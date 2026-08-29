@@ -17,7 +17,7 @@ import { diffResourceTotals } from "../server/db/reconcile.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dataDir = path.join(__dirname, "..", "data");
-const dbPath = path.join(dataDir, "campaign.db");
+const dbPath = process.env.WILDERWEB_DB_PATH || path.join(dataDir, "campaign.db");
 const force = process.argv.includes("--force");
 
 async function readJson(name) {
