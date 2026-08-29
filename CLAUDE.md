@@ -77,3 +77,13 @@ backend only through `client/src/api.js` (`getResource`/`putResource`/`addHistor
 pattern per view (see `Dashboard.jsx`) is: `GET` the resource on mount, edit local state, track a
 `dirty` flag, and `PUT` the whole resource back on explicit save — there's no autosave or
 per-field patching.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and specs live as markdown files under `.scratch/<feature-slug>/`. See `docs/agents/issue-tracker.md`.
+
+### Domain docs
+
+Single-context layout: `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
