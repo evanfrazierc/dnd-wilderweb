@@ -18,3 +18,7 @@ test("hexDistance measures neighboring hexes as 1", () => {
 test("hexDistance measures a longer path", () => {
   assert.equal(hexDistance({ q: 0, r: 0 }, { q: 2, r: -1 }), 2);
 });
+
+test("hexDistance from a hex to itself is 0", () => {
+  assert.equal(hexDistance({ q: 3, r: -2 }, { q: 3, r: -2 }), 0);
+});
