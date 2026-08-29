@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
 import { getResource, putResource } from "../api.js";
+import Icon from "./Icon.jsx";
+
+const ALIGNMENT_ICON = {
+  Good: "AlignGood",
+  Evil: "AlignEvil",
+  Neutral: "AlignNeutral",
+  Unknown: "AlignUnknown",
+};
 
 function IntroductionTab() {
   const [intro, setIntro] = useState(null);
@@ -36,14 +44,15 @@ function IntroductionTab() {
   }
 
   return (
-    <div className="card">
+    <div className="card parchment journal-page">
       <div className="section-title-row">
-        <p className="pill">
+        <p className="pill" style={{ background: "rgba(36,28,18,0.08)", borderColor: "rgba(36,28,18,0.25)", color: "#5b4d34" }}>
           Posted by {intro.postedBy} on {intro.postedAt}
         </p>
         <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-          {status && <span className="pill">{status}</span>}
+          {status && <span className="pill accent">{status}</span>}
           <button className="btn" onClick={addParagraph}>
+            <Icon name="Plus" size={14} />
             Add paragraph
           </button>
           <button className="btn btn-primary" onClick={save}>
@@ -52,15 +61,15 @@ function IntroductionTab() {
         </div>
       </div>
       {intro.paragraphs.map((p, i) => (
-        <div key={i} style={{ display: "flex", gap: "0.5rem", marginBottom: "0.5rem" }}>
+        <div key={i} style={{ display: "flex", gap: "0.5rem", marginBottom: "0.6rem" }}>
           <textarea
             value={p}
             onChange={(e) => updateParagraph(i, e.target.value)}
             rows={3}
-            style={{ flex: 1 }}
+            style={{ flex: 1, background: "rgba(36,28,18,0.05)", color: "var(--ink)", borderColor: "rgba(36,28,18,0.25)" }}
           />
           <button className="btn btn-danger" onClick={() => removeParagraph(i)}>
-            Remove
+            <Icon name="Trash" size={14} />
           </button>
         </div>
       ))}
@@ -103,12 +112,15 @@ function DeitiesTab() {
   }
 
   return (
-    <div className="card">
+    <div>
       <div className="section-title-row">
-        <span />
+        <span className="text-faint" style={{ fontSize: "0.82rem" }}>
+          The pantheon known to the Wilderlands, confirmed and rumored alike.
+        </span>
         <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-          {status && <span className="pill">{status}</span>}
+          {status && <span className="pill accent">{status}</span>}
           <button className="btn" onClick={addDeity}>
+            <Icon name="Plus" size={14} />
             Add deity
           </button>
           <button className="btn btn-primary" onClick={save}>
@@ -116,37 +128,51 @@ function DeitiesTab() {
           </button>
         </div>
       </div>
-      {deities.map((d, i) => (
-        <div
-          key={i}
-          className="stat-row"
-          style={{ flexWrap: "wrap", gap: "0.5rem", alignItems: "center" }}
-        >
-          <input value={d.name} onChange={(e) => update(i, "name", e.target.value)} placeholder="Name" />
-          <input
-            value={d.title || ""}
-            onChange={(e) => update(i, "title", e.target.value)}
-            placeholder="Title"
-          />
-          <select value={d.alignment} onChange={(e) => update(i, "alignment", e.target.value)}>
-            <option>Good</option>
-            <option>Evil</option>
-            <option>Neutral</option>
-            <option>Unknown</option>
-          </select>
-          <label style={{ fontSize: "0.85rem", color: "var(--text-dim)" }}>
-            <input
-              type="checkbox"
-              checked={!!d.confirmed}
-              onChange={(e) => update(i, "confirmed", e.target.checked)}
-            />{" "}
-            confirmed
-          </label>
-          <button className="btn btn-danger" onClick={() => removeDeity(i)}>
-            Remove
-          </button>
-        </div>
-      ))}
+      <div className="grid grid-3">
+        {deities.map((d, i) => (
+          <div key={i} className={`card deity-card${d.confirmed ? "" : " unconfirmed"}`}>
+            <div className="deity-card-head">
+              <span className={`icon-badge ${d.alignment === "Evil" ? "bad" : d.alignment === "Good" ? "good" : "muted"}`}>
+                <Icon name={ALIGNMENT_ICON[d.alignment] || "AlignUnknown"} size={18} />
+              </span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <input
+                  className="deity-name-input"
+                  value={d.name}
+                  onChange={(e) => update(i, "name", e.target.value)}
+                  placeholder="Name"
+                />
+                <input
+                  className="deity-title-input"
+                  value={d.title || ""}
+                  onChange={(e) => update(i, "title", e.target.value)}
+                  placeholder="Title"
+                />
+              </div>
+              <button className="btn btn-icon btn-danger" onClick={() => removeDeity(i)} aria-label={`Remove ${d.name}`}>
+                <Icon name="Trash" size={13} />
+              </button>
+            </div>
+            <div className="deity-card-foot">
+              <select value={d.alignment} onChange={(e) => update(i, "alignment", e.target.value)}>
+                <option>Good</option>
+                <option>Evil</option>
+                <option>Neutral</option>
+                <option>Unknown</option>
+              </select>
+              <label className="text-faint" style={{ fontSize: "0.78rem", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                <input
+                  type="checkbox"
+                  checked={!!d.confirmed}
+                  onChange={(e) => update(i, "confirmed", e.target.checked)}
+                />
+                confirmed
+              </label>
+            </div>
+            {d.note && <p className="text-faint" style={{ fontSize: "0.78rem", marginTop: "0.5rem" }}>{d.note}</p>}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -202,24 +228,33 @@ function LocationsTab() {
   return (
     <div>
       <div className="section-title-row">
-        <span />
-        {status && <span className="pill">{status}</span>}
+        <span className="text-faint" style={{ fontSize: "0.82rem" }}>
+          Known kingdoms, counties, and settlements across the map.
+        </span>
+        {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
       </div>
       <div className="grid grid-2">
         {locations.kingdoms.map((kingdom) => (
-          <div className="card" key={kingdom.name}>
-            <h3>{kingdom.name}</h3>
-            {kingdom.capital && <p className="pill">Capital: {kingdom.capital}</p>}
+          <div className="card region-card" key={kingdom.name}>
+            <div className="region-card-head">
+              <span className="icon-badge">
+                <Icon name="MapPin" size={18} />
+              </span>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ margin: 0 }}>{kingdom.name}</h3>
+                {kingdom.capital && <span className="text-faint" style={{ fontSize: "0.76rem" }}>Capital: {kingdom.capital}</span>}
+              </div>
+            </div>
             {kingdom.counties.length === 0 && kingdom.other.length === 0 && (
-              <p style={{ color: "var(--text-dim)" }}>{kingdom.note || "No locations posted yet."}</p>
+              <p className="text-dim">{kingdom.note || "No locations posted yet."}</p>
             )}
             {kingdom.counties.map((county, ci) => (
-              <div key={county.name} style={{ marginTop: "0.5rem" }}>
-                <strong>{county.name}</strong>
-                <span className="pill" style={{ marginLeft: "0.5rem" }}>
-                  seat: {county.seat}
-                </span>
-                <ul>
+              <div key={county.name} style={{ marginTop: "0.6rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <strong>{county.name}</strong>
+                  <span className="pill">seat: {county.seat}</span>
+                </div>
+                <ul className="location-list">
                   {county.settlements.map((s) => (
                     <li key={s.name}>
                       {s.name} <span className="pill">{s.type}</span>
@@ -230,9 +265,9 @@ function LocationsTab() {
               </div>
             ))}
             {kingdom.other.length > 0 && (
-              <div style={{ marginTop: "0.5rem" }}>
+              <div style={{ marginTop: "0.6rem" }}>
                 <strong>Other</strong>
-                <ul>
+                <ul className="location-list">
                   {kingdom.other.map((o) => (
                     <li key={o.name}>
                       {o.name} <span className="pill">{o.type}</span>
@@ -245,23 +280,27 @@ function LocationsTab() {
         ))}
       </div>
 
-      <div className="card" style={{ marginTop: "1rem" }}>
+      <div className="section-header">
         <h3>Wilderlands Regions</h3>
+        <div className="rule" />
+      </div>
+      <div className="card">
         <div className="grid grid-3">
           {locations.wilderlandsRegions.map((r) => (
             <div key={r.name}>
               <strong>{r.name}</strong>
-              <p style={{ color: "var(--text-dim)", fontSize: "0.9rem" }}>{r.description}</p>
+              <p className="text-dim" style={{ fontSize: "0.88rem" }}>{r.description}</p>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="card" style={{ marginTop: "1rem" }}>
+      <div className="card" style={{ marginTop: "1.25rem" }}>
         <h3>Add a new kingdom</h3>
         <div style={{ display: "flex", gap: "0.5rem" }}>
           <input value={newKingdom} onChange={(e) => setNewKingdom(e.target.value)} placeholder="Kingdom name" />
           <button className="btn btn-primary" onClick={addKingdom}>
+            <Icon name="Plus" size={14} />
             Add
           </button>
         </div>
@@ -273,7 +312,7 @@ function LocationsTab() {
 function SettlementAdder({ onAdd }) {
   const [name, setName] = useState("");
   return (
-    <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.25rem" }}>
+    <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.35rem" }}>
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}
@@ -281,7 +320,7 @@ function SettlementAdder({ onAdd }) {
         style={{ fontSize: "0.85rem" }}
       />
       <button
-        className="btn"
+        className="btn btn-sm"
         onClick={() => {
           onAdd(name);
           setName("");
@@ -294,9 +333,9 @@ function SettlementAdder({ onAdd }) {
 }
 
 const TABS = [
-  { key: "intro", label: "Introduction", Component: IntroductionTab },
-  { key: "deities", label: "Deities", Component: DeitiesTab },
-  { key: "locations", label: "Locations", Component: LocationsTab },
+  { key: "intro", label: "Introduction", icon: "Codex", Component: IntroductionTab },
+  { key: "deities", label: "Deities", icon: "Piety", Component: DeitiesTab },
+  { key: "locations", label: "Locations", icon: "MapPin", Component: LocationsTab },
 ];
 
 export default function Codex() {
@@ -304,25 +343,24 @@ export default function Codex() {
   const Active = TABS.find((t) => t.key === tab).Component;
 
   return (
-    <div>
-      <div className="page-header">
-        <h2>Campaign Codex</h2>
-        <div className="tag-row">
-          {TABS.map((t) => (
-            <button
-              key={t.key}
-              className="btn"
-              style={
-                t.key === tab
-                  ? { borderColor: "var(--accent)", color: "var(--accent-strong)" }
-                  : undefined
-              }
-              onClick={() => setTab(t.key)}
-            >
-              {t.label}
-            </button>
-          ))}
+    <div className="fade-in">
+      <div className="page-header hero-header">
+        <div>
+          <span className="eyebrow">Lore &amp; Records</span>
+          <h2>Campaign Codex</h2>
         </div>
+      </div>
+      <div className="book-tabs">
+        {TABS.map((t) => (
+          <button
+            key={t.key}
+            className={`book-tab${t.key === tab ? " active" : ""}`}
+            onClick={() => setTab(t.key)}
+          >
+            <Icon name={t.icon} size={15} />
+            {t.label}
+          </button>
+        ))}
       </div>
       <Active />
     </div>
