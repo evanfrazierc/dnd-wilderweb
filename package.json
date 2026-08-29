@@ -1,0 +1,12 @@
+{
+  "name": "dnd-wilderweb",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A small toolkit for running D&D wilderness hexcrawls.",
+  "type": "module",
+  "main": "src/wilderweb.js",
+  "scripts": {
+    "test": "node --test"
+  },
+  "license": "MIT"
+}
