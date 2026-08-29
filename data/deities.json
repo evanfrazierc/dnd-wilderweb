@@ -1,0 +1,19 @@
+[
+  { "name": "Pelor", "title": "Dawnfather", "alignment": "Good", "confirmed": true },
+  { "name": "Erastil", "title": "Old Deadeye", "alignment": "Good", "confirmed": true },
+  { "name": "Desna", "title": "Wandering Dreamer", "alignment": "Good", "confirmed": true },
+  { "name": "Bahamut", "title": "Platinum Dragon", "alignment": "Good", "confirmed": true },
+  { "name": "Abadar", "title": "Father of Wealth and Order", "alignment": "Good", "confirmed": true },
+  { "name": "Kord", "title": "Stormlord", "alignment": "Good", "confirmed": true },
+  { "name": "Pharasma", "title": "Lady of Graves", "alignment": "Good", "confirmed": true },
+  { "name": "Shelyn", "title": "Eternal Rose", "alignment": "Good", "confirmed": true },
+  { "name": "Lamashtu", "title": "Mother of Monsters", "alignment": "Evil", "confirmed": true },
+  { "name": "Melora", "title": null, "alignment": "Unknown", "confirmed": false, "note": "Holy days on the calendar (Wildernight, Garland Day, Tidestill, Green Pact, Winterbloom) but not yet listed in the religions channel." },
+  { "name": "Andoletta", "title": null, "alignment": "Unknown", "confirmed": false, "note": "Holy days: Hearth Day, Hallow's Eve." },
+  { "name": "Sarenrae", "title": null, "alignment": "Unknown", "confirmed": false, "note": "Holy days: Confession Day, Burningwind Festival." },
+  { "name": "Ioun", "title": null, "alignment": "Unknown", "confirmed": false, "note": "Holy day: Quill Day." },
+  { "name": "Sehanine", "title": null, "alignment": "Unknown", "confirmed": false, "note": "Holy day: Shadowlight." },
+  { "name": "Calistria", "title": null, "alignment": "Unknown", "confirmed": false, "note": "Holy days: Challenge Day, Feast of Vigor." },
+  { "name": "Corellon", "title": null, "alignment": "Unknown", "confirmed": false, "note": "Holy day: Day of the Arch-Heart." },
+  { "name": "Moradin", "title": null, "alignment": "Unknown", "confirmed": false, "note": "Holy days: Forge Festival, Oath Day." }
+]
