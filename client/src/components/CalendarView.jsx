@@ -1,51 +1,39 @@
 import { useEffect, useState } from "react";
 import { getResource, putResource } from "../api.js";
+import Icon from "./Icon.jsx";
+import { seasonColor } from "../lib/campaign.js";
 
 function MonthCard({ month, isCurrent, currentDay }) {
   const holidaysByDay = Object.fromEntries(month.holidays.map((h) => [h.day, h]));
   const days = Array.from({ length: 30 }, (_, i) => i + 1);
+  const color = seasonColor(month.season);
 
   return (
-    <div className="card" style={{ borderColor: isCurrent ? "var(--accent)" : "var(--border)" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+    <div
+      className={`card month-card${isCurrent ? " current" : ""}`}
+      style={{ "--season-color": color }}
+    >
+      <div className="month-card-head">
         <h4>
-          {month.number}. {month.name}
+          <span className="text-faint">{month.number.toString().padStart(2, "0")}</span> {month.name}
         </h4>
-        <span className="pill">{month.season}</span>
+        <span className="season-tag" style={{ "--season-color": color }}>
+          <Icon name={month.season} size={12} />
+          {month.season}
+        </span>
       </div>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(6, 1fr)",
-          gap: "3px",
-          marginTop: "0.5rem",
-        }}
-      >
+      <div className="day-grid">
         {days.map((day) => {
           const holiday = holidaysByDay[day];
           const isToday = isCurrent && day === currentDay;
           return (
             <div
               key={day}
+              className={`day-cell${isToday ? " today" : ""}${holiday ? " holiday" : ""}`}
               title={holiday ? `${holiday.name} (${holiday.deity} holy day)` : undefined}
-              style={{
-                aspectRatio: "1",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: "4px",
-                fontSize: "0.7rem",
-                background: isToday
-                  ? "var(--accent)"
-                  : holiday
-                  ? "var(--bg-elevated)"
-                  : "transparent",
-                border: holiday ? "1px solid var(--accent)" : "1px solid var(--border)",
-                color: isToday ? "#1a1410" : holiday ? "var(--accent-strong)" : "var(--text-dim)",
-                fontWeight: isToday || holiday ? 700 : 400,
-              }}
             >
               {day}
+              {holiday && <span className="day-dot" />}
             </div>
           );
         })}
@@ -54,6 +42,7 @@ function MonthCard({ month, isCurrent, currentDay }) {
         <div className="tag-row">
           {[...new Set(month.holidays.map((h) => h.name))].map((name) => (
             <span key={name} className="pill">
+              <Icon name="Piety" size={11} />
               {name}
             </span>
           ))}
@@ -104,30 +93,49 @@ export default function CalendarView() {
   if (error) return <div className="error-box">Failed to load calendar: {error}</div>;
   if (!calendar) return <div className="loading">Loading calendar…</div>;
 
+  const currentSeason = calendar.months.find((m) => m.number === calendar.currentDate.month)?.season;
+
   return (
-    <div>
-      <div className="page-header">
-        <h2>Continental Calendar — {calendar.era}</h2>
-        <p className="pill">
-          {calendar.currentDate.monthName} {calendar.currentDate.day}, {calendar.currentDate.year}{" "}
-          ({calendar.currentDate.yearLabel})
-        </p>
+    <div className="fade-in">
+      <div className="page-header hero-header">
+        <div>
+          <span className="eyebrow">{calendar.era}</span>
+          <h2>
+            {calendar.currentDate.monthName} {calendar.currentDate.day}, {calendar.currentDate.year}
+          </h2>
+        </div>
+        <div className="hero-meta">
+          <span className="pill accent">{calendar.currentDate.yearLabel}</span>
+          {currentSeason && (
+            <span className="season-tag" style={{ "--season-color": seasonColor(currentSeason) }}>
+              <Icon name={currentSeason} size={13} />
+              {currentSeason}
+            </span>
+          )}
+        </div>
       </div>
 
-      <div className="card" style={{ marginBottom: "1.5rem" }}>
-        <h3>Set current date</h3>
+      <div className="card" style={{ marginBottom: "1.75rem" }}>
+        <div className="stat-group-head">
+          <span className="icon-badge">
+            <Icon name="Calendar" size={17} />
+          </span>
+          <h3>Set current date</h3>
+        </div>
         <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap" }}>
           <label>
-            Year{" "}
+            Year
+            <br />
             <input
               type="number"
               value={draftDate.year}
               onChange={(e) => setDraftDate({ ...draftDate, year: e.target.value })}
-              style={{ width: "5rem" }}
+              style={{ width: "5.5rem" }}
             />
           </label>
           <label>
-            Month{" "}
+            Month
+            <br />
             <select
               value={draftDate.month}
               onChange={(e) => setDraftDate({ ...draftDate, month: e.target.value })}
@@ -140,20 +148,25 @@ export default function CalendarView() {
             </select>
           </label>
           <label>
-            Day{" "}
+            Day
+            <br />
             <input
               type="number"
               min="1"
               max="30"
               value={draftDate.day}
               onChange={(e) => setDraftDate({ ...draftDate, day: e.target.value })}
-              style={{ width: "4rem" }}
+              style={{ width: "4.5rem" }}
             />
           </label>
-          <button className="btn btn-primary" onClick={saveDate}>
+          <button className="btn btn-primary" onClick={saveDate} style={{ alignSelf: "flex-end" }}>
             Save
           </button>
-          {status && <span className="pill">{status}</span>}
+          {status && (
+            <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`} style={{ alignSelf: "flex-end" }}>
+              {status}
+            </span>
+          )}
         </div>
       </div>
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getResource, putResource } from "../api.js";
+import Icon from "./Icon.jsx";
 
 function AddBuildingForm({ buildingCatalog, onAdd }) {
   const [name, setName] = useState("");
@@ -14,7 +15,7 @@ function AddBuildingForm({ buildingCatalog, onAdd }) {
   }
 
   return (
-    <form onSubmit={submit} style={{ display: "flex", gap: "0.5rem", marginTop: "0.75rem" }}>
+    <form onSubmit={submit} className="add-building-form">
       <input
         list="building-catalog"
         placeholder="Building name"
@@ -34,6 +35,7 @@ function AddBuildingForm({ buildingCatalog, onAdd }) {
         style={{ flex: "1 1 auto" }}
       />
       <button className="btn" type="submit">
+        <Icon name="Plus" size={14} />
         Add
       </button>
     </form>
@@ -89,52 +91,78 @@ export default function Settlements() {
   if (error) return <div className="error-box">Failed to load settlements: {error}</div>;
   if (!settlements) return <div className="loading">Loading settlements…</div>;
 
-  return (
-    <div>
-      <div className="page-header">
-        <h2>Settlements &amp; Regions</h2>
-        <p style={{ color: "var(--text-dim)" }}>
-          Building lists reflect the last confirmed snapshot per region. Cross-check the History
-          log for construction since then.
-        </p>
-        {status && <span className="pill">{status}</span>}
-      </div>
+  const totalBuildings = settlements.reduce((sum, r) => sum + r.buildings.length, 0);
 
-      <div className="grid grid-2">
+  return (
+    <div className="fade-in">
+      <div className="page-header hero-header">
+        <div>
+          <span className="eyebrow">The Wilderlands</span>
+          <h2>Settlements &amp; Regions</h2>
+        </div>
+        <div className="hero-meta">
+          <span className="pill accent">
+            <Icon name="Settlements" size={13} />
+            {settlements.length} regions
+          </span>
+          <span className="pill">{totalBuildings} buildings</span>
+        </div>
+      </div>
+      <p className="text-dim hero-note">
+        Building lists reflect the last confirmed snapshot per region. Cross-check the History log
+        for construction since then.
+      </p>
+      {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+
+      <div className="grid grid-2" style={{ marginTop: "1.25rem" }}>
         {settlements.map((region) => (
-          <div className="card" key={region.region}>
-            <div className="section-title-row">
-              <h3 style={{ margin: 0 }}>{region.region}</h3>
-              <span className="pill">as of {region.asOf}</span>
+          <div className="card region-card" key={region.region}>
+            <div className="region-card-head">
+              <span className="icon-badge">
+                <Icon name="MapPin" size={18} />
+              </span>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ margin: 0 }}>{region.region}</h3>
+                <span className="text-faint" style={{ fontSize: "0.76rem" }}>
+                  as of {region.asOf}
+                </span>
+              </div>
+              <span className="pill">{region.buildings.length} buildings</span>
             </div>
-            {region.buildings.map((building, i) => {
-              const catalog = catalogEntry(building.name);
-              return (
-                <div
-                  className="stat-row"
-                  key={`${building.name}-${i}`}
-                  title={catalog ? catalog.effect : undefined}
-                >
-                  <div>
-                    <div style={{ fontWeight: 600 }}>
-                      {building.name}
-                      {building.count ? ` ×${building.count}` : ""}
-                    </div>
-                    {building.detail && (
-                      <div style={{ fontSize: "0.85rem", color: "var(--text-dim)" }}>
-                        {building.detail}
+
+            {region.buildings.length === 0 && (
+              <div className="empty-state" style={{ padding: "1.25rem" }}>
+                No buildings recorded yet.
+              </div>
+            )}
+
+            <div className="building-list">
+              {region.buildings.map((building, i) => {
+                const catalog = catalogEntry(building.name);
+                const category = catalog?.category || "Main Settlement";
+                return (
+                  <div className="building-row" key={`${building.name}-${i}`} title={catalog ? catalog.effect : undefined}>
+                    <span className={`icon-badge sm building-cat-${category.replace(/\s+/g, "-")}`}>
+                      <Icon name={category} size={14} />
+                    </span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="building-name">
+                        {building.name}
+                        {building.count ? ` ×${building.count}` : ""}
                       </div>
-                    )}
+                      {building.detail && <div className="text-faint building-detail">{building.detail}</div>}
+                    </div>
+                    <button
+                      className="btn btn-icon btn-danger"
+                      onClick={() => removeBuilding(region.region, i)}
+                      aria-label={`Remove ${building.name}`}
+                    >
+                      <Icon name="Trash" size={14} />
+                    </button>
                   </div>
-                  <button
-                    className="btn btn-danger"
-                    onClick={() => removeBuilding(region.region, i)}
-                  >
-                    Remove
-                  </button>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
             <AddBuildingForm
               buildingCatalog={buildingCatalog}
               onAdd={(b) => addBuilding(region.region, b)}
