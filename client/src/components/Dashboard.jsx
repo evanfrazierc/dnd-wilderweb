@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { getResource, putResource } from "../api.js";
+import { getProjection } from "../api.js";
+import { useEventSubmit } from "../lib/useEventSubmit.js";
 import Icon from "./Icon.jsx";
+import WarningsList from "./WarningsList.jsx";
 
 function StatGroup({ title, icon, values, descriptions, onChange, gauge }) {
   return (
@@ -54,41 +56,61 @@ function StatGroup({ title, icon, values, descriptions, onChange, gauge }) {
   );
 }
 
+function diffChanges(loaded, draft) {
+  const changes = {};
+  for (const group of ["resources", "assets", "society"]) {
+    for (const key of Object.keys(draft[group] || {})) {
+      const delta = draft[group][key] - loaded[group][key];
+      if (delta !== 0) changes[key] = delta;
+    }
+  }
+  return changes;
+}
+
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
-  const [dirty, setDirty] = useState(false);
-  const [status, setStatus] = useState("");
+  const [draft, setDraft] = useState(null);
+  const [gameDate, setGameDate] = useState("");
+  const [note, setNote] = useState("");
   const [error, setError] = useState(null);
 
+  function load() {
+    return getProjection("stats").then((s) => {
+      setStats(s);
+      setDraft(s);
+    });
+  }
+
   useEffect(() => {
-    getResource("stats").then(setStats).catch((e) => setError(e.message));
+    load().catch((e) => setError(e.message));
   }, []);
+
+  const { submit, status, warnings } = useEventSubmit(() => {
+    load();
+    setNote("");
+  });
 
   function updateGroup(group, key, value) {
     if (Number.isNaN(value)) return;
-    setStats((prev) => ({
-      ...prev,
-      [group]: { ...prev[group], [key]: value },
-    }));
-    setDirty(true);
-    setStatus("");
+    setDraft((prev) => ({ ...prev, [group]: { ...prev[group], [key]: value } }));
   }
 
+  const dirty = stats && draft && JSON.stringify(diffChanges(stats, draft)) !== "{}";
+
   async function save() {
-    setStatus("Saving...");
-    try {
-      await putResource("stats", stats);
-      setDirty(false);
-      setStatus("Saved.");
-    } catch (e) {
-      setStatus(`Error: ${e.message}`);
-    }
+    const changes = diffChanges(stats, draft);
+    await submit({
+      type: "ResourceChanged",
+      gameDate: gameDate.trim() || stats.asOf,
+      note: note.trim() || undefined,
+      payload: { changes },
+    });
   }
 
   if (error) return <div className="error-box">Failed to load stats: {error}</div>;
-  if (!stats) return <div className="loading">Loading kingdom stats…</div>;
+  if (!stats || !draft) return <div className="loading">Loading kingdom stats…</div>;
 
-  const population = stats.assets?.Population ?? 0;
+  const population = draft.assets?.Population ?? 0;
 
   function societyGauge(key, value) {
     if (key === "Unrest" || key === "Loyalty") {
@@ -118,41 +140,73 @@ export default function Dashboard() {
 
       <div className="section-title-row">
         <span className="text-faint" style={{ fontSize: "0.82rem" }}>
-          Adjust values below, then commit them to the record.
+          Adjust values below, then commit them to the record as a resource change.
         </span>
-        <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
-          {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
-          <button className="btn btn-primary" onClick={save} disabled={!dirty}>
-            <Icon name="Scroll" size={14} />
-            Save changes
-          </button>
-        </div>
       </div>
 
       <div className="grid grid-3">
         <StatGroup
           title="Resources"
           icon="Resources"
-          values={stats.resources}
+          values={draft.resources}
           descriptions={stats.resourceDescriptions}
           onChange={(k, v) => updateGroup("resources", k, v)}
         />
         <StatGroup
           title="Assets"
           icon="Main Settlement"
-          values={stats.assets}
+          values={draft.assets}
           descriptions={stats.assetDescriptions}
           onChange={(k, v) => updateGroup("assets", k, v)}
         />
         <StatGroup
           title="Society"
           icon="Loyalty"
-          values={stats.society}
+          values={draft.society}
           descriptions={stats.societyDescriptions}
           onChange={(k, v) => updateGroup("society", k, v)}
           gauge={societyGauge}
         />
       </div>
+
+      {dirty && (
+        <div className="card" style={{ marginTop: "1.25rem" }}>
+          <div className="stat-group-head">
+            <span className="icon-badge">
+              <Icon name="Scroll" size={17} />
+            </span>
+            <h3>Record this change</h3>
+          </div>
+          <div style={{ display: "flex", gap: "0.75rem", alignItems: "flex-end", flexWrap: "wrap" }}>
+            <label style={{ flex: "1 1 12rem" }}>
+              Game date
+              <br />
+              <input
+                value={gameDate}
+                onChange={(e) => setGameDate(e.target.value)}
+                placeholder="e.g. Month 4, 1227"
+                style={{ width: "100%" }}
+              />
+            </label>
+            <label style={{ flex: "2 1 16rem" }}>
+              Note
+              <br />
+              <input
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="What happened"
+                style={{ width: "100%" }}
+              />
+            </label>
+            <button className="btn btn-primary" onClick={save}>
+              <Icon name="Scroll" size={14} />
+              Save changes
+            </button>
+            {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+          </div>
+          <WarningsList warnings={warnings} />
+        </div>
+      )}
 
       {stats.annualIncomeUpkeep && (
         <>

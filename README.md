@@ -4,13 +4,16 @@ A campaign tracker for the Wilderweb D&D campaign (a Kingmaker-style wilderness 
 
 ## What's here
 
-- **`data/`** — the source of truth: calendar, deities, locations, campaign lore, the building
-  catalog, per-region settlement buildings, current kingdom stats, and a chronological build
-  order / bookkeeping history. Transcribed from the campaign's Discord channels.
-- **`server/`** — a small Express API that reads and writes the JSON files in `data/`.
-- **`client/`** — a React (Vite) app with five views: Kingdom Dashboard, Calendar, Settlements,
-  History Log, and Codex (lore/deities/locations). Edits made in the UI are saved back to the
-  files in `data/`, so they show up in `git diff` like any other change.
+- **`server/db/`** — a SQLite event log (`data/campaign.db`) that's the source of truth: every
+  campaign change (resource changes, construction, calendar advances, deity/location amendments,
+  DM rulings) is recorded as an event, with current state kept as a queryable projection.
+  See `CONTEXT.md` for the vocabulary and `docs/adr/` for the design decisions behind it.
+- **`server/`** — a small Express API over that database.
+- **`client/`** — a React (Vite) app with five views: Dashboard, Calendar, Settlements, Timeline,
+  and Codex (lore/deities/locations). Edits made in the UI are recorded as events, not overwrites.
+- **`data/*.json`** — a git-diffable backup of current state, produced on demand by
+  `npm run export`; originally transcribed from the campaign's Discord channels and migrated into
+  the database by `npm run migrate`.
 
 ## Development
 

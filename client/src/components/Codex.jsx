@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { getResource, putResource } from "../api.js";
+import { getProjection, getReference } from "../api.js";
+import { useEventSubmit } from "../lib/useEventSubmit.js";
 import Icon from "./Icon.jsx";
+import WarningsList from "./WarningsList.jsx";
 
 const ALIGNMENT_ICON = {
   Good: "AlignGood",
@@ -9,220 +11,265 @@ const ALIGNMENT_ICON = {
   Unknown: "AlignUnknown",
 };
 
+// Reference data (CONTEXT.md): no event history, edited directly in the database.
+// Read-only here until Phase 2+ builds an admin UI for it (see docs/agents and
+// .scratch/campaign-database/spec.md, Q7).
 function IntroductionTab() {
   const [intro, setIntro] = useState(null);
-  const [status, setStatus] = useState("");
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    getResource("introduction").then(setIntro);
+    getReference("introduction").then(setIntro).catch((e) => setError(e.message));
   }, []);
 
+  if (error) return <div className="error-box">Failed to load introduction: {error}</div>;
   if (!intro) return <div className="loading">Loading…</div>;
-
-  function updateParagraph(i, value) {
-    const paragraphs = [...intro.paragraphs];
-    paragraphs[i] = value;
-    setIntro({ ...intro, paragraphs });
-  }
-
-  function addParagraph() {
-    setIntro({ ...intro, paragraphs: [...intro.paragraphs, ""] });
-  }
-
-  function removeParagraph(i) {
-    setIntro({ ...intro, paragraphs: intro.paragraphs.filter((_, idx) => idx !== i) });
-  }
-
-  async function save() {
-    setStatus("Saving...");
-    try {
-      await putResource("introduction", intro);
-      setStatus("Saved.");
-    } catch (e) {
-      setStatus(`Error: ${e.message}`);
-    }
-  }
 
   return (
     <div className="card parchment journal-page">
-      <div className="section-title-row">
-        <p className="pill" style={{ background: "rgba(36,28,18,0.08)", borderColor: "rgba(36,28,18,0.25)", color: "#5b4d34" }}>
-          Posted by {intro.postedBy} on {intro.postedAt}
-        </p>
-        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-          {status && <span className="pill accent">{status}</span>}
-          <button className="btn" onClick={addParagraph}>
-            <Icon name="Plus" size={14} />
-            Add paragraph
-          </button>
-          <button className="btn btn-primary" onClick={save}>
-            Save
-          </button>
-        </div>
-      </div>
+      <p
+        className="pill"
+        style={{ background: "rgba(36,28,18,0.08)", borderColor: "rgba(36,28,18,0.25)", color: "#5b4d34" }}
+      >
+        Posted by {intro.postedBy} on {intro.postedAt}
+      </p>
       {intro.paragraphs.map((p, i) => (
-        <div key={i} style={{ display: "flex", gap: "0.5rem", marginBottom: "0.6rem" }}>
-          <textarea
-            value={p}
-            onChange={(e) => updateParagraph(i, e.target.value)}
-            rows={3}
-            style={{ flex: 1, background: "rgba(36,28,18,0.05)", color: "var(--ink)", borderColor: "rgba(36,28,18,0.25)" }}
-          />
-          <button className="btn btn-danger" onClick={() => removeParagraph(i)}>
-            <Icon name="Trash" size={14} />
-          </button>
-        </div>
+        <p key={i} style={{ marginTop: "0.6rem" }}>
+          {p}
+        </p>
       ))}
     </div>
   );
 }
 
+function DeityCard({ deity, onSaved }) {
+  const [draft, setDraft] = useState(deity);
+  const [gameDate, setGameDate] = useState("");
+  const { submit, status, warnings } = useEventSubmit(onSaved);
+
+  function field(key, value) {
+    setDraft({ ...draft, [key]: value });
+  }
+
+  const dirty = JSON.stringify(draft) !== JSON.stringify(deity);
+
+  function save() {
+    const changes = {};
+    for (const key of ["title", "alignment", "confirmed", "note"]) {
+      if (draft[key] !== deity[key]) changes[key] = draft[key];
+    }
+    if (Object.keys(changes).length === 0 || !gameDate.trim()) return;
+    submit({
+      type: "DeityAmended",
+      gameDate: gameDate.trim(),
+      note: `Amended via the Codex`,
+      payload: { name: deity.name, changes },
+    }).then(() => setGameDate(""));
+  }
+
+  return (
+    <div className={`card deity-card${draft.confirmed ? "" : " unconfirmed"}`}>
+      <div className="deity-card-head">
+        <span className={`icon-badge ${draft.alignment === "Evil" ? "bad" : draft.alignment === "Good" ? "good" : "muted"}`}>
+          <Icon name={ALIGNMENT_ICON[draft.alignment] || "AlignUnknown"} size={18} />
+        </span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="deity-name-input" style={{ fontWeight: 600 }}>{draft.name}</div>
+          <input
+            className="deity-title-input"
+            value={draft.title || ""}
+            onChange={(e) => field("title", e.target.value)}
+            placeholder="Title"
+          />
+        </div>
+      </div>
+      <div className="deity-card-foot">
+        <select value={draft.alignment} onChange={(e) => field("alignment", e.target.value)}>
+          <option>Good</option>
+          <option>Evil</option>
+          <option>Neutral</option>
+          <option>Unknown</option>
+        </select>
+        <label className="text-faint" style={{ fontSize: "0.78rem", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+          <input
+            type="checkbox"
+            checked={!!draft.confirmed}
+            onChange={(e) => field("confirmed", e.target.checked)}
+          />
+          confirmed
+        </label>
+      </div>
+      <textarea
+        value={draft.note || ""}
+        onChange={(e) => field("note", e.target.value)}
+        placeholder="Note"
+        rows={2}
+        style={{ width: "100%", marginTop: "0.5rem", fontSize: "0.8rem" }}
+      />
+      {dirty && (
+        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginTop: "0.5rem", flexWrap: "wrap" }}>
+          <input
+            value={gameDate}
+            onChange={(e) => setGameDate(e.target.value)}
+            placeholder="Game date"
+            style={{ width: "8rem", fontSize: "0.8rem" }}
+          />
+          <button className="btn btn-primary btn-sm" onClick={save} disabled={!gameDate.trim()}>
+            Save
+          </button>
+          {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+        </div>
+      )}
+      <WarningsList warnings={warnings} />
+    </div>
+  );
+}
+
+function NewDeityForm({ onAdded }) {
+  const [name, setName] = useState("");
+  const [gameDate, setGameDate] = useState("");
+  const { submit, status, warnings } = useEventSubmit(() => {
+    setName("");
+    setGameDate("");
+  });
+
+  function submitForm(e) {
+    e.preventDefault();
+    if (!name.trim() || !gameDate.trim()) return;
+    submit({
+      type: "DeityAmended",
+      gameDate: gameDate.trim(),
+      note: "Added via the Codex",
+      payload: { name: name.trim(), changes: { alignment: "Unknown", confirmed: false } },
+    }).then(() => onAdded());
+  }
+
+  return (
+    <form onSubmit={submitForm} className="card" style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
+      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="New deity's name" style={{ flex: 1 }} />
+      <input value={gameDate} onChange={(e) => setGameDate(e.target.value)} placeholder="Game date" style={{ width: "8rem" }} />
+      <button className="btn btn-primary" type="submit">
+        <Icon name="Plus" size={14} />
+        Add deity
+      </button>
+      {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+      <WarningsList warnings={warnings} />
+    </form>
+  );
+}
+
 function DeitiesTab() {
   const [deities, setDeities] = useState(null);
-  const [status, setStatus] = useState("");
+  const [error, setError] = useState(null);
+
+  function load() {
+    return getProjection("deities").then(setDeities);
+  }
 
   useEffect(() => {
-    getResource("deities").then(setDeities);
+    load().catch((e) => setError(e.message));
   }, []);
 
+  if (error) return <div className="error-box">Failed to load deities: {error}</div>;
   if (!deities) return <div className="loading">Loading…</div>;
-
-  function update(i, field, value) {
-    const next = [...deities];
-    next[i] = { ...next[i], [field]: value };
-    setDeities(next);
-  }
-
-  function addDeity() {
-    setDeities([...deities, { name: "New Deity", title: "", alignment: "Unknown", confirmed: false, note: "" }]);
-  }
-
-  function removeDeity(i) {
-    setDeities(deities.filter((_, idx) => idx !== i));
-  }
-
-  async function save() {
-    setStatus("Saving...");
-    try {
-      await putResource("deities", deities);
-      setStatus("Saved.");
-    } catch (e) {
-      setStatus(`Error: ${e.message}`);
-    }
-  }
 
   return (
     <div>
       <div className="section-title-row">
         <span className="text-faint" style={{ fontSize: "0.82rem" }}>
-          The pantheon known to the Wilderlands, confirmed and rumored alike.
+          The pantheon known to the Wilderlands, confirmed and rumored alike. Each deity saves on
+          its own as a DeityAmended event.
         </span>
-        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-          {status && <span className="pill accent">{status}</span>}
-          <button className="btn" onClick={addDeity}>
-            <Icon name="Plus" size={14} />
-            Add deity
-          </button>
-          <button className="btn btn-primary" onClick={save}>
-            Save
-          </button>
-        </div>
       </div>
-      <div className="grid grid-3">
-        {deities.map((d, i) => (
-          <div key={i} className={`card deity-card${d.confirmed ? "" : " unconfirmed"}`}>
-            <div className="deity-card-head">
-              <span className={`icon-badge ${d.alignment === "Evil" ? "bad" : d.alignment === "Good" ? "good" : "muted"}`}>
-                <Icon name={ALIGNMENT_ICON[d.alignment] || "AlignUnknown"} size={18} />
-              </span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <input
-                  className="deity-name-input"
-                  value={d.name}
-                  onChange={(e) => update(i, "name", e.target.value)}
-                  placeholder="Name"
-                />
-                <input
-                  className="deity-title-input"
-                  value={d.title || ""}
-                  onChange={(e) => update(i, "title", e.target.value)}
-                  placeholder="Title"
-                />
-              </div>
-              <button className="btn btn-icon btn-danger" onClick={() => removeDeity(i)} aria-label={`Remove ${d.name}`}>
-                <Icon name="Trash" size={13} />
-              </button>
-            </div>
-            <div className="deity-card-foot">
-              <select value={d.alignment} onChange={(e) => update(i, "alignment", e.target.value)}>
-                <option>Good</option>
-                <option>Evil</option>
-                <option>Neutral</option>
-                <option>Unknown</option>
-              </select>
-              <label className="text-faint" style={{ fontSize: "0.78rem", display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                <input
-                  type="checkbox"
-                  checked={!!d.confirmed}
-                  onChange={(e) => update(i, "confirmed", e.target.checked)}
-                />
-                confirmed
-              </label>
-            </div>
-            {d.note && <p className="text-faint" style={{ fontSize: "0.78rem", marginTop: "0.5rem" }}>{d.note}</p>}
-          </div>
+      <div className="grid grid-3" style={{ marginBottom: "1.25rem" }}>
+        {deities.map((d) => (
+          <DeityCard key={d.name} deity={d} onSaved={load} />
         ))}
       </div>
+      <NewDeityForm onAdded={load} />
+    </div>
+  );
+}
+
+function SettlementAdder({ onAdd }) {
+  const [name, setName] = useState("");
+  return (
+    <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.35rem" }}>
+      <input
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="New settlement"
+        style={{ fontSize: "0.85rem" }}
+      />
+      <button
+        className="btn btn-sm"
+        onClick={() => {
+          onAdd(name);
+          setName("");
+        }}
+      >
+        Add
+      </button>
     </div>
   );
 }
 
 function LocationsTab() {
   const [locations, setLocations] = useState(null);
-  const [status, setStatus] = useState("");
+  const [draft, setDraft] = useState(null);
+  const [note, setNote] = useState("");
+  const [gameDate, setGameDate] = useState("");
   const [newKingdom, setNewKingdom] = useState("");
+  const [error, setError] = useState(null);
+
+  function load() {
+    return getProjection("locations").then((data) => {
+      setLocations(data);
+      setDraft(data);
+    });
+  }
 
   useEffect(() => {
-    getResource("locations").then(setLocations);
+    load().catch((e) => setError(e.message));
   }, []);
 
-  if (!locations) return <div className="loading">Loading…</div>;
+  const { submit, status, warnings } = useEventSubmit(() => {
+    load();
+    setNote("");
+    setGameDate("");
+  });
 
-  async function save(next) {
-    setLocations(next);
-    setStatus("Saving...");
-    try {
-      await putResource("locations", next);
-      setStatus("Saved.");
-    } catch (e) {
-      setStatus(`Error: ${e.message}`);
-    }
-  }
+  if (error) return <div className="error-box">Failed to load locations: {error}</div>;
+  if (!locations || !draft) return <div className="loading">Loading…</div>;
+
+  const dirty = JSON.stringify(draft) !== JSON.stringify(locations);
 
   function addKingdom() {
     if (!newKingdom.trim()) return;
-    save({
-      ...locations,
-      kingdoms: [
-        ...locations.kingdoms,
-        { name: newKingdom.trim(), capital: null, counties: [], other: [] },
-      ],
+    setDraft({
+      ...draft,
+      kingdoms: [...draft.kingdoms, { name: newKingdom.trim(), capital: null, counties: [], other: [] }],
     });
     setNewKingdom("");
   }
 
   function addSettlement(kingdomName, countyIndex, name) {
     if (!name.trim()) return;
-    const kingdoms = locations.kingdoms.map((k) => {
+    const kingdoms = draft.kingdoms.map((k) => {
       if (k.name !== kingdomName) return k;
       const counties = k.counties.map((c, i) =>
         i === countyIndex
           ? { ...c, settlements: [...c.settlements, { name: name.trim(), type: "Settlement" }] }
-          : c
+          : c,
       );
       return { ...k, counties };
     });
-    save({ ...locations, kingdoms });
+    setDraft({ ...draft, kingdoms });
+  }
+
+  function save() {
+    if (!note.trim() || !gameDate.trim()) return;
+    submit({ type: "LocationAmended", gameDate: gameDate.trim(), note: note.trim(), payload: { data: draft } });
   }
 
   return (
@@ -231,10 +278,9 @@ function LocationsTab() {
         <span className="text-faint" style={{ fontSize: "0.82rem" }}>
           Known kingdoms, counties, and settlements across the map.
         </span>
-        {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
       </div>
       <div className="grid grid-2">
-        {locations.kingdoms.map((kingdom) => (
+        {draft.kingdoms.map((kingdom) => (
           <div className="card region-card" key={kingdom.name}>
             <div className="region-card-head">
               <span className="icon-badge">
@@ -286,7 +332,7 @@ function LocationsTab() {
       </div>
       <div className="card">
         <div className="grid grid-3">
-          {locations.wilderlandsRegions.map((r) => (
+          {draft.wilderlandsRegions.map((r) => (
             <div key={r.name}>
               <strong>{r.name}</strong>
               <p className="text-dim" style={{ fontSize: "0.88rem" }}>{r.description}</p>
@@ -299,35 +345,43 @@ function LocationsTab() {
         <h3>Add a new kingdom</h3>
         <div style={{ display: "flex", gap: "0.5rem" }}>
           <input value={newKingdom} onChange={(e) => setNewKingdom(e.target.value)} placeholder="Kingdom name" />
-          <button className="btn btn-primary" onClick={addKingdom}>
+          <button className="btn" onClick={addKingdom}>
             <Icon name="Plus" size={14} />
             Add
           </button>
         </div>
       </div>
-    </div>
-  );
-}
 
-function SettlementAdder({ onAdd }) {
-  const [name, setName] = useState("");
-  return (
-    <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.35rem" }}>
-      <input
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="New settlement"
-        style={{ fontSize: "0.85rem" }}
-      />
-      <button
-        className="btn btn-sm"
-        onClick={() => {
-          onAdd(name);
-          setName("");
-        }}
-      >
-        Add
-      </button>
+      {dirty && (
+        <div className="card" style={{ marginTop: "1.25rem" }}>
+          <div className="stat-group-head">
+            <span className="icon-badge">
+              <Icon name="Scroll" size={17} />
+            </span>
+            <h3>Record this change</h3>
+          </div>
+          <p className="text-faint" style={{ fontSize: "0.8rem" }}>
+            This replaces the whole locations record, so a note describing what changed is required.
+          </p>
+          <div style={{ display: "flex", gap: "0.75rem", alignItems: "flex-end", flexWrap: "wrap" }}>
+            <label style={{ flex: "0 0 8rem" }}>
+              Game date
+              <br />
+              <input value={gameDate} onChange={(e) => setGameDate(e.target.value)} style={{ width: "100%" }} />
+            </label>
+            <label style={{ flex: "1 1 16rem" }}>
+              Note
+              <br />
+              <input value={note} onChange={(e) => setNote(e.target.value)} style={{ width: "100%" }} />
+            </label>
+            <button className="btn btn-primary" onClick={save} disabled={!note.trim() || !gameDate.trim()}>
+              Save
+            </button>
+            {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+          </div>
+          <WarningsList warnings={warnings} />
+        </div>
+      )}
     </div>
   );
 }
