@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { getResource, putResource } from "../api.js";
+import { getProjection } from "../api.js";
+import { useEventSubmit } from "../lib/useEventSubmit.js";
 import Icon from "./Icon.jsx";
+import WarningsList from "./WarningsList.jsx";
 import { seasonColor } from "../lib/campaign.js";
 
 function MonthCard({ month, isCurrent, currentDay }) {
@@ -55,39 +57,35 @@ function MonthCard({ month, isCurrent, currentDay }) {
 export default function CalendarView() {
   const [calendar, setCalendar] = useState(null);
   const [draftDate, setDraftDate] = useState(null);
-  const [status, setStatus] = useState("");
+  const [note, setNote] = useState("");
   const [error, setError] = useState(null);
 
+  function load() {
+    return getProjection("calendar").then((c) => {
+      setCalendar(c);
+      setDraftDate(c.currentDate);
+    });
+  }
+
   useEffect(() => {
-    getResource("calendar")
-      .then((c) => {
-        setCalendar(c);
-        setDraftDate(c.currentDate);
-      })
-      .catch((e) => setError(e.message));
+    load().catch((e) => setError(e.message));
   }, []);
 
+  const { submit, status, warnings } = useEventSubmit(() => {
+    load();
+    setNote("");
+  });
+
   async function saveDate() {
-    setStatus("Saving...");
-    try {
-      const monthEntry = calendar.months.find((m) => m.number === Number(draftDate.month));
-      const updated = {
-        ...calendar,
-        currentDate: {
-          ...draftDate,
-          month: Number(draftDate.month),
-          day: Number(draftDate.day),
-          year: Number(draftDate.year),
-          monthName: monthEntry?.name || draftDate.monthName,
-        },
-      };
-      await putResource("calendar", updated);
-      setCalendar(updated);
-      setDraftDate(updated.currentDate);
-      setStatus("Saved.");
-    } catch (e) {
-      setStatus(`Error: ${e.message}`);
-    }
+    const month = Number(draftDate.month);
+    const day = Number(draftDate.day);
+    const year = Number(draftDate.year);
+    await submit({
+      type: "CalendarAdvanced",
+      gameDate: `Month ${month}, ${day}th, ${year}`,
+      note: note.trim() || undefined,
+      payload: { year, month, day, yearLabel: draftDate.yearLabel, note: draftDate.note },
+    });
   }
 
   if (error) return <div className="error-box">Failed to load calendar: {error}</div>;
@@ -120,9 +118,9 @@ export default function CalendarView() {
           <span className="icon-badge">
             <Icon name="Calendar" size={17} />
           </span>
-          <h3>Set current date</h3>
+          <h3>Advance the calendar</h3>
         </div>
-        <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "0.75rem", alignItems: "flex-end", flexWrap: "wrap" }}>
           <label>
             Year
             <br />
@@ -159,15 +157,22 @@ export default function CalendarView() {
               style={{ width: "4.5rem" }}
             />
           </label>
-          <button className="btn btn-primary" onClick={saveDate} style={{ alignSelf: "flex-end" }}>
+          <label style={{ flex: "1 1 12rem" }}>
+            Note
+            <br />
+            <input
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="What happened this tick"
+              style={{ width: "100%" }}
+            />
+          </label>
+          <button className="btn btn-primary" onClick={saveDate}>
             Save
           </button>
-          {status && (
-            <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`} style={{ alignSelf: "flex-end" }}>
-              {status}
-            </span>
-          )}
+          {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
         </div>
+        <WarningsList warnings={warnings} />
       </div>
 
       <div className="grid grid-3">

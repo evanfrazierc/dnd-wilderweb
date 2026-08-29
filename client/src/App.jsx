@@ -3,7 +3,7 @@ import "./App.css";
 import Dashboard from "./components/Dashboard.jsx";
 import CalendarView from "./components/CalendarView.jsx";
 import Settlements from "./components/Settlements.jsx";
-import History from "./components/History.jsx";
+import Timeline from "./components/Timeline.jsx";
 import Codex from "./components/Codex.jsx";
 import StatusBar from "./components/StatusBar.jsx";
 import Icon from "./components/Icon.jsx";
@@ -12,7 +12,7 @@ const PAGES = [
   { key: "dashboard", label: "Dashboard", icon: "Atlas", Component: Dashboard },
   { key: "calendar", label: "Calendar", icon: "Calendar", Component: CalendarView },
   { key: "settlements", label: "Settlements", icon: "Settlements", Component: Settlements },
-  { key: "history", label: "History Log", icon: "History", Component: History },
+  { key: "timeline", label: "Timeline", icon: "History", Component: Timeline },
   { key: "codex", label: "Codex", icon: "Codex", Component: Codex },
 ];
 

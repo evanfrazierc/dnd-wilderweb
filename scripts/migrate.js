@@ -95,6 +95,9 @@ function seedReferenceData(db, { calendar, introduction, buildings, stats }) {
       annualIncomeUpkeep: stats.annualIncomeUpkeep,
     }));
 
+  db.prepare("INSERT INTO campaign_meta (key, value) VALUES ('calendar_meta', ?)")
+    .run(JSON.stringify({ era: calendar.era, daysPerMonth: calendar.daysPerMonth }));
+
   const insertMonth = db.prepare(
     "INSERT INTO calendar_months (number, name, season, holidays) VALUES (?, ?, ?, ?)",
   );

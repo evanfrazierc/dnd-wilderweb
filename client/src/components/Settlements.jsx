@@ -1,16 +1,26 @@
 import { useEffect, useState } from "react";
-import { getResource, putResource } from "../api.js";
+import { getProjection, getReference } from "../api.js";
+import { useEventSubmit } from "../lib/useEventSubmit.js";
 import Icon from "./Icon.jsx";
+import WarningsList from "./WarningsList.jsx";
 
 function AddBuildingForm({ buildingCatalog, onAdd }) {
   const [name, setName] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [detail, setDetail] = useState("");
+  const [gameDate, setGameDate] = useState("");
 
   function submit(e) {
     e.preventDefault();
-    if (!name.trim()) return;
-    onAdd({ name: name.trim(), detail: detail.trim() });
+    if (!name.trim() || !gameDate.trim()) return;
+    onAdd({
+      building: name.trim(),
+      displayName: displayName.trim() || undefined,
+      detail: detail.trim() || undefined,
+      gameDate: gameDate.trim(),
+    });
     setName("");
+    setDisplayName("");
     setDetail("");
   }
 
@@ -29,10 +39,22 @@ function AddBuildingForm({ buildingCatalog, onAdd }) {
         ))}
       </datalist>
       <input
+        placeholder="In-fiction name (optional)"
+        value={displayName}
+        onChange={(e) => setDisplayName(e.target.value)}
+        style={{ flex: "1 1 auto" }}
+      />
+      <input
         placeholder="Detail (optional)"
         value={detail}
         onChange={(e) => setDetail(e.target.value)}
         style={{ flex: "1 1 auto" }}
+      />
+      <input
+        placeholder="Game date"
+        value={gameDate}
+        onChange={(e) => setGameDate(e.target.value)}
+        style={{ flex: "1 1 8rem" }}
       />
       <button className="btn" type="submit">
         <Icon name="Plus" size={14} />
@@ -46,42 +68,40 @@ export default function Settlements() {
   const [settlements, setSettlements] = useState(null);
   const [buildingCatalog, setBuildingCatalog] = useState([]);
   const [error, setError] = useState(null);
-  const [status, setStatus] = useState("");
+
+  function load() {
+    return Promise.all([getProjection("settlements"), getReference("buildings")]).then(([s, b]) => {
+      setSettlements(s);
+      setBuildingCatalog(b);
+    });
+  }
 
   useEffect(() => {
-    Promise.all([getResource("settlements"), getResource("buildings")])
-      .then(([s, b]) => {
-        setSettlements(s);
-        setBuildingCatalog(b);
-      })
-      .catch((e) => setError(e.message));
+    load().catch((e) => setError(e.message));
   }, []);
 
-  async function persist(next) {
-    setSettlements(next);
-    setStatus("Saving...");
-    try {
-      await putResource("settlements", next);
-      setStatus("Saved.");
-    } catch (e) {
-      setStatus(`Error: ${e.message}`);
-    }
+  const { submit, status, warnings } = useEventSubmit(load);
+
+  function addBuilding(regionName, { building, displayName, detail, gameDate }) {
+    submit({
+      type: "BuildingConstructed",
+      gameDate,
+      region: regionName,
+      note: `Constructed via the Settlements view`,
+      payload: { building, displayName, detail, count: 1 },
+    });
   }
 
-  function addBuilding(regionName, building) {
-    const next = settlements.map((r) =>
-      r.region === regionName ? { ...r, buildings: [...r.buildings, building] } : r
-    );
-    persist(next);
-  }
-
-  function removeBuilding(regionName, index) {
-    const next = settlements.map((r) =>
-      r.region === regionName
-        ? { ...r, buildings: r.buildings.filter((_, i) => i !== index) }
-        : r
-    );
-    persist(next);
+  function removeBuilding(regionName, building) {
+    const gameDate = window.prompt(`Game date this was removed/lost?`, "");
+    if (!gameDate) return;
+    submit({
+      type: "BuildingRemoved",
+      gameDate,
+      region: regionName,
+      note: `Removed via the Settlements view`,
+      payload: { building, count: 1 },
+    });
   }
 
   function catalogEntry(name) {
@@ -109,10 +129,11 @@ export default function Settlements() {
         </div>
       </div>
       <p className="text-dim hero-note">
-        Building lists reflect the last confirmed snapshot per region. Cross-check the History log
-        for construction since then.
+        Adding or removing a building here logs it as a BuildingConstructed / BuildingRemoved event
+        on the Timeline.
       </p>
       {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+      <WarningsList warnings={warnings} />
 
       <div className="grid grid-2" style={{ marginTop: "1.25rem" }}>
         {settlements.map((region) => (
@@ -123,9 +144,6 @@ export default function Settlements() {
               </span>
               <div style={{ flex: 1 }}>
                 <h3 style={{ margin: 0 }}>{region.region}</h3>
-                <span className="text-faint" style={{ fontSize: "0.76rem" }}>
-                  as of {region.asOf}
-                </span>
               </div>
               <span className="pill">{region.buildings.length} buildings</span>
             </div>
@@ -137,25 +155,27 @@ export default function Settlements() {
             )}
 
             <div className="building-list">
-              {region.buildings.map((building, i) => {
+              {region.buildings.map((building) => {
                 const catalog = catalogEntry(building.name);
                 const category = catalog?.category || "Main Settlement";
+                const label = building.displayName || building.name;
                 return (
-                  <div className="building-row" key={`${building.name}-${i}`} title={catalog ? catalog.effect : undefined}>
+                  <div className="building-row" key={building.name} title={catalog ? catalog.effect : undefined}>
                     <span className={`icon-badge sm building-cat-${category.replace(/\s+/g, "-")}`}>
                       <Icon name={category} size={14} />
                     </span>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div className="building-name">
-                        {building.name}
-                        {building.count ? ` ×${building.count}` : ""}
+                        {label}
+                        {building.displayName && <span className="text-faint"> ({building.name})</span>}
+                        {building.count > 1 ? ` ×${building.count}` : ""}
                       </div>
                       {building.detail && <div className="text-faint building-detail">{building.detail}</div>}
                     </div>
                     <button
                       className="btn btn-icon btn-danger"
-                      onClick={() => removeBuilding(region.region, i)}
-                      aria-label={`Remove ${building.name}`}
+                      onClick={() => removeBuilding(region.region, building.name)}
+                      aria-label={`Remove ${label}`}
                     >
                       <Icon name="Trash" size={14} />
                     </button>

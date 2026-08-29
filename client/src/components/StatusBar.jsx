@@ -1,24 +1,23 @@
 import { useEffect, useState } from "react";
-import { getResource } from "../api.js";
+import { getProjection, getEvents } from "../api.js";
 import Icon from "./Icon.jsx";
 import { currentMonth, formatDate, seasonColor } from "../lib/campaign.js";
 
 export default function StatusBar() {
   const [calendar, setCalendar] = useState(null);
   const [stats, setStats] = useState(null);
-  const [history, setHistory] = useState(null);
+  const [latest, setLatest] = useState(null);
 
   useEffect(() => {
-    getResource("calendar").then(setCalendar).catch(() => {});
-    getResource("stats").then(setStats).catch(() => {});
-    getResource("history").then(setHistory).catch(() => {});
+    getProjection("calendar").then(setCalendar).catch(() => {});
+    getProjection("stats").then(setStats).catch(() => {});
+    getEvents({ limit: 500 })
+      .then((events) => setLatest(events.at(-1) ?? null))
+      .catch(() => {});
   }, []);
 
   const month = currentMonth(calendar);
   const season = month?.season;
-  const latest = history?.length
-    ? [...history].sort((a, b) => (a.postedAt < b.postedAt ? 1 : -1))[0]
-    : null;
 
   const unrest = stats?.society?.Unrest;
   const population = stats?.assets?.Population;
@@ -59,7 +58,7 @@ export default function StatusBar() {
           </span>
           <div>
             <div className="status-caption">Latest entry</div>
-            <div className="status-value status-recent-title">{latest.title}</div>
+            <div className="status-value status-recent-title">{latest.note || latest.type}</div>
           </div>
         </div>
       )}

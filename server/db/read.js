@@ -53,9 +53,13 @@ function readSettlements(db) {
 function readCalendar(db) {
   const state = db.prepare("SELECT * FROM calendar_state WHERE id = 1").get();
   const months = db.prepare("SELECT * FROM calendar_months ORDER BY number").all();
+  const monthName = state ? months.find((m) => m.number === state.month)?.name : null;
+  const metaRow = db.prepare("SELECT value FROM campaign_meta WHERE key = 'calendar_meta'").get();
+  const meta = metaRow ? JSON.parse(metaRow.value) : {};
   return {
+    ...meta,
     currentDate: state
-      ? { year: state.year, yearLabel: state.year_label, month: state.month, day: state.day, note: state.note }
+      ? { year: state.year, yearLabel: state.year_label, month: state.month, monthName, day: state.day, note: state.note }
       : null,
     months: months.map((m) => ({ number: m.number, name: m.name, season: m.season, holidays: JSON.parse(m.holidays) })),
   };

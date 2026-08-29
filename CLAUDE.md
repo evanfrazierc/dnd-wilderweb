@@ -5,8 +5,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 A campaign tracker for the Wilderweb D&D campaign (a Kingmaker-style wilderness settlement game):
-an Express API (`server/`) that reads/writes JSON files in `data/`, and a React (Vite) client
-(`client/`) that edits that data through the UI.
+an Express API (`server/`) backed by a SQLite event log (`server/db/`), and a React (Vite) client
+(`client/`) where every edit is recorded as a historical event, not a blind overwrite.
 
 ## Commands
 
@@ -42,31 +42,26 @@ default 4000):
 npm start
 ```
 
-Database (see Architecture below — in progress, not yet the client's source of truth):
+Database:
 
 ```bash
-npm run migrate   # data/*.json -> data/campaign.db (--force to wipe and re-run)
-npm run export    # data/campaign.db -> data/*.json (do not run until Phase 2's cutover; see spec)
+npm run migrate   # one-time: data/*.json -> data/campaign.db. Refuses to re-run once
+                   # completed (even with --force) -- delete data/campaign.db manually
+                   # first if you really mean to start over; see scripts/migrate.js.
+npm run export    # data/campaign.db -> data/*.json, for a git-diffable backup. Safe to
+                   # run any time now that the database is what the app actually reads.
 ```
 
 ## Architecture
 
-**A database migration is in progress** (`.scratch/campaign-database/spec.md`, `CONTEXT.md`,
-`docs/adr/0001`-`0006`). Read those before changing `server/db/` — they explain the event-log
-design, why trades aren't a separate event type, why validation warns instead of blocking, etc.
+`data/campaign.db` (SQLite, via `server/db/`) is the source of truth. `data/*.json` is a
+git-diffable backup produced by `npm run export`, not something the running app reads or writes
+(ADR-0002 / `docs/agents`'s Q7 in `.scratch/campaign-database/spec.md`). Read `CONTEXT.md` (the
+event taxonomy and domain vocabulary) and `docs/adr/0001`-`0006` before changing `server/db/` or
+the event-emitting client code — they explain why trades aren't a separate event type, why
+validation warns instead of blocking, why there's no auth yet, etc.
 
-### `data/*.json` is still what the running app reads and writes (for now)
-
-Everything the app displays — calendar, deities, locations, campaign lore, the building catalog,
-per-region settlement buildings, current kingdom stats, and a chronological build-order/bookkeeping
-history — lives as JSON files in `data/`, transcribed from the campaign's Discord channels. Edits
-made in the client UI are written straight back to these files, so they show up in `git diff` like
-any other change. **This is Phase 1/2 in-progress territory**: `data/campaign.db` (SQLite, via
-`server/db/`) now exists alongside these files and is being built out as the eventual source of
-truth, but the client hasn't been cut over yet — until then, treat `data/*.json` as authoritative
-and `server/db/` as the new system being built next to it, not yet replacing it.
-
-### `server/db/` — the event log and its projections (Phase 1)
+### `server/db/` — the event log and its projections
 
 - `schema.sql` / `connection.js`: SQLite via Node's built-in `node:sqlite` (no new dependency).
   DB file at `data/campaign.db`, gitignored — `npm run export` is the git-diffable backup path.
@@ -87,30 +82,38 @@ and `server/db/` as the new system being built next to it, not yet replacing it.
   and diffs the result against `stats.json`'s snapshot rather than trusting either side — run it
   and read the mismatch report before assuming the database's numbers are correct.
 
-### Server (`server/index.js`) is a generic JSON-resource CRUD layer
+### Server (`server/index.js`) — thin routing over `server/db/`
 
-It does **not** have per-domain routes for calendar, deities, etc. Instead:
+No JSON files are read or written at request time. Routes: `GET`/`POST /api/events`,
+`GET /api/projections/:resource` (`stats`, `settlements`, `calendar`, `deities`, `locations` —
+current state, shaped to match the old `data/*.json` files), `GET /api/reference/:resource`
+(`buildings`, `introduction` — static, read-only, no event history), `GET /api/obligations[/:id]`.
+In production, Express also serves the built client (`client/dist`) and falls back to
+`index.html` for any non-`/api` route (SPA routing).
 
-- `RESOURCES` is a whitelist of resource names (`calendar`, `deities`, `locations`,
-  `introduction`, `buildings`, `settlements`, `stats`, `history`) that map 1:1 to
-  `data/<resource>.json`.
-- `GET /api/:resource` and `PUT /api/:resource` read/overwrite the whole file for that resource.
-- `history` additionally gets `POST /api/history` (append, auto-incrementing `id`) and
-  `DELETE /api/history/:id`, since it's an append/remove log rather than a single edited document.
-- Adding a new data file means adding its name to `RESOURCES` — nothing else in the server needs
-  to change.
-- In production, Express also serves the built client (`client/dist`) and falls back to
-  `index.html` for any non-`/api` route (SPA routing).
+### Client (`client/`) is five page views that emit events, not blind writes
 
-### Client (`client/`) is five independent page views over that same resource API
+`client/src/App.jsx` is a simple tab switcher (no router) between: Dashboard, Calendar,
+Settlements, Timeline, and Codex (lore/deities/locations). Every write goes through
+`client/src/api.js`'s `postEvent` and the shared `client/src/lib/useEventSubmit.js` hook (submit,
+track status, surface warnings — `WarningsList.jsx` renders them). Reads go through
+`getProjection`/`getReference`/`getEvents`/`getObligations`. Per view:
 
-`client/src/App.jsx` is a simple tab switcher (no router) between: Kingdom Dashboard, Calendar,
-Settlements, History Log, and Codex (lore/deities/locations). Each view component talks to the
-backend only through `client/src/api.js` (`getResource`/`putResource`/`addHistoryEntry`/
-`deleteHistoryEntry`), which is a thin fetch wrapper over the resource endpoints above. The common
-pattern per view (see `Dashboard.jsx`) is: `GET` the resource on mount, edit local state, track a
-`dirty` flag, and `PUT` the whole resource back on explicit save — there's no autosave or
-per-field patching.
+- **Dashboard**: edits stat values locally (steppers, same UX as before), then on save diffs the
+  draft against the loaded snapshot into one `ResourceChanged` event.
+- **CalendarView**: the date-set form emits `CalendarAdvanced`.
+- **Settlements**: add/remove building emits `BuildingConstructed`/`BuildingRemoved`, including
+  the optional `displayName` field (an in-fiction name like `"Anora's Roost"` for a `Tower`; the
+  `building` field itself must match the catalog — see Q2 in the spec).
+- **Codex**'s three tabs no longer share one copy-pasted load/edit/save shape (the thing the
+  earlier architecture review flagged) — each now matches its data's actual shape: Introduction is
+  read-only reference data; Deities saves per-card as `DeityAmended`; Locations batches edits into
+  one whole-document `LocationAmended`, which requires a note since the payload replaces the
+  entire document.
+- **Timeline** (replaces the old History Log): lists events newest-first, filterable by
+  type/region, shows an obligation-progress panel, and its "log a new entry" form covers just
+  `ResourceChanged`/`DMRuling` (auto-detected by whether resource changes were entered) — the
+  other five event types go through their own view's form.
 
 ## Agent skills
 
