@@ -2,11 +2,21 @@
   "name": "dnd-wilderweb",
   "version": "0.1.0",
   "private": true,
-  "description": "A small toolkit for running D&D wilderness hexcrawls.",
+  "description": "A campaign tracker for the Wilderweb D&D campaign.",
   "type": "module",
-  "main": "src/wilderweb.js",
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "server": "node server/index.js",
+    "client": "npm run dev --prefix client",
+    "dev": "concurrently -n server,client -c blue,green \"npm:server\" \"npm:client\"",
+    "build": "npm run build --prefix client",
+    "start": "npm run build && node server/index.js"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
 }

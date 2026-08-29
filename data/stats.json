@@ -1,0 +1,107 @@
+{
+  "settlement": "Stirling Reach",
+  "asOf": "2026-08-23",
+  "asOfNote": "Latest values from the #current-stats channel, after the Trade Post and Tower build orders.",
+  "resources": {
+    "Wood": 12,
+    "Food": 12,
+    "Stone": 12,
+    "Iron": 16,
+    "Wealth": 25
+  },
+  "resourceDescriptions": {
+    "Wood": "Gathered from forests and used for building",
+    "Food": "Consumed each year to keep units and populace healthy and alive",
+    "Stone": "Used for building sturdier structures or upgrades",
+    "Iron": "Includes the entirety of its process from smelting ore to solid iron bars",
+    "Wealth": "Measure of large amounts in funding, either in coin, credit, or goods"
+  },
+  "assets": {
+    "Horses": 5,
+    "Weapons": 4,
+    "Tools": 2,
+    "Population": 2,
+    "Medicine": 1,
+    "Ships": 0
+  },
+  "assetDescriptions": {
+    "Horses": "Herd of horses or equivalent, of which purchasable or levied mounts can be drawn from",
+    "Weapons": "Martial weapons, used to equip players and units",
+    "Tools": "Necessities needed for special projects or repairs",
+    "Population": "Large group of individuals/families, each can produce a Militia if levied",
+    "Medicine": "Used for creating healer's kits and potions, as well as staving off mass disease",
+    "Ships": "A few ships, of which purchasable or requisitioned boats and ships can be drawn from"
+  },
+  "society": {
+    "Unrest": 0,
+    "Diplomacy": 2,
+    "Loyalty": 3,
+    "Piety": 1,
+    "Dread": 0,
+    "Intrigue": 2
+  },
+  "societyDescriptions": {
+    "Unrest": "Measures kingdom strife, when it exceeds Pop count, rebellion breaks out",
+    "Diplomacy": "Relations and public image, used to initiate and pull in favors from other factions",
+    "Loyalty": "Used to offset otherwise unpopular moves, generates Unrest when below Pop count",
+    "Piety": "Used to initiate and pull in favors from religious factions, may provide divine bonuses",
+    "Dread": "Used to match or stave off threats, lowers Loyalty by 1 for every 1 above Pop count",
+    "Intrigue": "Used to infiltrate, sabotage, spy, or scout out regions and realms"
+  },
+  "annualIncomeUpkeep": {
+    "asOf": "2025-09-08",
+    "note": "Posted before several later buildings (e.g. the second Iron Mine, Trade Post, Tower); treat as a base reference rather than the current total.",
+    "lines": [
+      {
+        "resource": "Wood",
+        "net": 4,
+        "breakdown": [
+          "+4 (from 4 Logging Camps)"
+        ]
+      },
+      {
+        "resource": "Stone",
+        "net": 1,
+        "breakdown": [
+          "+1 (from Quarry)"
+        ]
+      },
+      {
+        "resource": "Food",
+        "net": 3,
+        "breakdown": [
+          "+10 (from 6 Farm, 2 Fishing Dock, 2 Mill)",
+          "-7 (from Tavern, 2 Pop, and 1 Guard; 1 Stables, 2 Ranch)"
+        ]
+      },
+      {
+        "resource": "Iron",
+        "net": 2,
+        "breakdown": [
+          "+2 (from 2 Iron Mine)"
+        ]
+      },
+      {
+        "resource": "Wealth",
+        "net": 1,
+        "breakdown": [
+          "+1 (from Tavern)"
+        ]
+      },
+      {
+        "resource": "Medicine",
+        "net": 1,
+        "breakdown": [
+          "+1 (from 1 Herbalist Hut)"
+        ]
+      },
+      {
+        "resource": "Horse",
+        "net": 1,
+        "breakdown": [
+          "+1 (from Ranch)"
+        ]
+      }
+    ]
+  }
+}

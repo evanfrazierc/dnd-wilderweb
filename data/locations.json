@@ -1,0 +1,54 @@
+{
+  "kingdoms": [
+    {
+      "name": "Kingdom of Casdenia",
+      "capital": "Royal City of Casdenor",
+      "counties": [
+        {
+          "name": "County of Arnestal",
+          "seat": "City of Arnestal",
+          "settlements": [
+            { "name": "Village of Hornstead", "type": "Village" },
+            { "name": "Village of Belmore", "type": "Village" },
+            { "name": "Village of Emerstook", "type": "Village" },
+            { "name": "Village of Carthrun", "type": "Village" }
+          ]
+        }
+      ],
+      "other": [
+        { "name": "Olen's Rest", "type": "Landmark" }
+      ]
+    },
+    {
+      "name": "Kingdom of Ravenstone",
+      "capital": "City of Ravenstone",
+      "counties": [],
+      "other": []
+    },
+    {
+      "name": "Kingdom of Galderoy",
+      "capital": null,
+      "counties": [],
+      "other": [],
+      "note": "No locations posted yet."
+    },
+    {
+      "name": "Kingdom of Tremund",
+      "capital": null,
+      "counties": [],
+      "other": [],
+      "note": "No locations posted yet."
+    }
+  ],
+  "wilderlandsRegions": [
+    { "name": "Stirling Reach", "description": "The party's settlement." },
+    { "name": "Narlmarches", "description": "Forest region north/adjacent to Stirling Reach." },
+    { "name": "Wilderwood", "description": "Forest region." },
+    { "name": "Mettlewood", "description": "Home to a small village, farmland and logging." },
+    { "name": "Faerweald", "description": "Forest region with iron deposits." },
+    { "name": "Carthrun", "description": "Region near the Village of Carthrun, has iron deposits." },
+    { "name": "Lake Silverstep", "description": "Lake region with fishing." },
+    { "name": "Argent River", "description": "River region southwest of Stirling Reach, crossed by a stone bridge." },
+    { "name": "Old Hills", "description": "Hill region with a quarry and a watch post (Anora's Roost)." }
+  ]
+}
