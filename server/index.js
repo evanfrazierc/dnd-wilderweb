@@ -1,6 +1,7 @@
 import express from "express";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { timingSafeEqual } from "node:crypto";
 import { getDb } from "./db/connection.js";
 import { createEvent, listEvents } from "./db/events.js";
 import { getProjection, getReference } from "./db/read.js";
@@ -9,7 +10,34 @@ import { listObligations, getObligation, listSettlingEvents } from "./db/obligat
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const clientDist = path.join(__dirname, "..", "client", "dist");
 
+// Shared-password gate for public deployments. A no-op locally unless SITE_PASSWORD is set,
+// so `npm run dev` stays prompt-free; set it in production to keep the table's edit access
+// to people who have the password, since there's no per-user auth (see CLAUDE.md).
+function safeEqual(a, b) {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  return bufA.length === bufB.length && timingSafeEqual(bufA, bufB);
+}
+
+function siteAuth(req, res, next) {
+  const password = process.env.SITE_PASSWORD;
+  if (!password) return next();
+
+  const user = process.env.SITE_USER || "party";
+  const [scheme, encoded] = (req.headers.authorization || "").split(" ");
+  if (scheme === "Basic" && encoded) {
+    const decoded = Buffer.from(encoded, "base64").toString("utf-8");
+    const sep = decoded.indexOf(":");
+    if (sep !== -1 && safeEqual(decoded.slice(0, sep), user) && safeEqual(decoded.slice(sep + 1), password)) {
+      return next();
+    }
+  }
+  res.set("WWW-Authenticate", 'Basic realm="Wilderweb", charset="UTF-8"');
+  res.status(401).send("Authentication required.");
+}
+
 const app = express();
+app.use(siteAuth);
 app.use(express.json({ limit: "2mb" }));
 
 app.get("/api/events", (req, res) => {
