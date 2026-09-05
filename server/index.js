@@ -40,10 +40,10 @@ const app = express();
 app.use(siteAuth);
 app.use(express.json({ limit: "2mb" }));
 
-app.get("/api/events", (req, res) => {
+app.get("/api/events", async (req, res) => {
   const { type, region, from, to, limit } = req.query;
   try {
-    const events = listEvents(getDb(), {
+    const events = await listEvents(await getDb(), {
       type,
       region,
       from: from != null ? Number(from) : undefined,
@@ -56,9 +56,9 @@ app.get("/api/events", (req, res) => {
   }
 });
 
-app.post("/api/events", (req, res) => {
+app.post("/api/events", async (req, res) => {
   try {
-    const result = createEvent(getDb(), req.body);
+    const result = await createEvent(await getDb(), req.body);
     if (!result.ok) return res.status(400).json({ errors: result.errors });
     res.status(201).json({ event: result.event, warnings: result.warnings });
   } catch (err) {
@@ -68,12 +68,12 @@ app.post("/api/events", (req, res) => {
 
 const PROJECTION_RESOURCES = new Set(["stats", "settlements", "calendar", "deities", "locations"]);
 
-app.get("/api/projections/:resource", (req, res) => {
+app.get("/api/projections/:resource", async (req, res) => {
   if (!PROJECTION_RESOURCES.has(req.params.resource)) {
     return res.status(404).json({ error: `Unknown projection: ${req.params.resource}` });
   }
   try {
-    res.json(getProjection(getDb(), req.params.resource));
+    res.json(await getProjection(await getDb(), req.params.resource));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -81,21 +81,21 @@ app.get("/api/projections/:resource", (req, res) => {
 
 const REFERENCE_RESOURCES = new Set(["buildings", "introduction"]);
 
-app.get("/api/reference/:resource", (req, res) => {
+app.get("/api/reference/:resource", async (req, res) => {
   if (!REFERENCE_RESOURCES.has(req.params.resource)) {
     return res.status(404).json({ error: `Unknown reference resource: ${req.params.resource}` });
   }
   try {
-    res.json(getReference(getDb(), req.params.resource));
+    res.json(await getReference(await getDb(), req.params.resource));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-app.get("/api/obligations", (req, res) => {
+app.get("/api/obligations", async (req, res) => {
   try {
     const { satisfied } = req.query;
-    res.json(listObligations(getDb(), {
+    res.json(await listObligations(await getDb(), {
       satisfied: satisfied === undefined ? undefined : satisfied === "true",
     }));
   } catch (err) {
@@ -103,11 +103,12 @@ app.get("/api/obligations", (req, res) => {
   }
 });
 
-app.get("/api/obligations/:id", (req, res) => {
+app.get("/api/obligations/:id", async (req, res) => {
   try {
-    const obligation = getObligation(getDb(), Number(req.params.id));
+    const db = await getDb();
+    const obligation = await getObligation(db, Number(req.params.id));
     if (!obligation) return res.status(404).json({ error: "Not found" });
-    const settlingEvents = listSettlingEvents(getDb(), obligation.id);
+    const settlingEvents = await listSettlingEvents(db, obligation.id);
     res.json({ ...obligation, settlingEvents });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -121,6 +122,13 @@ app.get(/^\/(?!api).*/, (req, res) => {
 });
 
 const port = process.env.PORT || 4000;
-app.listen(port, () => {
-  console.log(`Wilderweb server listening on http://localhost:${port}`);
-});
+getDb()
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`Wilderweb server listening on http://localhost:${port}`);
+    });
+  })
+  .catch((err) => {
+    console.error("Failed to connect to the database:", err);
+    process.exit(1);
+  });

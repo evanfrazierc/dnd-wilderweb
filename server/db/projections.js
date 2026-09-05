@@ -2,27 +2,27 @@
  * Applies one event's payload onto the projection tables. Always called inside the
  * same transaction as the event's insert (docs/adr/0001-hybrid-event-log-with-projections.md).
  */
-export function applyProjection(db, event) {
+export async function applyProjection(db, event) {
   const { type, region, payload } = event;
 
   switch (type) {
     case "ResourceChanged":
-      applyResourceChanged(db, event);
+      await applyResourceChanged(db, event);
       break;
     case "BuildingConstructed":
-      applyBuildingConstructed(db, region, payload);
+      await applyBuildingConstructed(db, region, payload);
       break;
     case "BuildingRemoved":
-      applyBuildingRemoved(db, region, payload);
+      await applyBuildingRemoved(db, region, payload);
       break;
     case "CalendarAdvanced":
-      applyCalendarAdvanced(db, payload);
+      await applyCalendarAdvanced(db, payload);
       break;
     case "DeityAmended":
-      applyDeityAmended(db, payload);
+      await applyDeityAmended(db, payload);
       break;
     case "LocationAmended":
-      applyLocationAmended(db, payload);
+      await applyLocationAmended(db, payload);
       break;
     case "DMRuling":
       break; // no state change by construction (validate.js enforces this)
@@ -31,31 +31,31 @@ export function applyProjection(db, event) {
   }
 }
 
-function applyResourceChanged(db, event) {
+async function applyResourceChanged(db, event) {
   const { payload } = event;
   for (const [name, delta] of Object.entries(payload.changes || {})) {
-    const row = db.prepare("SELECT * FROM resource_totals WHERE name = ?").get(name);
+    const row = await db.prepare("SELECT * FROM resource_totals WHERE name = ?").get(name);
     if (!row) continue; // unknown resource: already surfaced as a warning, nothing to update
-    db.prepare("UPDATE resource_totals SET value = value + ? WHERE grp = ? AND name = ?")
+    await db.prepare("UPDATE resource_totals SET value = value + ? WHERE grp = ? AND name = ?")
       .run(delta, row.grp, name);
   }
 
   if (payload.obligationId) {
-    const obligation = db.prepare("SELECT * FROM obligations WHERE id = ?").get(payload.obligationId);
+    const obligation = await db.prepare("SELECT * FROM obligations WHERE id = ?").get(payload.obligationId);
     if (obligation) {
       const paid = -1 * (payload.changes?.[obligation.repayment_resource] ?? 0);
       if (paid > 0) {
         const remaining = Math.max(0, obligation.amount_remaining - paid);
-        db.prepare("UPDATE obligations SET amount_remaining = ?, satisfied = ? WHERE id = ?")
+        await db.prepare("UPDATE obligations SET amount_remaining = ?, satisfied = ? WHERE id = ?")
           .run(remaining, remaining <= 0 ? 1 : 0, obligation.id);
       }
     }
   }
 }
 
-function applyBuildingConstructed(db, region, payload) {
+async function applyBuildingConstructed(db, region, payload) {
   const count = payload.count ?? 1;
-  db.prepare(`
+  await db.prepare(`
     INSERT INTO settlement_buildings (region, building, display_name, count, detail)
     VALUES (?, ?, ?, ?, ?)
     ON CONFLICT (region, building) DO UPDATE SET
@@ -65,21 +65,21 @@ function applyBuildingConstructed(db, region, payload) {
   `).run(region, payload.building, payload.displayName ?? null, count, payload.detail ?? null);
 }
 
-function applyBuildingRemoved(db, region, payload) {
+async function applyBuildingRemoved(db, region, payload) {
   const count = payload.count ?? 1;
-  const row = db.prepare("SELECT * FROM settlement_buildings WHERE region = ? AND building = ?")
+  const row = await db.prepare("SELECT * FROM settlement_buildings WHERE region = ? AND building = ?")
     .get(region, payload.building);
   if (!row) return; // already surfaced as a warning
   const next = row.count - count;
   if (next <= 0) {
-    db.prepare("DELETE FROM settlement_buildings WHERE id = ?").run(row.id);
+    await db.prepare("DELETE FROM settlement_buildings WHERE id = ?").run(row.id);
   } else {
-    db.prepare("UPDATE settlement_buildings SET count = ? WHERE id = ?").run(next, row.id);
+    await db.prepare("UPDATE settlement_buildings SET count = ? WHERE id = ?").run(next, row.id);
   }
 }
 
-function applyCalendarAdvanced(db, payload) {
-  db.prepare(`
+async function applyCalendarAdvanced(db, payload) {
+  await db.prepare(`
     INSERT INTO calendar_state (id, year, year_label, month, day, note)
     VALUES (1, ?, ?, ?, ?, ?)
     ON CONFLICT (id) DO UPDATE SET
@@ -91,8 +91,8 @@ function applyCalendarAdvanced(db, payload) {
   `).run(payload.year, payload.yearLabel ?? null, payload.month, payload.day, payload.note ?? null);
 }
 
-function applyDeityAmended(db, payload) {
-  const existing = db.prepare("SELECT * FROM deities WHERE name = ?").get(payload.name);
+async function applyDeityAmended(db, payload) {
+  const existing = await db.prepare("SELECT * FROM deities WHERE name = ?").get(payload.name);
   const changes = payload.changes ?? {};
   const merged = {
     title: (changes.title !== undefined ? changes.title : existing?.title) ?? null,
@@ -100,7 +100,7 @@ function applyDeityAmended(db, payload) {
     confirmed: (changes.confirmed !== undefined ? (changes.confirmed ? 1 : 0) : existing?.confirmed) ?? 0,
     note: (changes.note !== undefined ? changes.note : existing?.note) ?? null,
   };
-  db.prepare(`
+  await db.prepare(`
     INSERT INTO deities (name, title, alignment, confirmed, note)
     VALUES (?, ?, ?, ?, ?)
     ON CONFLICT (name) DO UPDATE SET
@@ -109,8 +109,8 @@ function applyDeityAmended(db, payload) {
   `).run(payload.name, merged.title, merged.alignment, merged.confirmed, merged.note);
 }
 
-function applyLocationAmended(db, payload) {
-  db.prepare(`
+async function applyLocationAmended(db, payload) {
+  await db.prepare(`
     INSERT INTO locations_state (id, data) VALUES (1, ?)
     ON CONFLICT (id) DO UPDATE SET data = excluded.data
   `).run(JSON.stringify(payload.data));

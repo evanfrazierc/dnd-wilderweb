@@ -1,6 +1,6 @@
 /** Read helpers for projections and reference tables, shaped to match the old data/*.json files. */
 
-export function getProjection(db, resource) {
+export async function getProjection(db, resource) {
   switch (resource) {
     case "stats":
       return readStats(db);
@@ -17,12 +17,12 @@ export function getProjection(db, resource) {
   }
 }
 
-function readStats(db) {
-  const totals = db.prepare("SELECT * FROM resource_totals").all();
-  const defs = db.prepare("SELECT * FROM resource_definitions").all();
+async function readStats(db) {
+  const totals = await db.prepare("SELECT * FROM resource_totals").all();
+  const defs = await db.prepare("SELECT * FROM resource_definitions").all();
   const byGroup = (grp) => Object.fromEntries(totals.filter((r) => r.grp === grp).map((r) => [r.name, r.value]));
   const descByGroup = (grp) => Object.fromEntries(defs.filter((r) => r.grp === grp).map((r) => [r.name, r.description]));
-  const metaRow = db.prepare("SELECT value FROM campaign_meta WHERE key = 'stats_meta'").get();
+  const metaRow = await db.prepare("SELECT value FROM campaign_meta WHERE key = 'stats_meta'").get();
   const meta = metaRow ? JSON.parse(metaRow.value) : {};
   return {
     ...meta,
@@ -35,8 +35,8 @@ function readStats(db) {
   };
 }
 
-function readSettlements(db) {
-  const rows = db.prepare("SELECT * FROM settlement_buildings ORDER BY region, building").all();
+async function readSettlements(db) {
+  const rows = await db.prepare("SELECT * FROM settlement_buildings ORDER BY region, building").all();
   const byRegion = new Map();
   for (const row of rows) {
     if (!byRegion.has(row.region)) byRegion.set(row.region, []);
@@ -50,11 +50,11 @@ function readSettlements(db) {
   return Array.from(byRegion.entries()).map(([region, buildings]) => ({ region, buildings }));
 }
 
-function readCalendar(db) {
-  const state = db.prepare("SELECT * FROM calendar_state WHERE id = 1").get();
-  const months = db.prepare("SELECT * FROM calendar_months ORDER BY number").all();
+async function readCalendar(db) {
+  const state = await db.prepare("SELECT * FROM calendar_state WHERE id = 1").get();
+  const months = await db.prepare("SELECT * FROM calendar_months ORDER BY number").all();
   const monthName = state ? months.find((m) => m.number === state.month)?.name : null;
-  const metaRow = db.prepare("SELECT value FROM campaign_meta WHERE key = 'calendar_meta'").get();
+  const metaRow = await db.prepare("SELECT value FROM campaign_meta WHERE key = 'calendar_meta'").get();
   const meta = metaRow ? JSON.parse(metaRow.value) : {};
   return {
     ...meta,
@@ -65,8 +65,9 @@ function readCalendar(db) {
   };
 }
 
-function readDeities(db) {
-  return db.prepare("SELECT * FROM deities ORDER BY name").all().map((d) => ({
+async function readDeities(db) {
+  const rows = await db.prepare("SELECT * FROM deities ORDER BY name").all();
+  return rows.map((d) => ({
     name: d.name,
     title: d.title,
     alignment: d.alignment,
@@ -75,15 +76,16 @@ function readDeities(db) {
   }));
 }
 
-function readLocations(db) {
-  const row = db.prepare("SELECT * FROM locations_state WHERE id = 1").get();
+async function readLocations(db) {
+  const row = await db.prepare("SELECT * FROM locations_state WHERE id = 1").get();
   return row ? JSON.parse(row.data) : {};
 }
 
-export function getReference(db, resource) {
+export async function getReference(db, resource) {
   switch (resource) {
-    case "buildings":
-      return db.prepare("SELECT * FROM building_catalog ORDER BY name").all().map((b) => ({
+    case "buildings": {
+      const rows = await db.prepare("SELECT * FROM building_catalog ORDER BY name").all();
+      return rows.map((b) => ({
         name: b.name,
         category: b.category,
         effect: b.effect,
@@ -93,8 +95,9 @@ export function getReference(db, resource) {
         buildTime: b.build_time ?? undefined,
         requires: JSON.parse(b.requires),
       }));
+    }
     case "introduction": {
-      const row = db.prepare("SELECT value FROM campaign_meta WHERE key = 'introduction'").get();
+      const row = await db.prepare("SELECT value FROM campaign_meta WHERE key = 'introduction'").get();
       return row ? JSON.parse(row.value) : null;
     }
     default:

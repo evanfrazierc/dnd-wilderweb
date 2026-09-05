@@ -27,8 +27,8 @@ async function readJson(name) {
 
 async function main() {
   if (existsSync(dbPath)) {
-    const existing = openDb(dbPath);
-    const migratedAt = existing.prepare("SELECT value FROM campaign_meta WHERE key = 'migrated_at'").get();
+    const existing = await openDb(dbPath);
+    const migratedAt = await existing.prepare("SELECT value FROM campaign_meta WHERE key = 'migrated_at'").get();
     existing.close();
     if (migratedAt) {
       // Once a migration has completed, the live app may have written real events into it.
@@ -48,46 +48,46 @@ async function main() {
     await unlink(dbPath);
   }
 
-  const db = openDb(dbPath);
+  const db = await openDb(dbPath);
   const [calendar, deities, history, introduction, locations, buildings, settlements, stats] =
     await Promise.all([
       readJson("calendar"), readJson("deities"), readJson("history"), readJson("introduction"),
       readJson("locations"), readJson("buildings"), readJson("settlements"), readJson("stats"),
     ]);
 
-  seedReferenceData(db, { calendar, introduction, buildings, stats });
-  seedResourceBaseline(db, stats);
+  await seedReferenceData(db, { calendar, introduction, buildings, stats });
+  await seedResourceBaseline(db, stats);
 
   const warningsSeen = [];
-  importHistory(db, history, warningsSeen);
-  reconcileOpeningBalance(db, stats, warningsSeen);
-  importSettlements(db, settlements, warningsSeen);
-  importCalendar(db, calendar, warningsSeen);
-  importDeities(db, deities, warningsSeen);
-  importLocations(db, locations, warningsSeen);
+  await importHistory(db, history, warningsSeen);
+  await reconcileOpeningBalance(db, stats, warningsSeen);
+  await importSettlements(db, settlements, warningsSeen);
+  await importCalendar(db, calendar, warningsSeen);
+  await importDeities(db, deities, warningsSeen);
+  await importLocations(db, locations, warningsSeen);
 
-  db.prepare("INSERT INTO campaign_meta (key, value) VALUES ('migrated_at', ?)").run(new Date().toISOString());
+  await db.prepare("INSERT INTO campaign_meta (key, value) VALUES ('migrated_at', ?)").run(new Date().toISOString());
 
-  report(db, stats, warningsSeen);
+  await report(db, stats, warningsSeen);
   db.close();
 }
 
-function seedReferenceData(db, { calendar, introduction, buildings, stats }) {
+async function seedReferenceData(db, { calendar, introduction, buildings, stats }) {
   const insertBuilding = db.prepare(`
     INSERT INTO building_catalog (name, category, effect, cost, cost_note, upkeep, build_time, requires)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `);
   for (const b of buildings) {
-    insertBuilding.run(
+    await insertBuilding.run(
       b.name, b.category ?? null, b.effect ?? null, JSON.stringify(b.cost ?? {}),
       b.costNote ?? null, b.upkeep ?? null, b.buildTime ?? null, JSON.stringify(b.requires ?? []),
     );
   }
 
-  db.prepare("INSERT INTO campaign_meta (key, value) VALUES ('introduction', ?)")
+  await db.prepare("INSERT INTO campaign_meta (key, value) VALUES ('introduction', ?)")
     .run(JSON.stringify(introduction));
 
-  db.prepare("INSERT INTO campaign_meta (key, value) VALUES ('stats_meta', ?)")
+  await db.prepare("INSERT INTO campaign_meta (key, value) VALUES ('stats_meta', ?)")
     .run(JSON.stringify({
       settlement: stats.settlement,
       asOf: stats.asOf,
@@ -95,14 +95,14 @@ function seedReferenceData(db, { calendar, introduction, buildings, stats }) {
       annualIncomeUpkeep: stats.annualIncomeUpkeep,
     }));
 
-  db.prepare("INSERT INTO campaign_meta (key, value) VALUES ('calendar_meta', ?)")
+  await db.prepare("INSERT INTO campaign_meta (key, value) VALUES ('calendar_meta', ?)")
     .run(JSON.stringify({ era: calendar.era, daysPerMonth: calendar.daysPerMonth }));
 
   const insertMonth = db.prepare(
     "INSERT INTO calendar_months (number, name, season, holidays) VALUES (?, ?, ?, ?)",
   );
   for (const m of calendar.months) {
-    insertMonth.run(m.number, m.name, m.season ?? null, JSON.stringify(m.holidays ?? []));
+    await insertMonth.run(m.number, m.name, m.season ?? null, JSON.stringify(m.holidays ?? []));
   }
 
   const insertDef = db.prepare(
@@ -110,16 +110,16 @@ function seedReferenceData(db, { calendar, introduction, buildings, stats }) {
   );
   for (const [grp, descKey] of [["resources", "resourceDescriptions"], ["assets", "assetDescriptions"], ["society", "societyDescriptions"]]) {
     for (const [name, description] of Object.entries(stats[descKey] ?? {})) {
-      insertDef.run(grp, name, description);
+      await insertDef.run(grp, name, description);
     }
   }
 }
 
-function seedResourceBaseline(db, stats) {
+async function seedResourceBaseline(db, stats) {
   const insert = db.prepare("INSERT INTO resource_totals (grp, name, value) VALUES (?, ?, 0)");
   for (const grp of ["resources", "assets", "society"]) {
     for (const name of Object.keys(stats[grp] ?? {})) {
-      insert.run(grp, name);
+      await insert.run(grp, name);
     }
   }
 }
@@ -127,12 +127,12 @@ function seedResourceBaseline(db, stats) {
 // history.json id 49: a resource loan repayable in Wealth. See CONTEXT.md's Obligation entry.
 const LOAN_TITLE = "Month 6 Loaned Resources";
 
-function importHistory(db, history, warningsSeen) {
+async function importHistory(db, history, warningsSeen) {
   for (const entry of history) {
     const hasChanges = entry.changes && Object.keys(entry.changes).length > 0;
     const type = hasChanges ? "ResourceChanged" : "DMRuling";
     const note = [entry.title, entry.note].filter(Boolean).join(" — ");
-    const result = createEvent(db, {
+    const result = await createEvent(db, {
       type,
       gameDate: entry.gameDate,
       postedAt: entry.postedAt,
@@ -148,7 +148,7 @@ function importHistory(db, history, warningsSeen) {
 
     if (entry.title === LOAN_TITLE) {
       const due = parseGameDate(entry.gameDate);
-      createObligation(db, {
+      await createObligation(db, {
         description: "Resource loan, repayable in Wealth (history.json id 49)",
         originalResources: entry.changes,
         repaymentResource: "Wealth",
@@ -174,16 +174,16 @@ const BUILDING_ALIASES = {
 // Closes the gap between history.json's replayed deltas and stats.json's snapshot with one
 // clearly-labeled, dated corrective event, rather than leaving resource_totals silently wrong
 // or pretending the gap doesn't exist (Q1: keep the log's authoritative claim honest).
-function reconcileOpeningBalance(db, stats, warningsSeen) {
-  const diffs = diffResourceTotals(db, stats).filter((d) => d.mismatch && d.snapshot !== undefined);
+async function reconcileOpeningBalance(db, stats, warningsSeen) {
+  const diffs = (await diffResourceTotals(db, stats)).filter((d) => d.mismatch && d.snapshot !== undefined);
   if (diffs.length === 0) return;
 
-  const earliest = db.prepare("SELECT MIN(game_date_sort) m FROM events").get().m;
-  const earliestEvent = db.prepare("SELECT game_date_raw FROM events WHERE game_date_sort = ?").get(earliest);
+  const earliest = (await db.prepare("SELECT MIN(game_date_sort) m FROM events").get()).m;
+  const earliestEvent = await db.prepare("SELECT game_date_raw FROM events WHERE game_date_sort = ?").get(earliest);
   const before = parseGameDate(earliestEvent.game_date_raw);
   const gameDate = `Month ${before.month}, ${Math.max(1, before.day - 1)}th, ${before.year}`;
 
-  const result = createEvent(db, {
+  const result = await createEvent(db, {
     type: "ResourceChanged",
     gameDate,
     postedAt: new Date().toISOString().slice(0, 10),
@@ -196,11 +196,11 @@ function reconcileOpeningBalance(db, stats, warningsSeen) {
   if (result.warnings.length) warningsSeen.push({ source: "reconciliation", warnings: result.warnings });
 }
 
-function importSettlements(db, settlements, warningsSeen) {
+async function importSettlements(db, settlements, warningsSeen) {
   for (const region of settlements) {
     for (const b of region.buildings) {
       const alias = BUILDING_ALIASES[b.name];
-      const result = createEvent(db, {
+      const result = await createEvent(db, {
         type: "BuildingConstructed",
         gameDate: region.asOf,
         postedAt: region.asOf,
@@ -220,9 +220,9 @@ function importSettlements(db, settlements, warningsSeen) {
   }
 }
 
-function importCalendar(db, calendar, warningsSeen) {
+async function importCalendar(db, calendar, warningsSeen) {
   const d = calendar.currentDate;
-  const result = createEvent(db, {
+  const result = await createEvent(db, {
     type: "CalendarAdvanced",
     gameDate: `Month ${d.month}, ${d.day}th, ${d.year}`,
     postedAt: new Date().toISOString().slice(0, 10),
@@ -239,9 +239,9 @@ function importCalendar(db, calendar, warningsSeen) {
 // known game-date (history.json's earliest entries are year 1225).
 const CAMPAIGN_START_GAME_DATE = "1225";
 
-function importDeities(db, deities, warningsSeen) {
+async function importDeities(db, deities, warningsSeen) {
   for (const deity of deities) {
-    const result = createEvent(db, {
+    const result = await createEvent(db, {
       type: "DeityAmended",
       gameDate: CAMPAIGN_START_GAME_DATE,
       postedAt: new Date().toISOString().slice(0, 10),
@@ -255,8 +255,8 @@ function importDeities(db, deities, warningsSeen) {
   }
 }
 
-function importLocations(db, locations, warningsSeen) {
-  const result = createEvent(db, {
+async function importLocations(db, locations, warningsSeen) {
+  const result = await createEvent(db, {
     type: "LocationAmended",
     gameDate: CAMPAIGN_START_GAME_DATE,
     postedAt: new Date().toISOString().slice(0, 10),
@@ -269,11 +269,11 @@ function importLocations(db, locations, warningsSeen) {
   if (result.warnings.length) warningsSeen.push({ source: "locations", warnings: result.warnings });
 }
 
-function report(db, stats, warningsSeen) {
+async function report(db, stats, warningsSeen) {
   console.log("\n--- Migration report ---\n");
 
   console.log("Replayed totals vs. stats.json snapshot (after the reconciliation adjustment, these should match):");
-  for (const { grp, name, replayed, snapshot, mismatch } of diffResourceTotals(db, stats)) {
+  for (const { grp, name, replayed, snapshot, mismatch } of await diffResourceTotals(db, stats)) {
     console.log(`  [${grp}] ${name}: replayed=${replayed} snapshot=${snapshot}${mismatch ? "  <-- MISMATCH" : ""}`);
   }
 
@@ -291,8 +291,8 @@ function report(db, stats, warningsSeen) {
     console.log("\nNo warnings raised during replay.");
   }
 
-  const eventCount = db.prepare("SELECT COUNT(*) c FROM events").get().c;
-  const obligationCount = db.prepare("SELECT COUNT(*) c FROM obligations").get().c;
+  const eventCount = (await db.prepare("SELECT COUNT(*) c FROM events").get()).c;
+  const obligationCount = (await db.prepare("SELECT COUNT(*) c FROM obligations").get()).c;
   console.log(`\nImported ${eventCount} events, ${obligationCount} obligation(s).`);
   console.log(`Database written to ${dbPath}\n`);
 }

@@ -8,20 +8,18 @@ import { applyProjection } from "./projections.js";
  * Returns { ok: false, errors } on a shape failure (400-worthy), or
  * { ok: true, event, warnings } on success. Warnings never block the write (ADR-0005).
  */
-export function createEvent(db, { type, gameDate, postedAt, actor, region, note, payload }) {
+export async function createEvent(db, { type, gameDate, postedAt, actor, region, note, payload }) {
   const errors = validateShape(type, { note, region, payload });
   if (errors.length > 0) return { ok: false, errors };
 
   const parsed = parseGameDate(gameDate);
-  const warnings = checkWarnings(db, type, { region, payload: payload ?? {} });
+  const warnings = await checkWarnings(db, type, { region, payload: payload ?? {} });
 
-  db.exec("BEGIN");
-  try {
-    const stmt = db.prepare(`
+  const event = await db.transaction(async (tx) => {
+    const info = await tx.prepare(`
       INSERT INTO events (type, game_date_raw, game_date_sort, posted_at, actor, region, note, payload, warnings)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    const info = stmt.run(
+    `).run(
       type,
       gameDate,
       parsed.sortKey,
@@ -33,23 +31,20 @@ export function createEvent(db, { type, gameDate, postedAt, actor, region, note,
       JSON.stringify(warnings),
     );
 
-    applyProjection(db, { id: info.lastInsertRowid, type, region, payload: payload ?? {} });
+    await applyProjection(tx, { id: info.lastInsertRowid, type, region, payload: payload ?? {} });
 
-    db.exec("COMMIT");
-    const event = getEvent(db, info.lastInsertRowid);
-    return { ok: true, event, warnings };
-  } catch (err) {
-    db.exec("ROLLBACK");
-    throw err;
-  }
+    return getEvent(tx, info.lastInsertRowid);
+  });
+
+  return { ok: true, event, warnings };
 }
 
-export function getEvent(db, id) {
-  const row = db.prepare("SELECT * FROM events WHERE id = ?").get(id);
+export async function getEvent(db, id) {
+  const row = await db.prepare("SELECT * FROM events WHERE id = ?").get(id);
   return row ? deserializeEvent(row) : null;
 }
 
-export function listEvents(db, { type, region, from, to, limit = 200 } = {}) {
+export async function listEvents(db, { type, region, from, to, limit = 200 } = {}) {
   const clauses = [];
   const params = [];
 
@@ -71,7 +66,7 @@ export function listEvents(db, { type, region, from, to, limit = 200 } = {}) {
   }
 
   const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
-  const rows = db
+  const rows = await db
     .prepare(`SELECT * FROM events ${where} ORDER BY game_date_sort ASC, id ASC LIMIT ?`)
     .all(...params, limit);
 

@@ -1,16 +1,15 @@
 import { parseGameDate } from "./gameDate.js";
 
-export function createObligation(db, {
+export async function createObligation(db, {
   description, originalResources, repaymentResource, amountTotal, dueGameDate, createdByEventId,
 }) {
   const due = dueGameDate ? parseGameDate(dueGameDate) : null;
-  const stmt = db.prepare(`
+  const info = await db.prepare(`
     INSERT INTO obligations
       (description, original_resources, repayment_resource, amount_total, amount_remaining,
        due_game_date_raw, due_game_date_sort, created_by_event_id, satisfied)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)
-  `);
-  const info = stmt.run(
+  `).run(
     description,
     JSON.stringify(originalResources ?? {}),
     repaymentResource,
@@ -23,21 +22,21 @@ export function createObligation(db, {
   return getObligation(db, info.lastInsertRowid);
 }
 
-export function getObligation(db, id) {
-  const row = db.prepare("SELECT * FROM obligations WHERE id = ?").get(id);
+export async function getObligation(db, id) {
+  const row = await db.prepare("SELECT * FROM obligations WHERE id = ?").get(id);
   return row ? deserialize(row) : null;
 }
 
-export function listObligations(db, { satisfied } = {}) {
+export async function listObligations(db, { satisfied } = {}) {
   const rows = satisfied === undefined
-    ? db.prepare("SELECT * FROM obligations ORDER BY due_game_date_sort ASC").all()
-    : db.prepare("SELECT * FROM obligations WHERE satisfied = ? ORDER BY due_game_date_sort ASC")
+    ? await db.prepare("SELECT * FROM obligations ORDER BY due_game_date_sort ASC").all()
+    : await db.prepare("SELECT * FROM obligations WHERE satisfied = ? ORDER BY due_game_date_sort ASC")
         .all(satisfied ? 1 : 0);
   return rows.map(deserialize);
 }
 
 /** Every ResourceChanged event that has settled (part of) this obligation. */
-export function listSettlingEvents(db, obligationId) {
+export async function listSettlingEvents(db, obligationId) {
   return db
     .prepare(`
       SELECT * FROM events

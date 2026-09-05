@@ -59,12 +59,12 @@ export function validateShape(type, { note, region, payload }) {
  * In-game validity checks: warns, never blocks (docs/adr/0005-validation-warns-not-blocks.md).
  * Returns a list of warning strings to store alongside the event.
  */
-export function checkWarnings(db, type, { region, payload }) {
+export async function checkWarnings(db, type, { region, payload }) {
   const warnings = [];
 
   if (type === "ResourceChanged") {
     for (const [name, delta] of Object.entries(payload.changes || {})) {
-      const row = findResourceRow(db, name);
+      const row = await findResourceRow(db, name);
       if (!row) {
         warnings.push(`Unknown resource name "${name}" -- not in resource_totals`);
         continue;
@@ -76,7 +76,7 @@ export function checkWarnings(db, type, { region, payload }) {
     }
 
     if (payload.obligationId) {
-      const obligation = db.prepare("SELECT * FROM obligations WHERE id = ?").get(payload.obligationId);
+      const obligation = await db.prepare("SELECT * FROM obligations WHERE id = ?").get(payload.obligationId);
       if (!obligation) {
         warnings.push(`References obligation #${payload.obligationId}, which does not exist`);
       } else {
@@ -89,13 +89,13 @@ export function checkWarnings(db, type, { region, payload }) {
   }
 
   if (type === "BuildingConstructed") {
-    const catalog = db.prepare("SELECT * FROM building_catalog WHERE name = ?").get(payload.building);
+    const catalog = await db.prepare("SELECT * FROM building_catalog WHERE name = ?").get(payload.building);
     if (!catalog) {
       warnings.push(`"${payload.building}" is not in the building catalog`);
     } else {
       const requires = JSON.parse(catalog.requires || "[]");
       for (const req of requires) {
-        const present = db
+        const present = await db
           .prepare("SELECT 1 FROM settlement_buildings WHERE region = ? AND building = ?")
           .get(region, req);
         if (!present) {
@@ -106,7 +106,7 @@ export function checkWarnings(db, type, { region, payload }) {
   }
 
   if (type === "BuildingRemoved") {
-    const present = db
+    const present = await db
       .prepare("SELECT count FROM settlement_buildings WHERE region = ? AND building = ?")
       .get(region, payload.building);
     if (!present || present.count < (payload.count ?? 1)) {
@@ -115,7 +115,7 @@ export function checkWarnings(db, type, { region, payload }) {
   }
 
   if (type === "CalendarAdvanced") {
-    const current = db.prepare("SELECT * FROM calendar_state WHERE id = 1").get();
+    const current = await db.prepare("SELECT * FROM calendar_state WHERE id = 1").get();
     if (current) {
       const next = parseGameDate(`Month ${payload.month}, ${payload.day}th, ${payload.year}`);
       const currentSort = parseGameDate(`Month ${current.month}, ${current.day}th, ${current.year}`);

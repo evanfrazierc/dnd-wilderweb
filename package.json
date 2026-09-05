@@ -14,12 +14,14 @@
     "dev": "concurrently -n server,client -c blue,green \"npm:server\" \"npm:client\"",
     "postinstall": "npm install --prefix client",
     "build": "npm run build --prefix client",
-    "start": "npm run build && node scripts/deploy-start.js",
+    "start": "npm run build && node server/index.js",
     "migrate": "node scripts/migrate.js",
-    "export": "node scripts/export.js"
+    "export": "node scripts/export.js",
+    "copy-to-turso": "node scripts/copy-to-turso.js"
   },
   "license": "MIT",
   "dependencies": {
+    "@libsql/client": "^0.18.0",
     "express": "^4.21.2"
   },
   "devDependencies": {

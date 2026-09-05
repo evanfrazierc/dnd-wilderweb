@@ -1,5 +1,5 @@
-import { DatabaseSync } from "node:sqlite";
-import { fileURLToPath } from "node:url";
+import { createClient } from "@libsql/client";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
 import { readFileSync } from "node:fs";
 
@@ -8,18 +8,86 @@ const schemaPath = path.join(__dirname, "schema.sql");
 
 let db = null;
 
-export function openDb(dbPath) {
-  const database = new DatabaseSync(dbPath);
-  database.exec("PRAGMA foreign_keys = ON");
-  database.exec(readFileSync(schemaPath, "utf-8"));
-  return database;
+// Wraps a libSQL Client or Transaction (both expose `.execute()`) in the
+// `db.prepare(sql).get/all/run(...)` shape the rest of server/db/ was written against, so
+// swapping node:sqlite's DatabaseSync for libSQL only meant adding `await` at call sites
+// instead of rewriting every query (docs/adr/0007-turso-for-hosting.md).
+function wrapExecutor(executor) {
+  return {
+    prepare(sql) {
+      return {
+        async get(...args) {
+          const result = await executor.execute({ sql, args });
+          return result.rows[0];
+        },
+        async all(...args) {
+          const result = await executor.execute({ sql, args });
+          return result.rows;
+        },
+        async run(...args) {
+          const result = await executor.execute({ sql, args });
+          return {
+            lastInsertRowid: result.lastInsertRowid !== undefined ? Number(result.lastInsertRowid) : undefined,
+            changes: result.rowsAffected,
+          };
+        },
+      };
+    },
+  };
 }
 
-export function getDb() {
+function wrapClient(client) {
+  const wrapped = wrapExecutor(client);
+  // Explicit transactions go through libSQL's Transaction API (not raw BEGIN/COMMIT via
+  // execute()) so the statements are guaranteed to share one logical connection whether
+  // this is a local file or a remote Turso database.
+  wrapped.transaction = async (fn) => {
+    const tx = await client.transaction("write");
+    try {
+      const result = await fn(wrapExecutor(tx));
+      await tx.commit();
+      return result;
+    } catch (err) {
+      await tx.rollback();
+      throw err;
+    }
+  };
+  wrapped.close = () => client.close();
+  return wrapped;
+}
+
+async function initSchema(client) {
+  await client.execute("PRAGMA foreign_keys = ON");
+  await client.executeMultiple(readFileSync(schemaPath, "utf-8"));
+}
+
+/** Opens a local database: `:memory:` or a filesystem path. Used by tests and local scripts. */
+export async function openDb(target) {
+  const url = target === ":memory:" ? ":memory:" : pathToFileURL(target).href;
+  const client = createClient({ url });
+  await initSchema(client);
+  return wrapClient(client);
+}
+
+/** Opens a remote Turso/libSQL database. Used in production. */
+export async function openRemoteDb({ url, authToken }) {
+  const client = createClient({ url, authToken });
+  await initSchema(client);
+  return wrapClient(client);
+}
+
+export async function getDb() {
   if (!db) {
-    const dbPath = process.env.WILDERWEB_DB_PATH
-      || path.join(__dirname, "..", "..", "data", "campaign.db");
-    db = openDb(dbPath);
+    if (process.env.TURSO_DATABASE_URL) {
+      db = await openRemoteDb({
+        url: process.env.TURSO_DATABASE_URL,
+        authToken: process.env.TURSO_AUTH_TOKEN,
+      });
+    } else {
+      const dbPath = process.env.WILDERWEB_DB_PATH
+        || path.join(__dirname, "..", "..", "data", "campaign.db");
+      db = await openDb(dbPath);
+    }
   }
   return db;
 }
