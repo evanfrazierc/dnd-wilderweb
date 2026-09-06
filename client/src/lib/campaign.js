@@ -9,24 +9,24 @@ export function seasonColor(season) {
   return SEASON_HEX[season] || "#a99a83";
 }
 
-// The dataviz skill's validated categorical palette (dark-mode steps), not a hand-picked or
-// generated-by-formula one. A pure evenly-spaced hue wheel *looks* like it should guarantee
-// separation, but human hue discrimination isn't uniform -- it's weak in the green/yellow-green
-// region, so two mathematically-45°-apart hues can still land close enough to be mistaken for
-// each other there (this is exactly the bug reported: two holidays both read as "green").
-// This 8-hue order is checked against the app's actual dark surface (#1c1712) for lightness
-// band, chroma floor, CVD-safe separation, normal-vision separation, and contrast -- see
-// dataviz skill references/palette.md and references/color-formula.md. Fixed order, never
-// cycled or reordered per-render.
+// A categorical palette built the dataviz skill's way (fixed hue order, checked against the
+// app's actual dark surface #1c1712 for lightness band, chroma floor, CVD-safe separation,
+// normal-vision separation, and contrast -- all pass), but re-tuned in saturation/lightness
+// to sit in this app's own warm, muted color family (--accent/--good/--bad/--warn/--season-*
+// in index.css) instead of the skill's default vivid dataviz hues. A pure evenly-spaced hue
+// wheel *looks* like it should guarantee separation, but human hue discrimination isn't
+// uniform -- it's weak in the green/yellow-green region, so two mathematically-45°-apart hues
+// can still land close enough to be mistaken for each other there (the originally reported
+// bug: two holidays both reading as "green"). Fixed order, never cycled or reordered per-render.
 const HOLIDAY_PALETTE = [
-  "#3987e5", // blue
-  "#d95926", // orange
-  "#199e70", // aqua
-  "#c98500", // yellow
-  "#d55181", // magenta
-  "#008300", // green
-  "#9085e9", // violet
-  "#e66767", // red
+  "#5199cd", // dusty blue (echoes --season-winter)
+  "#c86741", // rust/terracotta (echoes --bad)
+  "#359775", // pine teal
+  "#b58a26", // antique gold (echoes --warn / --accent)
+  "#c95e86", // dusty rose
+  "#49913b", // sage/forest green (echoes --good)
+  "#7a60c7", // muted plum
+  "#cf5959", // muted red
 ];
 
 // Assigns a color to each holiday name *within one month*, by the order names first appear
