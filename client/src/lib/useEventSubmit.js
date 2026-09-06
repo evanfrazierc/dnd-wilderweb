@@ -10,6 +10,11 @@ import { postEvent } from "../api.js";
  * out per save rather than opting in, matching how they used to post everything
  * manually). Posting is best-effort server-side (server/discord.js): a failed post
  * never fails the save, it's just reported back in the status text.
+ *
+ * Not every event type offers this choice to the DM (e.g. BuildingAmended, DMRuling --
+ * corrections/tidying, not campaign news) -- a caller can pass `postToDiscord` on the
+ * event object itself to force it off (or on) for one submission, overriding the
+ * checkbox state entirely. Omit it to use the checkbox as normal.
  */
 export function useEventSubmit(onSuccess) {
   const [status, setStatus] = useState("");
@@ -19,11 +24,12 @@ export function useEventSubmit(onSuccess) {
   async function submit(event) {
     setStatus("Saving...");
     setWarnings([]);
+    const effectivePostToDiscord = event.postToDiscord !== undefined ? event.postToDiscord : postToDiscord;
     try {
-      const result = await postEvent({ ...event, postToDiscord });
+      const result = await postEvent({ ...event, postToDiscord: effectivePostToDiscord });
       setWarnings(result.warnings || []);
       const parts = [result.warnings?.length ? "Saved, with warnings." : "Saved."];
-      if (postToDiscord) {
+      if (effectivePostToDiscord) {
         if (result.discord?.ok === false) parts.push(`Discord post failed: ${result.discord.error}`);
         else if (result.discord?.skipped) parts.push("Discord not configured.");
         else parts.push("Posted to Discord.");

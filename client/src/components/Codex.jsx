@@ -5,7 +5,6 @@ import { useReferenceSave } from "../lib/useReferenceSave.js";
 import { useDraft } from "../lib/useDraft.js";
 import Icon from "./Icon.jsx";
 import WarningsList from "./WarningsList.jsx";
-import PostToDiscordToggle from "./PostToDiscordToggle.jsx";
 
 const ALIGNMENT_ICON = {
   Good: "AlignGood",
@@ -119,7 +118,7 @@ function IntroductionTab() {
 function DeityCard({ deity, onSaved }) {
   const [draft, setDraft] = useState(deity);
   const [gameDate, setGameDate] = useState("");
-  const { submit, status, warnings, postToDiscord, setPostToDiscord } = useEventSubmit(onSaved);
+  const { submit, status, warnings } = useEventSubmit(onSaved);
 
   function field(key, value) {
     setDraft({ ...draft, [key]: value });
@@ -133,11 +132,14 @@ function DeityCard({ deity, onSaved }) {
       if (draft[key] !== deity[key]) changes[key] = draft[key];
     }
     if (Object.keys(changes).length === 0 || !gameDate.trim()) return;
+    // No Discord option here: tweaking a deity's title/alignment/confirmation is lore
+    // upkeep, not campaign news, unlike most other save actions in this app.
     submit({
       type: "DeityAmended",
       gameDate: gameDate.trim(),
       note: `Amended via the Codex`,
       payload: { name: deity.name, changes },
+      postToDiscord: false,
     }).then(() => setGameDate(""));
   }
 
@@ -191,7 +193,6 @@ function DeityCard({ deity, onSaved }) {
           <button className="btn btn-primary btn-sm" onClick={save} disabled={!gameDate.trim()}>
             Save
           </button>
-          <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />
           {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
         </div>
       )}
@@ -203,7 +204,7 @@ function DeityCard({ deity, onSaved }) {
 function NewDeityForm({ onAdded }) {
   const [name, setName] = useState("");
   const [gameDate, setGameDate] = useState("");
-  const { submit, status, warnings, postToDiscord, setPostToDiscord } = useEventSubmit(() => {
+  const { submit, status, warnings } = useEventSubmit(() => {
     setName("");
     setGameDate("");
   });
@@ -211,11 +212,13 @@ function NewDeityForm({ onAdded }) {
   function submitForm(e) {
     e.preventDefault();
     if (!name.trim() || !gameDate.trim()) return;
+    // No Discord option here, matching DeityCard -- lore upkeep, not campaign news.
     submit({
       type: "DeityAmended",
       gameDate: gameDate.trim(),
       note: "Added via the Codex",
       payload: { name: name.trim(), changes: { alignment: "Unknown", confirmed: false } },
+      postToDiscord: false,
     }).then(() => onAdded());
   }
 
@@ -227,7 +230,6 @@ function NewDeityForm({ onAdded }) {
         <Icon name="Plus" size={14} />
         Add deity
       </button>
-      <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />
       {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
       <WarningsList warnings={warnings} />
     </form>
@@ -309,7 +311,7 @@ function LocationsTab() {
     load().catch((e) => setError(e.message));
   }, []);
 
-  const { submit, status, warnings, postToDiscord, setPostToDiscord } = useEventSubmit(() => {
+  const { submit, status, warnings } = useEventSubmit(() => {
     load();
     setNote("");
     setGameDate("");
@@ -345,7 +347,15 @@ function LocationsTab() {
 
   function save() {
     if (!note.trim() || !gameDate.trim()) return;
-    submit({ type: "LocationAmended", gameDate: gameDate.trim(), note: note.trim(), payload: { data: draft } });
+    // No Discord option here: LocationAmended replaces the whole document, so it can't tell
+    // "a new settlement was founded" (news) apart from "fixed a typo" (not) -- not offered.
+    submit({
+      type: "LocationAmended",
+      gameDate: gameDate.trim(),
+      note: note.trim(),
+      payload: { data: draft },
+      postToDiscord: false,
+    });
   }
 
   return (
@@ -453,7 +463,6 @@ function LocationsTab() {
             <button className="btn btn-primary" onClick={save} disabled={!note.trim() || !gameDate.trim()}>
               Save
             </button>
-            <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />
             {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
           </div>
           <WarningsList warnings={warnings} />

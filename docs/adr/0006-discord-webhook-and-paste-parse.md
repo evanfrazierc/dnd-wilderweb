@@ -8,6 +8,8 @@ The outbound half is built (`server/discord.js`), but not as "notify automatical
 
 Scope is Campaign state events only (`ResourceChanged`, `BuildingConstructed`, `BuildingRemoved`, `CalendarAdvanced`, `DeityAmended`, `LocationAmended`, `DMRuling`) — Reference data edits (building catalog, resource definitions, calendar structure, introduction) have no "post to Discord" option, since they aren't things that happened in the campaign (CONTEXT.md's Campaign state vs. Reference data split).
 
+Within Campaign state, not every event type offers the choice either. `BuildingAmended` (renaming/moving a building), `DeityAmended` (lore upkeep on a deity's title/alignment), and `LocationAmended` (the whole-document Locations edit, which can't distinguish "a new settlement was founded" from "fixed a typo") are corrections or tidying rather than campaign news, so their save actions pass `postToDiscord: false` explicitly and never show the checkbox at all. `DMRuling` is the same story and shares Timeline's "log a new entry" form with `ResourceChanged` -- the checkbox only appears when the form has resource changes entered (i.e. when it will actually submit as `ResourceChanged`), and the DMRuling branch forces `postToDiscord: false`. `useEventSubmit`'s `submit` accepts an explicit `postToDiscord` on the event object as an override of the checkbox state for exactly this reason.
+
 Messages are Discord embeds, one per event type (`buildEmbed` in `server/discord.js`), not plain text — title and color keyed by event type, fields shaped to that type's payload (e.g. resource deltas for `ResourceChanged`, the building name for `BuildingConstructed`), plus the note/actor/region when present.
 
 The inbound paste-and-parse half described above remains unimplemented.

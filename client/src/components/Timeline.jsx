@@ -86,6 +86,9 @@ function NewEntryForm({ obligations, onAdd }) {
               : undefined,
           }
         : {},
+      // DMRuling is a clarification/correction, not campaign news -- no Discord option for
+      // it (unlike ResourceChanged, which shares this same form and checkbox).
+      ...(hasChanges ? {} : { postToDiscord: false }),
     }).then(() => {
       setGameDate("");
       setRegion("");
@@ -187,7 +190,7 @@ function NewEntryForm({ obligations, onAdd }) {
           <Icon name="Scroll" size={14} />
           Add entry
         </button>
-        <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />
+        {hasChanges && <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />}
         {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
       </div>
       <WarningsList warnings={warnings} />

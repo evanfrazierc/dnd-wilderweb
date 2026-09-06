@@ -294,15 +294,18 @@ function RegionsEditor({ regions, onSaved }) {
 }
 
 // Edit an already-built building's display name/detail, or move it to another region.
-// Its own useEventSubmit/postToDiscord, same as RemoveBuildingControl -- kept as a separate
-// control since editing/moving is non-destructive and Remove is deliberately kept distinct.
+// Its own useEventSubmit, same as RemoveBuildingControl -- kept as a separate control since
+// editing/moving is non-destructive and Remove is deliberately kept distinct. No Discord
+// option here (unlike most save actions): renaming/moving a building is correcting or
+// tidying existing data, not something new happening in the campaign, so postToDiscord is
+// forced off rather than left to the DM's per-save choice.
 function EditBuildingControl({ regionName, building, label, regions, onChanged }) {
   const [expanded, setExpanded] = useState(false);
   const [displayName, setDisplayName] = useState(building.displayName || "");
   const [detail, setDetail] = useState(building.detail || "");
   const [targetRegion, setTargetRegion] = useState(regionName);
   const [gameDate, setGameDate] = useState("");
-  const { submit, status, warnings, postToDiscord, setPostToDiscord } = useEventSubmit(() => {
+  const { submit, status, warnings } = useEventSubmit(() => {
     setExpanded(false);
     setGameDate("");
     onChanged();
@@ -326,6 +329,7 @@ function EditBuildingControl({ regionName, building, label, regions, onChanged }
         region: regionName,
         note: `Moved to ${targetRegion}`,
         payload: { building: building.name, count: building.count },
+        postToDiscord: false,
       });
       await submit({
         type: "BuildingConstructed",
@@ -338,6 +342,7 @@ function EditBuildingControl({ regionName, building, label, regions, onChanged }
           detail: detail.trim() || undefined,
           count: building.count,
         },
+        postToDiscord: false,
       });
     } else {
       const changes = {};
@@ -349,6 +354,7 @@ function EditBuildingControl({ regionName, building, label, regions, onChanged }
         region: regionName,
         note: "Edited via the Settlements view",
         payload: { building: building.name, changes },
+        postToDiscord: false,
       });
     }
   }
@@ -388,7 +394,6 @@ function EditBuildingControl({ regionName, building, label, regions, onChanged }
           style={{ flex: "0 0 7rem", fontSize: "0.8rem" }}
         />
       )}
-      <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />
       {dirty && (
         <button className="btn btn-sm btn-primary" onClick={save} disabled={!gameDate.trim()}>
           Save

@@ -103,8 +103,12 @@ if Discord is unreachable or unconfigured (ADR-0006).
 Settlements, Timeline, and Codex (lore/deities/locations). Every write goes through
 `client/src/api.js`'s `postEvent` and the shared `client/src/lib/useEventSubmit.js` hook (submit,
 track status, surface warnings — `WarningsList.jsx` renders them; also owns the per-save
-`postToDiscord` flag, defaulted on, rendered as `PostToDiscordToggle.jsx`'s checkbox next to each
-save button). Reads go through `getProjection`/`getReference`/`getEvents`/`getObligations`. Per view:
+`postToDiscord` flag, defaulted on, rendered as `PostToDiscordToggle.jsx`'s checkbox next to a
+save button). Not every event type offers the checkbox, though — BuildingAmended, DeityAmended,
+LocationAmended, and DMRuling are corrections/tidying rather than campaign news, so those call
+sites pass `postToDiscord: false` on the event object to force it off (the hook honors an
+explicit value on the event over its own checkbox state; see the hook's own comment). Reads go
+through `getProjection`/`getReference`/`getEvents`/`getObligations`. Per view:
 
 - **Dashboard**: edits stat values locally (steppers, same UX as before), then on save diffs the
   draft against the loaded snapshot into one `ResourceChanged` event.
