@@ -1,8 +1,90 @@
 import { useEffect, useState } from "react";
-import { getProjection } from "../api.js";
+import { getProjection, getReference } from "../api.js";
 import { useEventSubmit } from "../lib/useEventSubmit.js";
+import { useReferenceSave } from "../lib/useReferenceSave.js";
 import Icon from "./Icon.jsx";
 import WarningsList from "./WarningsList.jsx";
+
+const RESOURCE_GROUPS = ["resources", "assets", "society"];
+
+// Reference data (CONTEXT.md): edited directly, no event history. Adding an entry here
+// seeds a zero-value resource_totals row (server/db/reference.js); removing one is
+// refused server-side while its current value is nonzero.
+function ResourceDefinitionsEditor({ definitions, onSaved }) {
+  const [draft, setDraft] = useState(definitions);
+  const { save, status } = useReferenceSave("resourceDefinitions", onSaved);
+
+  const dirty = JSON.stringify(draft) !== JSON.stringify(definitions);
+
+  function field(i, key, value) {
+    setDraft(draft.map((r, idx) => (idx === i ? { ...r, [key]: value } : r)));
+  }
+
+  function addRow() {
+    setDraft([...draft, { grp: "resources", name: "", description: "" }]);
+  }
+
+  function removeRow(i) {
+    setDraft(draft.filter((_, idx) => idx !== i));
+  }
+
+  function saveDefinitions() {
+    save(
+      draft
+        .filter((r) => r.name.trim())
+        .map((r) => ({ grp: r.grp, name: r.name.trim(), description: r.description?.trim() || null })),
+    );
+  }
+
+  return (
+    <div className="card" style={{ marginTop: "1.25rem" }}>
+      <div className="stat-group-head">
+        <span className="icon-badge">
+          <Icon name="Codex" size={17} />
+        </span>
+        <h3>Manage resources</h3>
+      </div>
+      <p className="text-faint" style={{ fontSize: "0.8rem" }}>
+        Adding a resource starts it at 0; removing one is refused while its current value
+        isn't 0 -- zero it out with a resource change first.
+      </p>
+      {draft.map((r, i) => (
+        <div key={i} style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem", alignItems: "flex-end", flexWrap: "wrap" }}>
+          <label style={{ flex: "0 0 8rem" }}>
+            Group
+            <br />
+            <select value={r.grp} onChange={(e) => field(i, "grp", e.target.value)} style={{ width: "100%" }}>
+              {RESOURCE_GROUPS.map((g) => <option key={g} value={g}>{g}</option>)}
+            </select>
+          </label>
+          <label style={{ flex: "1 1 8rem" }}>
+            Name
+            <br />
+            <input value={r.name} onChange={(e) => field(i, "name", e.target.value)} style={{ width: "100%" }} />
+          </label>
+          <label style={{ flex: "2 1 14rem" }}>
+            Description
+            <br />
+            <input value={r.description || ""} onChange={(e) => field(i, "description", e.target.value)} style={{ width: "100%" }} />
+          </label>
+          <button className="btn btn-sm btn-danger" onClick={() => removeRow(i)}>Remove</button>
+        </div>
+      ))}
+      <div style={{ marginTop: "0.75rem", display: "flex", gap: "0.5rem", alignItems: "center" }}>
+        <button className="btn btn-sm" onClick={addRow}>
+          <Icon name="Plus" size={14} />
+          Add resource
+        </button>
+        {dirty && (
+          <>
+            <button className="btn btn-primary" onClick={saveDefinitions}>Save resources</button>
+            {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function StatGroup({ title, icon, values, descriptions, onChange, gauge }) {
   return (
@@ -72,6 +154,8 @@ export default function Dashboard() {
   const [draft, setDraft] = useState(null);
   const [gameDate, setGameDate] = useState("");
   const [note, setNote] = useState("");
+  const [definitions, setDefinitions] = useState(null);
+  const [showResourceEditor, setShowResourceEditor] = useState(false);
   const [error, setError] = useState(null);
 
   function load() {
@@ -81,9 +165,19 @@ export default function Dashboard() {
     });
   }
 
+  function loadDefinitions() {
+    return getReference("resourceDefinitions").then(setDefinitions);
+  }
+
   useEffect(() => {
     load().catch((e) => setError(e.message));
+    loadDefinitions().catch((e) => setError(e.message));
   }, []);
+
+  function onDefinitionsSaved() {
+    loadDefinitions();
+    load();
+  }
 
   const { submit, status, warnings } = useEventSubmit(() => {
     load();
@@ -134,9 +228,16 @@ export default function Dashboard() {
             <Icon name="Calendar" size={13} />
             As of {stats.asOf}
           </span>
+          <button className="btn btn-sm" onClick={() => setShowResourceEditor(!showResourceEditor)}>
+            {showResourceEditor ? "Hide" : "Manage"} resources
+          </button>
         </div>
       </div>
       {stats.asOfNote && <p className="text-dim hero-note">{stats.asOfNote}</p>}
+
+      {showResourceEditor && definitions && (
+        <ResourceDefinitionsEditor definitions={definitions} onSaved={onDefinitionsSaved} />
+      )}
 
       <div className="section-title-row">
         <span className="text-faint" style={{ fontSize: "0.82rem" }}>

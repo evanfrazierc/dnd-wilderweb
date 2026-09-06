@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getProjection, getReference } from "../api.js";
 import { useEventSubmit } from "../lib/useEventSubmit.js";
+import { useReferenceSave } from "../lib/useReferenceSave.js";
 import Icon from "./Icon.jsx";
 import WarningsList from "./WarningsList.jsx";
 
@@ -12,32 +13,83 @@ const ALIGNMENT_ICON = {
 };
 
 // Reference data (CONTEXT.md): no event history, edited directly in the database.
-// Read-only here until Phase 2+ builds an admin UI for it (see docs/agents and
-// .scratch/campaign-database/spec.md, Q7).
 function IntroductionTab() {
   const [intro, setIntro] = useState(null);
+  const [draft, setDraft] = useState(null);
   const [error, setError] = useState(null);
 
+  function load() {
+    return getReference("introduction").then((data) => {
+      setIntro(data);
+      setDraft(data);
+    });
+  }
+
   useEffect(() => {
-    getReference("introduction").then(setIntro).catch((e) => setError(e.message));
+    load().catch((e) => setError(e.message));
   }, []);
 
+  const { save, status } = useReferenceSave("introduction", load);
+
   if (error) return <div className="error-box">Failed to load introduction: {error}</div>;
-  if (!intro) return <div className="loading">Loading…</div>;
+  if (!intro || !draft) return <div className="loading">Loading…</div>;
+
+  const dirty = JSON.stringify(draft) !== JSON.stringify(intro);
+
+  function field(key, value) {
+    setDraft({ ...draft, [key]: value });
+  }
+
+  function setParagraph(i, value) {
+    const paragraphs = draft.paragraphs.map((p, idx) => (idx === i ? value : p));
+    setDraft({ ...draft, paragraphs });
+  }
+
+  function addParagraph() {
+    setDraft({ ...draft, paragraphs: [...draft.paragraphs, ""] });
+  }
+
+  function removeParagraph(i) {
+    setDraft({ ...draft, paragraphs: draft.paragraphs.filter((_, idx) => idx !== i) });
+  }
 
   return (
     <div className="card parchment journal-page">
-      <p
-        className="pill"
-        style={{ background: "rgba(36,28,18,0.08)", borderColor: "rgba(36,28,18,0.25)", color: "#5b4d34" }}
-      >
-        Posted by {intro.postedBy} on {intro.postedAt}
-      </p>
-      {intro.paragraphs.map((p, i) => (
-        <p key={i} style={{ marginTop: "0.6rem" }}>
-          {p}
-        </p>
+      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+        <label style={{ flex: "1 1 10rem" }}>
+          Posted by
+          <br />
+          <input value={draft.postedBy || ""} onChange={(e) => field("postedBy", e.target.value)} style={{ width: "100%" }} />
+        </label>
+        <label style={{ flex: "1 1 10rem" }}>
+          Posted at
+          <br />
+          <input value={draft.postedAt || ""} onChange={(e) => field("postedAt", e.target.value)} style={{ width: "100%" }} />
+        </label>
+      </div>
+      {draft.paragraphs.map((p, i) => (
+        <div key={i} style={{ display: "flex", gap: "0.5rem", alignItems: "flex-start", marginTop: "0.6rem" }}>
+          <textarea
+            value={p}
+            onChange={(e) => setParagraph(i, e.target.value)}
+            rows={3}
+            style={{ flex: 1 }}
+          />
+          <button className="btn btn-sm btn-danger" onClick={() => removeParagraph(i)}>Remove</button>
+        </div>
       ))}
+      <div style={{ marginTop: "0.6rem" }}>
+        <button className="btn btn-sm" onClick={addParagraph}>
+          <Icon name="Plus" size={14} />
+          Add paragraph
+        </button>
+      </div>
+      {dirty && (
+        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginTop: "0.75rem" }}>
+          <button className="btn btn-primary" onClick={() => save(draft)}>Save</button>
+          {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+        </div>
+      )}
     </div>
   );
 }

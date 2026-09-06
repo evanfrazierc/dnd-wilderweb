@@ -1,9 +1,113 @@
 import { useEffect, useState } from "react";
-import { getProjection } from "../api.js";
+import { getProjection, getReference } from "../api.js";
 import { useEventSubmit } from "../lib/useEventSubmit.js";
+import { useReferenceSave } from "../lib/useReferenceSave.js";
 import Icon from "./Icon.jsx";
 import WarningsList from "./WarningsList.jsx";
 import { seasonColor } from "../lib/campaign.js";
+
+function parseHolidaysText(text) {
+  return text.split(",").map((s) => s.trim()).filter(Boolean).map((part) => {
+    const [day, name, deity] = part.split(":").map((s) => s.trim());
+    return { day: Number(day), name: name || "", deity: deity || undefined };
+  }).filter((h) => !Number.isNaN(h.day) && h.name);
+}
+function holidaysToText(holidays) {
+  return (holidays || []).map((h) => [h.day, h.name, h.deity].filter((v) => v !== undefined).join(":")).join(", ");
+}
+
+function toMonthRow(m) {
+  return { number: m.number, name: m.name || "", season: m.season || "", holidaysText: holidaysToText(m.holidays) };
+}
+function fromMonthRow(r) {
+  return { number: Number(r.number), name: r.name.trim(), season: r.season.trim() || null, holidays: parseHolidaysText(r.holidaysText) };
+}
+
+// Reference data (CONTEXT.md): edited directly, no event history.
+function CalendarStructureEditor({ structure, onSaved }) {
+  const [draft, setDraft] = useState({
+    era: structure.era || "",
+    daysPerMonth: structure.daysPerMonth ?? "",
+    months: structure.months.map(toMonthRow),
+  });
+  const { save, status } = useReferenceSave("calendarStructure", onSaved);
+
+  const baseline = { era: structure.era || "", daysPerMonth: structure.daysPerMonth ?? "", months: structure.months.map(toMonthRow) };
+  const dirty = JSON.stringify(draft) !== JSON.stringify(baseline);
+
+  function monthField(i, key, value) {
+    setDraft({ ...draft, months: draft.months.map((m, idx) => (idx === i ? { ...m, [key]: value } : m)) });
+  }
+
+  function addMonth() {
+    const nextNumber = Math.max(0, ...draft.months.map((m) => Number(m.number) || 0)) + 1;
+    setDraft({ ...draft, months: [...draft.months, { number: nextNumber, name: "", season: "", holidaysText: "" }] });
+  }
+
+  function removeMonth(i) {
+    setDraft({ ...draft, months: draft.months.filter((_, idx) => idx !== i) });
+  }
+
+  function saveStructure() {
+    save({
+      era: draft.era.trim() || null,
+      daysPerMonth: draft.daysPerMonth === "" ? null : Number(draft.daysPerMonth),
+      months: draft.months.map(fromMonthRow),
+    });
+  }
+
+  return (
+    <div className="card" style={{ marginTop: "1.25rem" }}>
+      <div className="stat-group-head">
+        <span className="icon-badge">
+          <Icon name="Codex" size={17} />
+        </span>
+        <h3>Edit calendar structure</h3>
+      </div>
+      <p className="text-faint" style={{ fontSize: "0.8rem" }}>
+        Holidays are a comma-separated list like "1: New Year: Pelor, 15: Harvest".
+      </p>
+      <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+        <label style={{ flex: "1 1 10rem" }}>
+          Era
+          <br />
+          <input value={draft.era} onChange={(e) => setDraft({ ...draft, era: e.target.value })} style={{ width: "100%" }} />
+        </label>
+        <label style={{ flex: "0 0 8rem" }}>
+          Days per month
+          <br />
+          <input
+            type="number"
+            value={draft.daysPerMonth}
+            onChange={(e) => setDraft({ ...draft, daysPerMonth: e.target.value })}
+            style={{ width: "100%" }}
+          />
+        </label>
+      </div>
+      {draft.months.map((m, i) => (
+        <div key={i} style={{ display: "flex", gap: "0.5rem", marginTop: "0.6rem", alignItems: "flex-end", flexWrap: "wrap" }}>
+          <label style={{ flex: "0 0 4rem" }}>#<br /><input type="number" value={m.number} onChange={(e) => monthField(i, "number", e.target.value)} style={{ width: "100%" }} /></label>
+          <label style={{ flex: "1 1 8rem" }}>Name<br /><input value={m.name} onChange={(e) => monthField(i, "name", e.target.value)} style={{ width: "100%" }} /></label>
+          <label style={{ flex: "1 1 6rem" }}>Season<br /><input value={m.season} onChange={(e) => monthField(i, "season", e.target.value)} style={{ width: "100%" }} /></label>
+          <label style={{ flex: "2 1 14rem" }}>Holidays<br /><input value={m.holidaysText} onChange={(e) => monthField(i, "holidaysText", e.target.value)} style={{ width: "100%" }} /></label>
+          <button className="btn btn-sm btn-danger" onClick={() => removeMonth(i)}>Remove</button>
+        </div>
+      ))}
+      <div style={{ marginTop: "0.75rem", display: "flex", gap: "0.5rem", alignItems: "center" }}>
+        <button className="btn btn-sm" onClick={addMonth}>
+          <Icon name="Plus" size={14} />
+          Add month
+        </button>
+        {dirty && (
+          <>
+            <button className="btn btn-primary" onClick={saveStructure}>Save structure</button>
+            {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function MonthCard({ month, isCurrent, currentDay }) {
   const holidaysByDay = Object.fromEntries(month.holidays.map((h) => [h.day, h]));
@@ -58,6 +162,8 @@ export default function CalendarView() {
   const [calendar, setCalendar] = useState(null);
   const [draftDate, setDraftDate] = useState(null);
   const [note, setNote] = useState("");
+  const [structure, setStructure] = useState(null);
+  const [showStructureEditor, setShowStructureEditor] = useState(false);
   const [error, setError] = useState(null);
 
   function load() {
@@ -67,9 +173,19 @@ export default function CalendarView() {
     });
   }
 
+  function loadStructure() {
+    return getReference("calendarStructure").then(setStructure);
+  }
+
   useEffect(() => {
     load().catch((e) => setError(e.message));
+    loadStructure().catch((e) => setError(e.message));
   }, []);
+
+  function onStructureSaved() {
+    loadStructure();
+    load();
+  }
 
   const { submit, status, warnings } = useEventSubmit(() => {
     load();
@@ -104,6 +220,9 @@ export default function CalendarView() {
         </div>
         <div className="hero-meta">
           <span className="pill accent">{calendar.currentDate.yearLabel}</span>
+          <button className="btn btn-sm" onClick={() => setShowStructureEditor(!showStructureEditor)}>
+            {showStructureEditor ? "Hide" : "Edit"} calendar structure
+          </button>
           {currentSeason && (
             <span className="season-tag" style={{ "--season-color": seasonColor(currentSeason) }}>
               <Icon name={currentSeason} size={13} />
@@ -112,6 +231,10 @@ export default function CalendarView() {
           )}
         </div>
       </div>
+
+      {showStructureEditor && structure && (
+        <CalendarStructureEditor structure={structure} onSaved={onStructureSaved} />
+      )}
 
       <div className="card" style={{ marginBottom: "1.75rem" }}>
         <div className="stat-group-head">

@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { openDb } from "../../server/db/connection.js";
 import { createEvent, listEvents } from "../../server/db/events.js";
+import { getObligation } from "../../server/db/obligations.js";
 
 async function freshDb() {
   const db = await openDb(":memory:");
@@ -105,6 +106,42 @@ test("LocationAmended requires a non-empty note, since payload.data replaces the
     type: "LocationAmended", gameDate: "1225", note: "Discovered a new village", payload: { data: { kingdoms: [] } },
   });
   assert.equal(valid.ok, true);
+});
+
+test("ResourceChanged with payload.newObligation creates an Obligation tied to the event", async () => {
+  const db = await freshDb();
+  await db.prepare("INSERT INTO resource_totals (grp, name, value) VALUES ('resources', 'Wealth', 0)").run();
+
+  const result = await createEvent(db, {
+    type: "ResourceChanged",
+    gameDate: "Month 1, 1225",
+    payload: {
+      changes: { Wood: 20, Stone: 20 },
+      newObligation: { description: "Test loan", repaymentResource: "Wealth", amountTotal: 50, dueGameDate: "Month 6, 1226" },
+    },
+  });
+  assert.equal(result.ok, true);
+
+  const obligation = await db.prepare("SELECT * FROM obligations WHERE created_by_event_id = ?").get(result.event.id);
+  assert.ok(obligation);
+  assert.equal(obligation.description, "Test loan");
+  assert.equal(obligation.repayment_resource, "Wealth");
+  assert.equal(obligation.amount_total, 50);
+  assert.equal(obligation.amount_remaining, 50);
+  assert.deepEqual(JSON.parse(obligation.original_resources), { Wood: 20, Stone: 20 });
+
+  const fetched = await getObligation(db, obligation.id);
+  assert.equal(fetched.createdByEventId, result.event.id);
+});
+
+test("ResourceChanged rejects a malformed newObligation", async () => {
+  const db = await freshDb();
+  const result = await createEvent(db, {
+    type: "ResourceChanged",
+    gameDate: "Month 1, 1225",
+    payload: { changes: { Wood: 5 }, newObligation: { description: "Missing fields" } },
+  });
+  assert.equal(result.ok, false);
 });
 
 test("listEvents filters by type and region, sorted by game date", async () => {

@@ -100,6 +100,20 @@ export async function getReference(db, resource) {
       const row = await db.prepare("SELECT value FROM campaign_meta WHERE key = 'introduction'").get();
       return row ? JSON.parse(row.value) : null;
     }
+    case "resourceDefinitions": {
+      const rows = await db.prepare("SELECT * FROM resource_definitions ORDER BY grp, name").all();
+      return rows.map((r) => ({ grp: r.grp, name: r.name, description: r.description ?? undefined }));
+    }
+    case "calendarStructure": {
+      const months = await db.prepare("SELECT * FROM calendar_months ORDER BY number").all();
+      const metaRow = await db.prepare("SELECT value FROM campaign_meta WHERE key = 'calendar_meta'").get();
+      const meta = metaRow ? JSON.parse(metaRow.value) : {};
+      return {
+        era: meta.era ?? undefined,
+        daysPerMonth: meta.daysPerMonth ?? undefined,
+        months: months.map((m) => ({ number: m.number, name: m.name, season: m.season, holidays: JSON.parse(m.holidays) })),
+      };
+    }
     default:
       return null;
   }

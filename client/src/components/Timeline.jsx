@@ -43,21 +43,47 @@ function NewEntryForm({ obligations, onAdd }) {
   const [note, setNote] = useState("");
   const [changesText, setChangesText] = useState("");
   const [obligationId, setObligationId] = useState("");
+  const [createsObligation, setCreatesObligation] = useState(false);
+  const [obDescription, setObDescription] = useState("");
+  const [obRepaymentResource, setObRepaymentResource] = useState("");
+  const [obAmountTotal, setObAmountTotal] = useState("");
+  const [obDueGameDate, setObDueGameDate] = useState("");
   const { submit, status, warnings } = useEventSubmit(onAdd);
 
   const changes = parseChanges(changesText);
   const hasChanges = Object.keys(changes).length > 0;
+  const newObligationReady = createsObligation && obDescription.trim() && obRepaymentResource.trim() && obAmountTotal !== "";
+
+  function resetObligationFields() {
+    setCreatesObligation(false);
+    setObDescription("");
+    setObRepaymentResource("");
+    setObAmountTotal("");
+    setObDueGameDate("");
+  }
 
   function submitForm(e) {
     e.preventDefault();
     if (!gameDate.trim() || !note.trim()) return;
+    if (createsObligation && !newObligationReady) return;
     submit({
       type: hasChanges ? "ResourceChanged" : "DMRuling",
       gameDate: gameDate.trim(),
       region: region.trim() || undefined,
       note: note.trim(),
       payload: hasChanges
-        ? { changes, obligationId: obligationId ? Number(obligationId) : undefined }
+        ? {
+            changes,
+            obligationId: obligationId ? Number(obligationId) : undefined,
+            newObligation: newObligationReady
+              ? {
+                  description: obDescription.trim(),
+                  repaymentResource: obRepaymentResource.trim(),
+                  amountTotal: Number(obAmountTotal),
+                  dueGameDate: obDueGameDate.trim() || undefined,
+                }
+              : undefined,
+          }
         : {},
     }).then(() => {
       setGameDate("");
@@ -65,6 +91,7 @@ function NewEntryForm({ obligations, onAdd }) {
       setNote("");
       setChangesText("");
       setObligationId("");
+      resetObligationFields();
     });
   }
 
@@ -118,12 +145,44 @@ function NewEntryForm({ obligations, onAdd }) {
           </select>
         </label>
       )}
+      {hasChanges && (
+        <div style={{ marginTop: "0.6rem" }}>
+          <label className="text-faint" style={{ fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+            <input type="checkbox" checked={createsObligation} onChange={(e) => setCreatesObligation(e.target.checked)} />
+            This also creates a new obligation (loan)
+          </label>
+          {createsObligation && (
+            <div className="grid grid-2" style={{ marginTop: "0.4rem" }}>
+              <label>
+                Description
+                <input value={obDescription} onChange={(e) => setObDescription(e.target.value)} style={{ width: "100%" }} />
+              </label>
+              <label>
+                Repayment resource
+                <input value={obRepaymentResource} onChange={(e) => setObRepaymentResource(e.target.value)} style={{ width: "100%" }} />
+              </label>
+              <label>
+                Amount owed
+                <input type="number" value={obAmountTotal} onChange={(e) => setObAmountTotal(e.target.value)} style={{ width: "100%" }} />
+              </label>
+              <label>
+                Due date (optional)
+                <input value={obDueGameDate} onChange={(e) => setObDueGameDate(e.target.value)} style={{ width: "100%" }} />
+              </label>
+            </div>
+          )}
+        </div>
+      )}
       <label style={{ display: "block", marginTop: "0.6rem" }}>
         Note
         <textarea value={note} onChange={(e) => setNote(e.target.value)} style={{ width: "100%" }} rows={2} />
       </label>
       <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginTop: "0.85rem" }}>
-        <button className="btn btn-primary" type="submit" disabled={!gameDate.trim() || !note.trim()}>
+        <button
+          className="btn btn-primary"
+          type="submit"
+          disabled={!gameDate.trim() || !note.trim() || (createsObligation && !newObligationReady)}
+        >
           <Icon name="Scroll" size={14} />
           Add entry
         </button>

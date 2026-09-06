@@ -6,6 +6,13 @@ import { getDb } from "./db/connection.js";
 import { createEvent, listEvents } from "./db/events.js";
 import { getProjection, getReference } from "./db/read.js";
 import { listObligations, getObligation, listSettlingEvents } from "./db/obligations.js";
+import {
+  ValidationError,
+  replaceBuildingCatalog,
+  replaceResourceDefinitions,
+  replaceCalendarStructure,
+  replaceIntroduction,
+} from "./db/reference.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const clientDist = path.join(__dirname, "..", "client", "dist");
@@ -79,7 +86,7 @@ app.get("/api/projections/:resource", async (req, res) => {
   }
 });
 
-const REFERENCE_RESOURCES = new Set(["buildings", "introduction"]);
+const REFERENCE_RESOURCES = new Set(["buildings", "introduction", "resourceDefinitions", "calendarStructure"]);
 
 app.get("/api/reference/:resource", async (req, res) => {
   if (!REFERENCE_RESOURCES.has(req.params.resource)) {
@@ -88,6 +95,28 @@ app.get("/api/reference/:resource", async (req, res) => {
   try {
     res.json(await getReference(await getDb(), req.params.resource));
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+const REFERENCE_WRITERS = {
+  buildings: (db, body) => replaceBuildingCatalog(db, body),
+  resourceDefinitions: (db, body) => replaceResourceDefinitions(db, body),
+  calendarStructure: (db, body) => replaceCalendarStructure(db, body),
+  introduction: (db, body) => replaceIntroduction(db, body),
+};
+
+app.put("/api/reference/:resource", async (req, res) => {
+  const writer = REFERENCE_WRITERS[req.params.resource];
+  if (!writer) {
+    return res.status(404).json({ error: `Unknown reference resource: ${req.params.resource}` });
+  }
+  try {
+    const db = await getDb();
+    await writer(db, req.body);
+    res.json(await getReference(db, req.params.resource));
+  } catch (err) {
+    if (err instanceof ValidationError) return res.status(400).json({ error: err.message });
     res.status(500).json({ error: err.message });
   }
 });

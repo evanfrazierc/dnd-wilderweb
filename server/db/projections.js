@@ -1,3 +1,5 @@
+import { createObligation } from "./obligations.js";
+
 /**
  * Applies one event's payload onto the projection tables. Always called inside the
  * same transaction as the event's insert (docs/adr/0001-hybrid-event-log-with-projections.md).
@@ -50,6 +52,17 @@ async function applyResourceChanged(db, event) {
           .run(remaining, remaining <= 0 ? 1 : 0, obligation.id);
       }
     }
+  }
+
+  if (payload.newObligation) {
+    await createObligation(db, {
+      description: payload.newObligation.description,
+      originalResources: payload.changes,
+      repaymentResource: payload.newObligation.repaymentResource,
+      amountTotal: payload.newObligation.amountTotal,
+      dueGameDate: payload.newObligation.dueGameDate,
+      createdByEventId: event.id,
+    });
   }
 }
 

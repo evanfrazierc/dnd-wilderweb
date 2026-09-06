@@ -1,8 +1,113 @@
 import { useEffect, useState } from "react";
 import { getProjection, getReference } from "../api.js";
 import { useEventSubmit } from "../lib/useEventSubmit.js";
+import { useReferenceSave } from "../lib/useReferenceSave.js";
 import Icon from "./Icon.jsx";
 import WarningsList from "./WarningsList.jsx";
+
+function parseCostText(text) {
+  const cost = {};
+  text.split(",").map((s) => s.trim()).filter(Boolean).forEach((part) => {
+    const [name, amount] = part.split(":").map((s) => s.trim());
+    if (name && amount !== undefined && !Number.isNaN(Number(amount))) cost[name] = Number(amount);
+  });
+  return cost;
+}
+function costToText(cost) {
+  return Object.entries(cost || {}).map(([k, v]) => `${k}: ${v}`).join(", ");
+}
+function parseListText(text) {
+  return text.split(",").map((s) => s.trim()).filter(Boolean);
+}
+
+function toRow(b) {
+  return {
+    name: b.name || "",
+    category: b.category || "",
+    effect: b.effect || "",
+    costText: costToText(b.cost),
+    costNote: b.costNote || "",
+    upkeep: b.upkeep || "",
+    buildTime: b.buildTime || "",
+    requiresText: (b.requires || []).join(", "),
+  };
+}
+function fromRow(r) {
+  return {
+    name: r.name.trim(),
+    category: r.category.trim() || null,
+    effect: r.effect.trim() || null,
+    cost: parseCostText(r.costText),
+    costNote: r.costNote.trim() || null,
+    upkeep: r.upkeep.trim() || null,
+    buildTime: r.buildTime.trim() || null,
+    requires: parseListText(r.requiresText),
+  };
+}
+
+// Reference data (CONTEXT.md): edited directly, no event history.
+function BuildingCatalogEditor({ catalog, onSaved }) {
+  const [draft, setDraft] = useState(catalog.map(toRow));
+  const { save, status } = useReferenceSave("buildings", onSaved);
+
+  const dirty = JSON.stringify(draft) !== JSON.stringify(catalog.map(toRow));
+
+  function field(i, key, value) {
+    setDraft(draft.map((r, idx) => (idx === i ? { ...r, [key]: value } : r)));
+  }
+
+  function addRow() {
+    setDraft([...draft, toRow({})]);
+  }
+
+  function removeRow(i) {
+    setDraft(draft.filter((_, idx) => idx !== i));
+  }
+
+  function saveCatalog() {
+    save(draft.filter((r) => r.name.trim()).map(fromRow));
+  }
+
+  return (
+    <div className="card" style={{ marginTop: "1.25rem" }}>
+      <div className="stat-group-head">
+        <span className="icon-badge">
+          <Icon name="Codex" size={17} />
+        </span>
+        <h3>Manage building catalog</h3>
+      </div>
+      <p className="text-faint" style={{ fontSize: "0.8rem" }}>
+        Cost is a comma-separated list like "Wood: 10, Stone: 5". Requires is a comma-separated
+        list of prerequisite building names.
+      </p>
+      {draft.map((r, i) => (
+        <div key={i} className="card" style={{ marginTop: "0.6rem", display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "flex-end" }}>
+          <label style={{ flex: "1 1 10rem" }}>Name<br /><input value={r.name} onChange={(e) => field(i, "name", e.target.value)} style={{ width: "100%" }} /></label>
+          <label style={{ flex: "1 1 8rem" }}>Category<br /><input value={r.category} onChange={(e) => field(i, "category", e.target.value)} style={{ width: "100%" }} /></label>
+          <label style={{ flex: "2 1 14rem" }}>Effect<br /><input value={r.effect} onChange={(e) => field(i, "effect", e.target.value)} style={{ width: "100%" }} /></label>
+          <label style={{ flex: "1 1 10rem" }}>Cost<br /><input value={r.costText} onChange={(e) => field(i, "costText", e.target.value)} style={{ width: "100%" }} /></label>
+          <label style={{ flex: "1 1 8rem" }}>Cost note<br /><input value={r.costNote} onChange={(e) => field(i, "costNote", e.target.value)} style={{ width: "100%" }} /></label>
+          <label style={{ flex: "1 1 6rem" }}>Upkeep<br /><input value={r.upkeep} onChange={(e) => field(i, "upkeep", e.target.value)} style={{ width: "100%" }} /></label>
+          <label style={{ flex: "1 1 6rem" }}>Build time<br /><input value={r.buildTime} onChange={(e) => field(i, "buildTime", e.target.value)} style={{ width: "100%" }} /></label>
+          <label style={{ flex: "1 1 10rem" }}>Requires<br /><input value={r.requiresText} onChange={(e) => field(i, "requiresText", e.target.value)} style={{ width: "100%" }} /></label>
+          <button className="btn btn-sm btn-danger" onClick={() => removeRow(i)}>Remove</button>
+        </div>
+      ))}
+      <div style={{ marginTop: "0.75rem", display: "flex", gap: "0.5rem", alignItems: "center" }}>
+        <button className="btn btn-sm" onClick={addRow}>
+          <Icon name="Plus" size={14} />
+          Add building
+        </button>
+        {dirty && (
+          <>
+            <button className="btn btn-primary" onClick={saveCatalog}>Save catalog</button>
+            {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function AddBuildingForm({ buildingCatalog, onAdd }) {
   const [name, setName] = useState("");
@@ -67,6 +172,7 @@ function AddBuildingForm({ buildingCatalog, onAdd }) {
 export default function Settlements() {
   const [settlements, setSettlements] = useState(null);
   const [buildingCatalog, setBuildingCatalog] = useState([]);
+  const [showCatalogEditor, setShowCatalogEditor] = useState(false);
   const [error, setError] = useState(null);
 
   function load() {
@@ -126,6 +232,9 @@ export default function Settlements() {
             {settlements.length} regions
           </span>
           <span className="pill">{totalBuildings} buildings</span>
+          <button className="btn btn-sm" onClick={() => setShowCatalogEditor(!showCatalogEditor)}>
+            {showCatalogEditor ? "Hide" : "Manage"} building catalog
+          </button>
         </div>
       </div>
       <p className="text-dim hero-note">
@@ -134,6 +243,8 @@ export default function Settlements() {
       </p>
       {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
       <WarningsList warnings={warnings} />
+
+      {showCatalogEditor && <BuildingCatalogEditor catalog={buildingCatalog} onSaved={load} />}
 
       <div className="grid grid-2" style={{ marginTop: "1.25rem" }}>
         {settlements.map((region) => (

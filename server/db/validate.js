@@ -14,6 +14,12 @@ export function validateShape(type, { note, region, payload }) {
       } else if (Object.keys(payload.changes).length === 0 && !payload.counterparty) {
         errors.push("ResourceChanged requires at least one non-zero entry in payload.changes");
       }
+      if (payload?.newObligation) {
+        const { description, repaymentResource, amountTotal } = payload.newObligation;
+        if (!description) errors.push("payload.newObligation requires a description");
+        if (!repaymentResource) errors.push("payload.newObligation requires a repaymentResource");
+        if (typeof amountTotal !== "number") errors.push("payload.newObligation requires a numeric amountTotal");
+      }
       break;
     }
     case "BuildingConstructed":

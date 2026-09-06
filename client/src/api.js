@@ -46,3 +46,13 @@ export function getObligations(params = {}) {
 export function getObligation(id) {
   return fetch(`/api/obligations/${id}`).then(handle);
 }
+
+// Reference data is edited directly, with no event history (CONTEXT.md), so this
+// replaces the whole collection/document in one call rather than posting an event.
+export function putReference(resource, data) {
+  return fetch(`/api/reference/${resource}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  }).then(handle);
+}
