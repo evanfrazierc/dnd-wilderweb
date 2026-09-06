@@ -1,7 +1,11 @@
 /**
- * Direct writes to reference data (CONTEXT.md: "edited directly with no event history").
- * Unlike server/db/events.js, these don't validate in-game warnings or record history --
- * they replace a whole reference collection/document atomically.
+ * Reads and direct writes for reference data (CONTEXT.md: "edited directly with no event
+ * history"). Unlike server/db/events.js, writes here don't validate in-game warnings or
+ * record history -- they replace a whole reference collection/document atomically.
+ *
+ * REFERENCE_RESOURCES is the single source of truth for which reference resources exist
+ * and how to read/write each one -- server/index.js's GET/PUT /api/reference/:resource
+ * routes just index into this table instead of maintaining their own parallel lists.
  */
 
 function requireFields(item, fields, label) {
@@ -13,6 +17,20 @@ function requireFields(item, fields, label) {
 }
 
 export class ValidationError extends Error {}
+
+export async function readBuildingCatalog(db) {
+  const rows = await db.prepare("SELECT * FROM building_catalog ORDER BY name").all();
+  return rows.map((b) => ({
+    name: b.name,
+    category: b.category,
+    effect: b.effect,
+    cost: JSON.parse(b.cost),
+    costNote: b.cost_note ?? undefined,
+    upkeep: b.upkeep ?? undefined,
+    buildTime: b.build_time ?? undefined,
+    requires: JSON.parse(b.requires),
+  }));
+}
 
 export async function replaceBuildingCatalog(db, buildings) {
   const seen = new Set();
@@ -38,6 +56,11 @@ export async function replaceBuildingCatalog(db, buildings) {
 }
 
 const RESOURCE_GROUPS = new Set(["resources", "assets", "society"]);
+
+export async function readResourceDefinitions(db) {
+  const rows = await db.prepare("SELECT * FROM resource_definitions ORDER BY grp, name").all();
+  return rows.map((r) => ({ grp: r.grp, name: r.name, description: r.description ?? undefined }));
+}
 
 export async function replaceResourceDefinitions(db, definitions) {
   const seen = new Set();
@@ -85,6 +108,17 @@ export async function replaceResourceDefinitions(db, definitions) {
   });
 }
 
+export async function readCalendarStructure(db) {
+  const months = await db.prepare("SELECT * FROM calendar_months ORDER BY number").all();
+  const metaRow = await db.prepare("SELECT value FROM campaign_meta WHERE key = 'calendar_meta'").get();
+  const meta = metaRow ? JSON.parse(metaRow.value) : {};
+  return {
+    era: meta.era ?? undefined,
+    daysPerMonth: meta.daysPerMonth ?? undefined,
+    months: months.map((m) => ({ number: m.number, name: m.name, season: m.season, holidays: JSON.parse(m.holidays) })),
+  };
+}
+
 export async function replaceCalendarStructure(db, { era, daysPerMonth, months }) {
   const seen = new Set();
   for (const m of months) {
@@ -108,6 +142,11 @@ export async function replaceCalendarStructure(db, { era, daysPerMonth, months }
   });
 }
 
+export async function readIntroduction(db) {
+  const row = await db.prepare("SELECT value FROM campaign_meta WHERE key = 'introduction'").get();
+  return row ? JSON.parse(row.value) : null;
+}
+
 export async function replaceIntroduction(db, { postedBy, postedAt, paragraphs }) {
   if (!Array.isArray(paragraphs)) {
     throw new ValidationError("Introduction requires paragraphs (an array of strings)");
@@ -117,3 +156,11 @@ export async function replaceIntroduction(db, { postedBy, postedAt, paragraphs }
     ON CONFLICT (key) DO UPDATE SET value = excluded.value
   `).run(JSON.stringify({ postedBy: postedBy ?? null, postedAt: postedAt ?? null, paragraphs }));
 }
+
+/** Single source of truth for which reference resources exist and how to read/write each. */
+export const REFERENCE_RESOURCES = {
+  buildings: { read: readBuildingCatalog, write: replaceBuildingCatalog },
+  introduction: { read: readIntroduction, write: replaceIntroduction },
+  resourceDefinitions: { read: readResourceDefinitions, write: replaceResourceDefinitions },
+  calendarStructure: { read: readCalendarStructure, write: replaceCalendarStructure },
+};

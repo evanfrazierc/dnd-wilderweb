@@ -1,4 +1,6 @@
-/** Read helpers for projections and reference tables, shaped to match the old data/*.json files. */
+/** Read helpers for projections (current campaign state), shaped to match the old data/*.json
+ * files. Reference-data reads live in server/db/reference.js instead -- CONTEXT.md's
+ * Projection and Reference data are different lifecycles, so they get different modules. */
 
 export async function getProjection(db, resource) {
   switch (resource) {
@@ -79,42 +81,4 @@ async function readDeities(db) {
 async function readLocations(db) {
   const row = await db.prepare("SELECT * FROM locations_state WHERE id = 1").get();
   return row ? JSON.parse(row.data) : {};
-}
-
-export async function getReference(db, resource) {
-  switch (resource) {
-    case "buildings": {
-      const rows = await db.prepare("SELECT * FROM building_catalog ORDER BY name").all();
-      return rows.map((b) => ({
-        name: b.name,
-        category: b.category,
-        effect: b.effect,
-        cost: JSON.parse(b.cost),
-        costNote: b.cost_note ?? undefined,
-        upkeep: b.upkeep ?? undefined,
-        buildTime: b.build_time ?? undefined,
-        requires: JSON.parse(b.requires),
-      }));
-    }
-    case "introduction": {
-      const row = await db.prepare("SELECT value FROM campaign_meta WHERE key = 'introduction'").get();
-      return row ? JSON.parse(row.value) : null;
-    }
-    case "resourceDefinitions": {
-      const rows = await db.prepare("SELECT * FROM resource_definitions ORDER BY grp, name").all();
-      return rows.map((r) => ({ grp: r.grp, name: r.name, description: r.description ?? undefined }));
-    }
-    case "calendarStructure": {
-      const months = await db.prepare("SELECT * FROM calendar_months ORDER BY number").all();
-      const metaRow = await db.prepare("SELECT value FROM campaign_meta WHERE key = 'calendar_meta'").get();
-      const meta = metaRow ? JSON.parse(metaRow.value) : {};
-      return {
-        era: meta.era ?? undefined,
-        daysPerMonth: meta.daysPerMonth ?? undefined,
-        months: months.map((m) => ({ number: m.number, name: m.name, season: m.season, holidays: JSON.parse(m.holidays) })),
-      };
-    }
-    default:
-      return null;
-  }
 }

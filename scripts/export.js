@@ -13,7 +13,8 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { writeFile } from "node:fs/promises";
 import { getDb } from "../server/db/connection.js";
-import { getProjection, getReference } from "../server/db/read.js";
+import { getProjection } from "../server/db/read.js";
+import { REFERENCE_RESOURCES } from "../server/db/reference.js";
 import { listEvents } from "../server/db/events.js";
 import { listObligations } from "../server/db/obligations.js";
 
@@ -39,8 +40,8 @@ async function main() {
   await writeJson("calendar", await getProjection(db, "calendar"));
   await writeJson("deities", await getProjection(db, "deities"));
   await writeJson("locations", await getProjection(db, "locations"));
-  await writeJson("buildings", await getReference(db, "buildings"));
-  await writeJson("introduction", await getReference(db, "introduction"));
+  await writeJson("buildings", await REFERENCE_RESOURCES.buildings.read(db));
+  await writeJson("introduction", await REFERENCE_RESOURCES.introduction.read(db));
   await writeJson("events", await listEvents(db, { limit: 100000 }));
   await writeJson("obligations", await listObligations(db));
 

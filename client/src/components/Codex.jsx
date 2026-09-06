@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { getProjection, getReference } from "../api.js";
 import { useEventSubmit } from "../lib/useEventSubmit.js";
 import { useReferenceSave } from "../lib/useReferenceSave.js";
+import { useDraft } from "../lib/useDraft.js";
 import Icon from "./Icon.jsx";
 import WarningsList from "./WarningsList.jsx";
+import PostToDiscordToggle from "./PostToDiscordToggle.jsx";
 
 const ALIGNMENT_ICON = {
   Good: "AlignGood",
@@ -15,14 +17,11 @@ const ALIGNMENT_ICON = {
 // Reference data (CONTEXT.md): no event history, edited directly in the database.
 function IntroductionTab() {
   const [intro, setIntro] = useState(null);
-  const [draft, setDraft] = useState(null);
   const [error, setError] = useState(null);
+  const { draft, dirty, set, addItem, removeItem } = useDraft(intro);
 
   function load() {
-    return getReference("introduction").then((data) => {
-      setIntro(data);
-      setDraft(data);
-    });
+    return getReference("introduction").then(setIntro);
   }
 
   useEffect(() => {
@@ -34,23 +33,20 @@ function IntroductionTab() {
   if (error) return <div className="error-box">Failed to load introduction: {error}</div>;
   if (!intro || !draft) return <div className="loading">Loading…</div>;
 
-  const dirty = JSON.stringify(draft) !== JSON.stringify(intro);
-
   function field(key, value) {
-    setDraft({ ...draft, [key]: value });
+    set([key], value);
   }
 
   function setParagraph(i, value) {
-    const paragraphs = draft.paragraphs.map((p, idx) => (idx === i ? value : p));
-    setDraft({ ...draft, paragraphs });
+    set(["paragraphs", i], value);
   }
 
   function addParagraph() {
-    setDraft({ ...draft, paragraphs: [...draft.paragraphs, ""] });
+    addItem(["paragraphs"], () => "");
   }
 
   function removeParagraph(i) {
-    setDraft({ ...draft, paragraphs: draft.paragraphs.filter((_, idx) => idx !== i) });
+    removeItem(["paragraphs"], i);
   }
 
   return (
@@ -97,7 +93,7 @@ function IntroductionTab() {
 function DeityCard({ deity, onSaved }) {
   const [draft, setDraft] = useState(deity);
   const [gameDate, setGameDate] = useState("");
-  const { submit, status, warnings } = useEventSubmit(onSaved);
+  const { submit, status, warnings, postToDiscord, setPostToDiscord } = useEventSubmit(onSaved);
 
   function field(key, value) {
     setDraft({ ...draft, [key]: value });
@@ -169,6 +165,7 @@ function DeityCard({ deity, onSaved }) {
           <button className="btn btn-primary btn-sm" onClick={save} disabled={!gameDate.trim()}>
             Save
           </button>
+          <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />
           {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
         </div>
       )}
@@ -180,7 +177,7 @@ function DeityCard({ deity, onSaved }) {
 function NewDeityForm({ onAdded }) {
   const [name, setName] = useState("");
   const [gameDate, setGameDate] = useState("");
-  const { submit, status, warnings } = useEventSubmit(() => {
+  const { submit, status, warnings, postToDiscord, setPostToDiscord } = useEventSubmit(() => {
     setName("");
     setGameDate("");
   });
@@ -204,6 +201,7 @@ function NewDeityForm({ onAdded }) {
         <Icon name="Plus" size={14} />
         Add deity
       </button>
+      <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />
       {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
       <WarningsList warnings={warnings} />
     </form>
@@ -285,7 +283,7 @@ function LocationsTab() {
     load().catch((e) => setError(e.message));
   }, []);
 
-  const { submit, status, warnings } = useEventSubmit(() => {
+  const { submit, status, warnings, postToDiscord, setPostToDiscord } = useEventSubmit(() => {
     load();
     setNote("");
     setGameDate("");
@@ -429,6 +427,7 @@ function LocationsTab() {
             <button className="btn btn-primary" onClick={save} disabled={!note.trim() || !gameDate.trim()}>
               Save
             </button>
+            <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />
             {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
           </div>
           <WarningsList warnings={warnings} />

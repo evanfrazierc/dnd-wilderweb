@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { getProjection, getReference } from "../api.js";
 import { useEventSubmit } from "../lib/useEventSubmit.js";
 import { useReferenceSave } from "../lib/useReferenceSave.js";
+import { useDraft } from "../lib/useDraft.js";
 import Icon from "./Icon.jsx";
 import WarningsList from "./WarningsList.jsx";
+import PostToDiscordToggle from "./PostToDiscordToggle.jsx";
 
 function parseCostText(text) {
   const cost = {};
@@ -47,21 +49,19 @@ function fromRow(r) {
 
 // Reference data (CONTEXT.md): edited directly, no event history.
 function BuildingCatalogEditor({ catalog, onSaved }) {
-  const [draft, setDraft] = useState(catalog.map(toRow));
+  const { draft, dirty, set, addItem, removeItem } = useDraft(catalog.map(toRow));
   const { save, status } = useReferenceSave("buildings", onSaved);
 
-  const dirty = JSON.stringify(draft) !== JSON.stringify(catalog.map(toRow));
-
   function field(i, key, value) {
-    setDraft(draft.map((r, idx) => (idx === i ? { ...r, [key]: value } : r)));
+    set([i], { ...draft[i], [key]: value });
   }
 
   function addRow() {
-    setDraft([...draft, toRow({})]);
+    addItem([], () => toRow({}));
   }
 
   function removeRow(i) {
-    setDraft(draft.filter((_, idx) => idx !== i));
+    removeItem([], i);
   }
 
   function saveCatalog() {
@@ -169,6 +169,59 @@ function AddBuildingForm({ buildingCatalog, onAdd }) {
   );
 }
 
+// Its own useEventSubmit (and so its own postToDiscord decision) rather than sharing the
+// page-level one used for adding buildings -- removal is a separate save action and the DM
+// should be able to decide on it independently.
+function RemoveBuildingControl({ regionName, building, label, onRemoved }) {
+  const [confirming, setConfirming] = useState(false);
+  const [gameDate, setGameDate] = useState("");
+  const { submit, status, warnings, postToDiscord, setPostToDiscord } = useEventSubmit(() => {
+    setConfirming(false);
+    setGameDate("");
+    onRemoved();
+  });
+
+  function confirmRemoval() {
+    if (!gameDate.trim()) return;
+    submit({
+      type: "BuildingRemoved",
+      gameDate: gameDate.trim(),
+      region: regionName,
+      note: "Removed via the Settlements view",
+      payload: { building, count: 1 },
+    });
+  }
+
+  if (!confirming) {
+    return (
+      <button className="btn btn-icon btn-danger" onClick={() => setConfirming(true)} aria-label={`Remove ${label}`}>
+        <Icon name="Trash" size={14} />
+      </button>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", gap: "0.4rem", alignItems: "center", flexWrap: "wrap", width: "100%", marginTop: "0.4rem" }}>
+      <input
+        value={gameDate}
+        onChange={(e) => setGameDate(e.target.value)}
+        placeholder="Game date this was removed/lost"
+        style={{ flex: "1 1 10rem", fontSize: "0.8rem" }}
+        autoFocus
+      />
+      <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />
+      <button className="btn btn-sm btn-danger" onClick={confirmRemoval} disabled={!gameDate.trim()}>
+        Confirm
+      </button>
+      <button className="btn btn-sm" onClick={() => setConfirming(false)}>
+        Cancel
+      </button>
+      {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+      <WarningsList warnings={warnings} />
+    </div>
+  );
+}
+
 export default function Settlements() {
   const [settlements, setSettlements] = useState(null);
   const [buildingCatalog, setBuildingCatalog] = useState([]);
@@ -186,7 +239,7 @@ export default function Settlements() {
     load().catch((e) => setError(e.message));
   }, []);
 
-  const { submit, status, warnings } = useEventSubmit(load);
+  const { submit, status, warnings, postToDiscord, setPostToDiscord } = useEventSubmit(load);
 
   function addBuilding(regionName, { building, displayName, detail, gameDate }) {
     submit({
@@ -195,18 +248,6 @@ export default function Settlements() {
       region: regionName,
       note: `Constructed via the Settlements view`,
       payload: { building, displayName, detail, count: 1 },
-    });
-  }
-
-  function removeBuilding(regionName, building) {
-    const gameDate = window.prompt(`Game date this was removed/lost?`, "");
-    if (!gameDate) return;
-    submit({
-      type: "BuildingRemoved",
-      gameDate,
-      region: regionName,
-      note: `Removed via the Settlements view`,
-      payload: { building, count: 1 },
     });
   }
 
@@ -241,7 +282,10 @@ export default function Settlements() {
         Adding or removing a building here logs it as a BuildingConstructed / BuildingRemoved event
         on the Timeline.
       </p>
-      {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+      <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", flexWrap: "wrap" }}>
+        <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />
+        {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+      </div>
       <WarningsList warnings={warnings} />
 
       {showCatalogEditor && <BuildingCatalogEditor catalog={buildingCatalog} onSaved={load} />}
@@ -271,7 +315,7 @@ export default function Settlements() {
                 const category = catalog?.category || "Main Settlement";
                 const label = building.displayName || building.name;
                 return (
-                  <div className="building-row" key={building.name} title={catalog ? catalog.effect : undefined}>
+                  <div className="building-row" key={building.name} title={catalog ? catalog.effect : undefined} style={{ flexWrap: "wrap" }}>
                     <span className={`icon-badge sm building-cat-${category.replace(/\s+/g, "-")}`}>
                       <Icon name={category} size={14} />
                     </span>
@@ -283,13 +327,12 @@ export default function Settlements() {
                       </div>
                       {building.detail && <div className="text-faint building-detail">{building.detail}</div>}
                     </div>
-                    <button
-                      className="btn btn-icon btn-danger"
-                      onClick={() => removeBuilding(region.region, building.name)}
-                      aria-label={`Remove ${label}`}
-                    >
-                      <Icon name="Trash" size={14} />
-                    </button>
+                    <RemoveBuildingControl
+                      regionName={region.region}
+                      building={building.name}
+                      label={label}
+                      onRemoved={load}
+                    />
                   </div>
                 );
               })}

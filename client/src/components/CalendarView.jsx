@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { getProjection, getReference } from "../api.js";
 import { useEventSubmit } from "../lib/useEventSubmit.js";
 import { useReferenceSave } from "../lib/useReferenceSave.js";
+import { useDraft } from "../lib/useDraft.js";
 import Icon from "./Icon.jsx";
 import WarningsList from "./WarningsList.jsx";
+import PostToDiscordToggle from "./PostToDiscordToggle.jsx";
 import { seasonColor } from "../lib/campaign.js";
 
 function parseHolidaysText(text) {
@@ -25,27 +27,24 @@ function fromMonthRow(r) {
 
 // Reference data (CONTEXT.md): edited directly, no event history.
 function CalendarStructureEditor({ structure, onSaved }) {
-  const [draft, setDraft] = useState({
+  const { draft, dirty, set, addItem, removeItem } = useDraft({
     era: structure.era || "",
     daysPerMonth: structure.daysPerMonth ?? "",
     months: structure.months.map(toMonthRow),
   });
   const { save, status } = useReferenceSave("calendarStructure", onSaved);
 
-  const baseline = { era: structure.era || "", daysPerMonth: structure.daysPerMonth ?? "", months: structure.months.map(toMonthRow) };
-  const dirty = JSON.stringify(draft) !== JSON.stringify(baseline);
-
   function monthField(i, key, value) {
-    setDraft({ ...draft, months: draft.months.map((m, idx) => (idx === i ? { ...m, [key]: value } : m)) });
+    set(["months", i], { ...draft.months[i], [key]: value });
   }
 
   function addMonth() {
     const nextNumber = Math.max(0, ...draft.months.map((m) => Number(m.number) || 0)) + 1;
-    setDraft({ ...draft, months: [...draft.months, { number: nextNumber, name: "", season: "", holidaysText: "" }] });
+    addItem(["months"], () => ({ number: nextNumber, name: "", season: "", holidaysText: "" }));
   }
 
   function removeMonth(i) {
-    setDraft({ ...draft, months: draft.months.filter((_, idx) => idx !== i) });
+    removeItem(["months"], i);
   }
 
   function saveStructure() {
@@ -71,7 +70,7 @@ function CalendarStructureEditor({ structure, onSaved }) {
         <label style={{ flex: "1 1 10rem" }}>
           Era
           <br />
-          <input value={draft.era} onChange={(e) => setDraft({ ...draft, era: e.target.value })} style={{ width: "100%" }} />
+          <input value={draft.era} onChange={(e) => set(["era"], e.target.value)} style={{ width: "100%" }} />
         </label>
         <label style={{ flex: "0 0 8rem" }}>
           Days per month
@@ -79,7 +78,7 @@ function CalendarStructureEditor({ structure, onSaved }) {
           <input
             type="number"
             value={draft.daysPerMonth}
-            onChange={(e) => setDraft({ ...draft, daysPerMonth: e.target.value })}
+            onChange={(e) => set(["daysPerMonth"], e.target.value)}
             style={{ width: "100%" }}
           />
         </label>
@@ -187,7 +186,7 @@ export default function CalendarView() {
     load();
   }
 
-  const { submit, status, warnings } = useEventSubmit(() => {
+  const { submit, status, warnings, postToDiscord, setPostToDiscord } = useEventSubmit(() => {
     load();
     setNote("");
   });
@@ -293,6 +292,7 @@ export default function CalendarView() {
           <button className="btn btn-primary" onClick={saveDate}>
             Save
           </button>
+          <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />
           {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
         </div>
         <WarningsList warnings={warnings} />

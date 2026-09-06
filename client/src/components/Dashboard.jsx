@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { getProjection, getReference } from "../api.js";
 import { useEventSubmit } from "../lib/useEventSubmit.js";
 import { useReferenceSave } from "../lib/useReferenceSave.js";
+import { useDraft } from "../lib/useDraft.js";
 import Icon from "./Icon.jsx";
 import WarningsList from "./WarningsList.jsx";
+import PostToDiscordToggle from "./PostToDiscordToggle.jsx";
 
 const RESOURCE_GROUPS = ["resources", "assets", "society"];
 
@@ -11,21 +13,19 @@ const RESOURCE_GROUPS = ["resources", "assets", "society"];
 // seeds a zero-value resource_totals row (server/db/reference.js); removing one is
 // refused server-side while its current value is nonzero.
 function ResourceDefinitionsEditor({ definitions, onSaved }) {
-  const [draft, setDraft] = useState(definitions);
+  const { draft, dirty, set, addItem, removeItem } = useDraft(definitions);
   const { save, status } = useReferenceSave("resourceDefinitions", onSaved);
 
-  const dirty = JSON.stringify(draft) !== JSON.stringify(definitions);
-
   function field(i, key, value) {
-    setDraft(draft.map((r, idx) => (idx === i ? { ...r, [key]: value } : r)));
+    set([i], { ...draft[i], [key]: value });
   }
 
   function addRow() {
-    setDraft([...draft, { grp: "resources", name: "", description: "" }]);
+    addItem([], () => ({ grp: "resources", name: "", description: "" }));
   }
 
   function removeRow(i) {
-    setDraft(draft.filter((_, idx) => idx !== i));
+    removeItem([], i);
   }
 
   function saveDefinitions() {
@@ -179,7 +179,7 @@ export default function Dashboard() {
     load();
   }
 
-  const { submit, status, warnings } = useEventSubmit(() => {
+  const { submit, status, warnings, postToDiscord, setPostToDiscord } = useEventSubmit(() => {
     load();
     setNote("");
   });
@@ -303,6 +303,7 @@ export default function Dashboard() {
               <Icon name="Scroll" size={14} />
               Save changes
             </button>
+            <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />
             {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
           </div>
           <WarningsList warnings={warnings} />

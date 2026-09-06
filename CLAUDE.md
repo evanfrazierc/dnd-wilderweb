@@ -91,13 +91,19 @@ current state, shaped to match the old `data/*.json` files), `GET /api/reference
 In production, Express also serves the built client (`client/dist`) and falls back to
 `index.html` for any non-`/api` route (SPA routing).
 
+`POST /api/events` also takes an optional `postToDiscord` flag (not part of the event itself,
+stripped before it reaches `createEvent`) — when true, `server/discord.js`'s `notifyDiscord`
+best-effort-posts a formatted embed to `DISCORD_WEBHOOK_URL`, never blocking or failing the save
+if Discord is unreachable or unconfigured (ADR-0006).
+
 ### Client (`client/`) is five page views that emit events, not blind writes
 
 `client/src/App.jsx` is a simple tab switcher (no router) between: Dashboard, Calendar,
 Settlements, Timeline, and Codex (lore/deities/locations). Every write goes through
 `client/src/api.js`'s `postEvent` and the shared `client/src/lib/useEventSubmit.js` hook (submit,
-track status, surface warnings — `WarningsList.jsx` renders them). Reads go through
-`getProjection`/`getReference`/`getEvents`/`getObligations`. Per view:
+track status, surface warnings — `WarningsList.jsx` renders them; also owns the per-save
+`postToDiscord` flag, defaulted on, rendered as `PostToDiscordToggle.jsx`'s checkbox next to each
+save button). Reads go through `getProjection`/`getReference`/`getEvents`/`getObligations`. Per view:
 
 - **Dashboard**: edits stat values locally (steppers, same UX as before), then on save diffs the
   draft against the loaded snapshot into one `ResourceChanged` event.

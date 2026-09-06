@@ -62,8 +62,8 @@ A second round of design questions came out of actually running the migration. A
 
 ## Phase 3 — Discord integration
 
-- [ ] Outbound webhook: after each successful `POST /api/events`, best-effort `POST` a formatted summary (type, game date, actor, note) to a configured webhook URL. Never blocks or fails the write if Discord is unreachable (ADR-0006).
-- [ ] Inbound paste-and-parse: an admin panel where the DM pastes raw Discord message text; a parser (extending the existing `parseChanges` logic from `History.jsx`) extracts a draft `ResourceChanged` or `DMRuling` for review and edit before it's submitted as a real event. Scoped to just these two types at launch (Q17) — the other five event types go through normal site forms.
+- [x] Outbound webhook (`server/discord.js`), revised from the original plan below: rather than posting automatically after every event, the DM ticks a "Post to Discord" checkbox per save (defaulted on) so live-session edits and corrections don't have to go out to the table (see ADR-0006's update). Best-effort `POST` of a formatted embed (title/color per event type, fields from that type's payload, note/actor/region) to `DISCORD_WEBHOOK_URL`; never blocks or fails the write if Discord is unreachable or unconfigured.
+- [ ] Inbound paste-and-parse: an admin panel where the DM pastes raw Discord message text; a parser (extending the existing `parseChanges` logic, now in `Timeline.jsx` rather than the since-replaced `History.jsx`) extracts a draft `ResourceChanged` or `DMRuling` for review and edit before it's submitted as a real event. Scoped to just these two types at launch (Q17) — the other five event types go through normal site forms.
 
 ## Explicitly deferred (see ADRs)
 

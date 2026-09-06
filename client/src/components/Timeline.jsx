@@ -3,6 +3,7 @@ import { getEvents, getObligations } from "../api.js";
 import { useEventSubmit } from "../lib/useEventSubmit.js";
 import Icon from "./Icon.jsx";
 import WarningsList from "./WarningsList.jsx";
+import PostToDiscordToggle from "./PostToDiscordToggle.jsx";
 
 const EVENT_TYPES = [
   "ResourceChanged",
@@ -48,7 +49,7 @@ function NewEntryForm({ obligations, onAdd }) {
   const [obRepaymentResource, setObRepaymentResource] = useState("");
   const [obAmountTotal, setObAmountTotal] = useState("");
   const [obDueGameDate, setObDueGameDate] = useState("");
-  const { submit, status, warnings } = useEventSubmit(onAdd);
+  const { submit, status, warnings, postToDiscord, setPostToDiscord } = useEventSubmit(onAdd);
 
   const changes = parseChanges(changesText);
   const hasChanges = Object.keys(changes).length > 0;
@@ -186,6 +187,7 @@ function NewEntryForm({ obligations, onAdd }) {
           <Icon name="Scroll" size={14} />
           Add entry
         </button>
+        <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />
         {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
       </div>
       <WarningsList warnings={warnings} />
