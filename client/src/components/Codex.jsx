@@ -15,9 +15,12 @@ const ALIGNMENT_ICON = {
 };
 
 // Reference data (CONTEXT.md): no event history, edited directly in the database.
+// Read-only by default -- a DM editing a typo shouldn't have to look at a form full of
+// textareas every time the campaign's players just want to read the introduction.
 function IntroductionTab() {
   const [intro, setIntro] = useState(null);
   const [error, setError] = useState(null);
+  const [editing, setEditing] = useState(false);
   const { draft, dirty, set, addItem, removeItem } = useDraft(intro);
 
   function load() {
@@ -28,7 +31,10 @@ function IntroductionTab() {
     load().catch((e) => setError(e.message));
   }, []);
 
-  const { save, status } = useReferenceSave("introduction", load);
+  const { save, status } = useReferenceSave("introduction", () => {
+    load();
+    setEditing(false);
+  });
 
   if (error) return <div className="error-box">Failed to load introduction: {error}</div>;
   if (!intro || !draft) return <div className="loading">Loading…</div>;
@@ -47,6 +53,27 @@ function IntroductionTab() {
 
   function removeParagraph(i) {
     removeItem(["paragraphs"], i);
+  }
+
+  if (!editing) {
+    return (
+      <div className="card parchment journal-page">
+        <div className="section-title-row">
+          <span className="text-faint" style={{ fontSize: "0.82rem" }}>
+            {intro.postedBy && `Posted by ${intro.postedBy}`}
+            {intro.postedBy && intro.postedAt && " · "}
+            {intro.postedAt}
+          </span>
+          <button className="btn btn-sm" onClick={() => setEditing(true)}>
+            <Icon name="Codex" size={14} />
+            Edit
+          </button>
+        </div>
+        {intro.paragraphs.map((p, i) => (
+          <p key={i}>{p}</p>
+        ))}
+      </div>
+    );
   }
 
   return (
@@ -80,12 +107,11 @@ function IntroductionTab() {
           Add paragraph
         </button>
       </div>
-      {dirty && (
-        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginTop: "0.75rem" }}>
-          <button className="btn btn-primary" onClick={() => save(draft)}>Save</button>
-          {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
-        </div>
-      )}
+      <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginTop: "0.75rem" }}>
+        {dirty && <button className="btn btn-primary" onClick={() => save(draft)}>Save</button>}
+        <button className="btn btn-sm" onClick={() => setEditing(false)}>Done editing</button>
+        {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+      </div>
     </div>
   );
 }

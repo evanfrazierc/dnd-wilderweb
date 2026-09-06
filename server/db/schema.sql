@@ -3,7 +3,7 @@
 CREATE TABLE IF NOT EXISTS events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   type TEXT NOT NULL CHECK (type IN (
-    'ResourceChanged', 'BuildingConstructed', 'BuildingRemoved',
+    'ResourceChanged', 'BuildingConstructed', 'BuildingRemoved', 'BuildingAmended',
     'CalendarAdvanced', 'DeityAmended', 'LocationAmended', 'DMRuling'
   )),
   game_date_raw TEXT NOT NULL,
@@ -91,7 +91,23 @@ CREATE TABLE IF NOT EXISTS building_catalog (
   cost_note TEXT,
   upkeep TEXT,
   build_time TEXT,
-  requires TEXT NOT NULL DEFAULT '[]'
+  requires TEXT NOT NULL DEFAULT '[]',
+  -- {resourceName: signedIntDelta} per building per year, separate from the free-text
+  -- effect/upkeep above. Only set for buildings whose effect is an unambiguous, dice-free,
+  -- population-independent flat rate -- see docs/adr/0009. Added via connection.js's
+  -- ALTER-TABLE-if-missing check, since this table predates the column (existing DBs
+  -- already had building_catalog before this was added).
+  annual_effect TEXT NOT NULL DEFAULT '{}'
+);
+
+-- Regions a building can be built in -- first-class reference data (docs/adr/0008) rather
+-- than a free-text label on settlement_buildings.region. A stable id separate from the
+-- mutable name is what lets a rename cascade to every settlement_buildings row referencing
+-- the old name (see replaceRegions in server/db/reference.js).
+CREATE TABLE IF NOT EXISTS regions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE,
+  description TEXT
 );
 
 CREATE TABLE IF NOT EXISTS resource_definitions (

@@ -6,7 +6,7 @@ import { useDraft } from "../lib/useDraft.js";
 import Icon from "./Icon.jsx";
 import WarningsList from "./WarningsList.jsx";
 import PostToDiscordToggle from "./PostToDiscordToggle.jsx";
-import { seasonColor } from "../lib/campaign.js";
+import { seasonColor, holidayColor } from "../lib/campaign.js";
 
 function parseHolidaysText(text) {
   return text.split(",").map((s) => s.trim()).filter(Boolean).map((part) => {
@@ -135,6 +135,7 @@ function MonthCard({ month, isCurrent, currentDay }) {
             <div
               key={day}
               className={`day-cell${isToday ? " today" : ""}${holiday ? " holiday" : ""}`}
+              style={holiday ? { "--holiday-color": holidayColor(holiday.name) } : undefined}
               title={holiday ? `${holiday.name} (${holiday.deity} holy day)` : undefined}
             >
               {day}
@@ -146,7 +147,7 @@ function MonthCard({ month, isCurrent, currentDay }) {
       {month.holidays.length > 0 && (
         <div className="tag-row">
           {[...new Set(month.holidays.map((h) => h.name))].map((name) => (
-            <span key={name} className="pill">
+            <span key={name} className="pill holiday" style={{ "--holiday-color": holidayColor(name) }}>
               <Icon name="Piety" size={11} />
               {name}
             </span>

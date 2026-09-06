@@ -32,6 +32,7 @@ function toRow(b) {
     upkeep: b.upkeep || "",
     buildTime: b.buildTime || "",
     requiresText: (b.requires || []).join(", "),
+    annualEffectText: costToText(b.annualEffect),
   };
 }
 function fromRow(r) {
@@ -44,6 +45,7 @@ function fromRow(r) {
     upkeep: r.upkeep.trim() || null,
     buildTime: r.buildTime.trim() || null,
     requires: parseListText(r.requiresText),
+    annualEffect: parseCostText(r.annualEffectText),
   };
 }
 
@@ -78,7 +80,10 @@ function BuildingCatalogEditor({ catalog, onSaved }) {
       </div>
       <p className="text-faint" style={{ fontSize: "0.8rem" }}>
         Cost is a comma-separated list like "Wood: 10, Stone: 5". Requires is a comma-separated
-        list of prerequisite building names.
+        list of prerequisite building names. Annual effect is the same format (negative values
+        for upkeep, e.g. "Wealth: 1, Food: -1") -- only set it for a flat, guaranteed,
+        per-building yearly effect; leave it blank for anything dice-based, population-scaled,
+        or player-invoked. It feeds the Dashboard's Annual Income &amp; Upkeep total (ADR-0009).
       </p>
       {draft.map((r, i) => (
         <div key={i} className="card" style={{ marginTop: "0.6rem", display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "flex-end" }}>
@@ -90,6 +95,7 @@ function BuildingCatalogEditor({ catalog, onSaved }) {
           <label style={{ flex: "1 1 6rem" }}>Upkeep<br /><input value={r.upkeep} onChange={(e) => field(i, "upkeep", e.target.value)} style={{ width: "100%" }} /></label>
           <label style={{ flex: "1 1 6rem" }}>Build time<br /><input value={r.buildTime} onChange={(e) => field(i, "buildTime", e.target.value)} style={{ width: "100%" }} /></label>
           <label style={{ flex: "1 1 10rem" }}>Requires<br /><input value={r.requiresText} onChange={(e) => field(i, "requiresText", e.target.value)} style={{ width: "100%" }} /></label>
+          <label style={{ flex: "1 1 10rem" }}>Annual effect<br /><input value={r.annualEffectText} onChange={(e) => field(i, "annualEffectText", e.target.value)} style={{ width: "100%" }} /></label>
           <button className="btn btn-sm btn-danger" onClick={() => removeRow(i)}>Remove</button>
         </div>
       ))}
@@ -222,17 +228,195 @@ function RemoveBuildingControl({ regionName, building, label, onRemoved }) {
   );
 }
 
+function toRegionRow(r) {
+  return { id: r.id, name: r.name || "", description: r.description || "" };
+}
+function fromRegionRow(r) {
+  return { id: r.id, name: r.name.trim(), description: r.description.trim() || null };
+}
+
+// Reference data (CONTEXT.md, ADR-0008): edited directly, no event history. Renaming
+// cascades server-side to every building currently in that region; removing one is refused
+// while it still has buildings.
+function RegionsEditor({ regions, onSaved }) {
+  const { draft, dirty, set, addItem, removeItem } = useDraft(regions.map(toRegionRow));
+  const { save, status } = useReferenceSave("regions", onSaved);
+
+  function field(i, key, value) {
+    set([i], { ...draft[i], [key]: value });
+  }
+
+  function addRow() {
+    addItem([], () => ({ id: null, name: "", description: "" }));
+  }
+
+  function removeRow(i) {
+    removeItem([], i);
+  }
+
+  function saveRegions() {
+    save(draft.filter((r) => r.name.trim()).map(fromRegionRow));
+  }
+
+  return (
+    <div className="card" style={{ marginTop: "1.25rem" }}>
+      <div className="stat-group-head">
+        <span className="icon-badge">
+          <Icon name="MapPin" size={17} />
+        </span>
+        <h3>Manage regions</h3>
+      </div>
+      <p className="text-faint" style={{ fontSize: "0.8rem" }}>
+        Renaming a region updates every building currently built there. Removing one is
+        refused while it still has buildings -- move or remove them first.
+      </p>
+      {draft.map((r, i) => (
+        <div key={i} style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem", alignItems: "flex-end", flexWrap: "wrap" }}>
+          <label style={{ flex: "1 1 10rem" }}>Name<br /><input value={r.name} onChange={(e) => field(i, "name", e.target.value)} style={{ width: "100%" }} /></label>
+          <label style={{ flex: "2 1 14rem" }}>Description<br /><input value={r.description} onChange={(e) => field(i, "description", e.target.value)} style={{ width: "100%" }} /></label>
+          <button className="btn btn-sm btn-danger" onClick={() => removeRow(i)}>Remove</button>
+        </div>
+      ))}
+      <div style={{ marginTop: "0.75rem", display: "flex", gap: "0.5rem", alignItems: "center" }}>
+        <button className="btn btn-sm" onClick={addRow}>
+          <Icon name="Plus" size={14} />
+          Add region
+        </button>
+        {dirty && (
+          <>
+            <button className="btn btn-primary" onClick={saveRegions}>Save regions</button>
+            {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Edit an already-built building's display name/detail, or move it to another region.
+// Its own useEventSubmit/postToDiscord, same as RemoveBuildingControl -- kept as a separate
+// control since editing/moving is non-destructive and Remove is deliberately kept distinct.
+function EditBuildingControl({ regionName, building, label, regions, onChanged }) {
+  const [expanded, setExpanded] = useState(false);
+  const [displayName, setDisplayName] = useState(building.displayName || "");
+  const [detail, setDetail] = useState(building.detail || "");
+  const [targetRegion, setTargetRegion] = useState(regionName);
+  const [gameDate, setGameDate] = useState("");
+  const { submit, status, warnings, postToDiscord, setPostToDiscord } = useEventSubmit(() => {
+    setExpanded(false);
+    setGameDate("");
+    onChanged();
+  });
+
+  const moving = targetRegion !== regionName;
+  const nameChanged = displayName.trim() !== (building.displayName || "");
+  const detailChanged = detail.trim() !== (building.detail || "");
+  const dirty = moving || nameChanged || detailChanged;
+
+  async function save() {
+    if (!gameDate.trim()) return;
+    if (moving) {
+      // A move is a BuildingRemoved from the old region immediately followed by a
+      // BuildingConstructed in the new one, carrying displayName/detail across -- preserves
+      // full history with the existing event types rather than a third "moved" type
+      // (CONTEXT.md's BuildingAmended entry / ADR-0004's precedent).
+      await submit({
+        type: "BuildingRemoved",
+        gameDate: gameDate.trim(),
+        region: regionName,
+        note: `Moved to ${targetRegion}`,
+        payload: { building: building.name, count: building.count },
+      });
+      await submit({
+        type: "BuildingConstructed",
+        gameDate: gameDate.trim(),
+        region: targetRegion,
+        note: `Moved from ${regionName}`,
+        payload: {
+          building: building.name,
+          displayName: displayName.trim() || undefined,
+          detail: detail.trim() || undefined,
+          count: building.count,
+        },
+      });
+    } else {
+      const changes = {};
+      if (nameChanged) changes.displayName = displayName.trim() || null;
+      if (detailChanged) changes.detail = detail.trim() || null;
+      await submit({
+        type: "BuildingAmended",
+        gameDate: gameDate.trim(),
+        region: regionName,
+        note: "Edited via the Settlements view",
+        payload: { building: building.name, changes },
+      });
+    }
+  }
+
+  if (!expanded) {
+    return (
+      <button className="btn btn-icon" onClick={() => setExpanded(true)} aria-label={`Edit ${label}`}>
+        <Icon name="Codex" size={14} />
+      </button>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", gap: "0.4rem", alignItems: "center", flexWrap: "wrap", width: "100%", marginTop: "0.4rem" }}>
+      <input
+        value={displayName}
+        onChange={(e) => setDisplayName(e.target.value)}
+        placeholder="In-fiction name"
+        style={{ flex: "1 1 8rem", fontSize: "0.8rem" }}
+      />
+      <input
+        value={detail}
+        onChange={(e) => setDetail(e.target.value)}
+        placeholder="Detail"
+        style={{ flex: "1 1 8rem", fontSize: "0.8rem" }}
+      />
+      <select value={targetRegion} onChange={(e) => setTargetRegion(e.target.value)} style={{ fontSize: "0.8rem" }}>
+        {regions.map((r) => (
+          <option key={r.name} value={r.name}>{r.name}</option>
+        ))}
+      </select>
+      {dirty && (
+        <input
+          value={gameDate}
+          onChange={(e) => setGameDate(e.target.value)}
+          placeholder="Game date"
+          style={{ flex: "0 0 7rem", fontSize: "0.8rem" }}
+        />
+      )}
+      <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />
+      {dirty && (
+        <button className="btn btn-sm btn-primary" onClick={save} disabled={!gameDate.trim()}>
+          Save
+        </button>
+      )}
+      <button className="btn btn-sm" onClick={() => setExpanded(false)}>Cancel</button>
+      {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+      <WarningsList warnings={warnings} />
+    </div>
+  );
+}
+
 export default function Settlements() {
   const [settlements, setSettlements] = useState(null);
   const [buildingCatalog, setBuildingCatalog] = useState([]);
+  const [regions, setRegions] = useState([]);
   const [showCatalogEditor, setShowCatalogEditor] = useState(false);
+  const [showRegionsEditor, setShowRegionsEditor] = useState(false);
   const [error, setError] = useState(null);
 
   function load() {
-    return Promise.all([getProjection("settlements"), getReference("buildings")]).then(([s, b]) => {
-      setSettlements(s);
-      setBuildingCatalog(b);
-    });
+    return Promise.all([getProjection("settlements"), getReference("buildings"), getReference("regions")]).then(
+      ([s, b, r]) => {
+        setSettlements(s);
+        setBuildingCatalog(b);
+        setRegions(r);
+      },
+    );
   }
 
   useEffect(() => {
@@ -258,7 +442,11 @@ export default function Settlements() {
   if (error) return <div className="error-box">Failed to load settlements: {error}</div>;
   if (!settlements) return <div className="loading">Loading settlements…</div>;
 
-  const totalBuildings = settlements.reduce((sum, r) => sum + r.buildings.length, 0);
+  // One card per known region (ADR-0008), not just regions that already have a building --
+  // that's what makes adding a brand-new, currently-empty settlement possible at all.
+  const settlementsByRegion = new Map(settlements.map((s) => [s.region, s.buildings]));
+  const mergedRegions = regions.map((r) => ({ region: r.name, buildings: settlementsByRegion.get(r.name) ?? [] }));
+  const totalBuildings = mergedRegions.reduce((sum, r) => sum + r.buildings.length, 0);
 
   return (
     <div className="fade-in">
@@ -270,9 +458,12 @@ export default function Settlements() {
         <div className="hero-meta">
           <span className="pill accent">
             <Icon name="Settlements" size={13} />
-            {settlements.length} regions
+            {mergedRegions.length} regions
           </span>
           <span className="pill">{totalBuildings} buildings</span>
+          <button className="btn btn-sm" onClick={() => setShowRegionsEditor(!showRegionsEditor)}>
+            {showRegionsEditor ? "Hide" : "Manage"} regions
+          </button>
           <button className="btn btn-sm" onClick={() => setShowCatalogEditor(!showCatalogEditor)}>
             {showCatalogEditor ? "Hide" : "Manage"} building catalog
           </button>
@@ -288,10 +479,11 @@ export default function Settlements() {
       </div>
       <WarningsList warnings={warnings} />
 
+      {showRegionsEditor && <RegionsEditor regions={regions} onSaved={load} />}
       {showCatalogEditor && <BuildingCatalogEditor catalog={buildingCatalog} onSaved={load} />}
 
       <div className="grid grid-2" style={{ marginTop: "1.25rem" }}>
-        {settlements.map((region) => (
+        {mergedRegions.map((region) => (
           <div className="card region-card" key={region.region}>
             <div className="region-card-head">
               <span className="icon-badge">
@@ -327,6 +519,13 @@ export default function Settlements() {
                       </div>
                       {building.detail && <div className="text-faint building-detail">{building.detail}</div>}
                     </div>
+                    <EditBuildingControl
+                      regionName={region.region}
+                      building={building}
+                      label={label}
+                      regions={regions}
+                      onChanged={load}
+                    />
                     <RemoveBuildingControl
                       regionName={region.region}
                       building={building.name}

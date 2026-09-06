@@ -29,6 +29,7 @@ export async function readBuildingCatalog(db) {
     upkeep: b.upkeep ?? undefined,
     buildTime: b.build_time ?? undefined,
     requires: JSON.parse(b.requires),
+    annualEffect: JSON.parse(b.annual_effect || "{}"),
   }));
 }
 
@@ -43,13 +44,14 @@ export async function replaceBuildingCatalog(db, buildings) {
   return db.transaction(async (tx) => {
     await tx.prepare("DELETE FROM building_catalog").run();
     const insert = tx.prepare(`
-      INSERT INTO building_catalog (name, category, effect, cost, cost_note, upkeep, build_time, requires)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO building_catalog (name, category, effect, cost, cost_note, upkeep, build_time, requires, annual_effect)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     for (const b of buildings) {
       await insert.run(
         b.name, b.category ?? null, b.effect ?? null, JSON.stringify(b.cost ?? {}),
         b.costNote ?? null, b.upkeep ?? null, b.buildTime ?? null, JSON.stringify(b.requires ?? []),
+        JSON.stringify(b.annualEffect ?? {}),
       );
     }
   });
@@ -157,10 +159,98 @@ export async function replaceIntroduction(db, { postedBy, postedAt, paragraphs }
   `).run(JSON.stringify({ postedBy: postedBy ?? null, postedAt: postedAt ?? null, paragraphs }));
 }
 
+/**
+ * Regions a building can be built in (docs/adr/0008) -- first-class reference data rather
+ * than a free-text label on settlement_buildings.region. Unlike the other reference
+ * resources, replaceRegions is NOT a generic wipe-and-reinsert: a rename needs to cascade to
+ * every settlement_buildings row referencing the old name, which requires diffing by the
+ * region's stable id (a name-keyed wipe-and-reinsert can't tell "renamed" from "deleted then
+ * re-added under a new name").
+ */
+export async function readRegions(db) {
+  return db.prepare("SELECT id, name, description FROM regions ORDER BY name").all();
+}
+
+export async function replaceRegions(db, regions) {
+  const seen = new Set();
+  for (const r of regions) {
+    requireFields(r, ["name"], "A region");
+    if (seen.has(r.name)) throw new ValidationError(`Duplicate region name: "${r.name}"`);
+    seen.add(r.name);
+  }
+
+  return db.transaction(async (tx) => {
+    const existing = await tx.prepare("SELECT id, name FROM regions").all();
+    const existingById = new Map(existing.map((e) => [e.id, e]));
+    const incomingIds = new Set(regions.filter((r) => r.id != null).map((r) => r.id));
+
+    for (const e of existing) {
+      if (incomingIds.has(e.id)) continue;
+      const count = await tx.prepare("SELECT COUNT(*) c FROM settlement_buildings WHERE region = ?").get(e.name);
+      if (count.c > 0) {
+        throw new ValidationError(
+          `Cannot remove region "${e.name}": it still has ${count.c} building(s). ` +
+          "Move or remove them first.",
+        );
+      }
+      await tx.prepare("DELETE FROM regions WHERE id = ?").run(e.id);
+    }
+
+    for (const r of regions) {
+      if (r.id != null && existingById.has(r.id)) {
+        const old = existingById.get(r.id);
+        await tx.prepare("UPDATE regions SET name = ?, description = ? WHERE id = ?")
+          .run(r.name, r.description ?? null, r.id);
+        if (old.name !== r.name) {
+          await tx.prepare("UPDATE settlement_buildings SET region = ? WHERE region = ?").run(r.name, old.name);
+        }
+      } else {
+        await tx.prepare("INSERT INTO regions (name, description) VALUES (?, ?)").run(r.name, r.description ?? null);
+      }
+    }
+  });
+}
+
+/** One-time, idempotent data bootstrap -- only runs while `regions` is empty, so it never
+ * clobbers a DM's edits. Seeds from the existing locations_state.wilderlandsRegions (already
+ * has descriptions) unioned with any settlement_buildings.region values not already covered.
+ * Called once from server/index.js's startup, not from connection.js -- this is a data
+ * concern, not a schema-shape one, and tests build their own region data directly. */
+export async function ensureRegionsSeeded(db) {
+  const { c } = await db.prepare("SELECT COUNT(*) c FROM regions").get();
+  if (c > 0) return;
+
+  const seen = new Set();
+  const seeds = [];
+
+  const locationsRow = await db.prepare("SELECT data FROM locations_state WHERE id = 1").get();
+  const wilderlandsRegions = locationsRow ? JSON.parse(locationsRow.data).wilderlandsRegions ?? [] : [];
+  for (const r of wilderlandsRegions) {
+    if (seen.has(r.name)) continue;
+    seen.add(r.name);
+    seeds.push({ name: r.name, description: r.description ?? null });
+  }
+
+  const buildingRegions = await db.prepare("SELECT DISTINCT region FROM settlement_buildings").all();
+  for (const { region } of buildingRegions) {
+    if (seen.has(region)) continue;
+    seen.add(region);
+    seeds.push({ name: region, description: null });
+  }
+
+  if (seeds.length === 0) return;
+
+  const insert = db.prepare("INSERT INTO regions (name, description) VALUES (?, ?)");
+  for (const s of seeds) {
+    await insert.run(s.name, s.description);
+  }
+}
+
 /** Single source of truth for which reference resources exist and how to read/write each. */
 export const REFERENCE_RESOURCES = {
   buildings: { read: readBuildingCatalog, write: replaceBuildingCatalog },
   introduction: { read: readIntroduction, write: replaceIntroduction },
   resourceDefinitions: { read: readResourceDefinitions, write: replaceResourceDefinitions },
   calendarStructure: { read: readCalendarStructure, write: replaceCalendarStructure },
+  regions: { read: readRegions, write: replaceRegions },
 };

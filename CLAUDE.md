@@ -65,7 +65,7 @@ validation warns instead of blocking, why there's no auth yet, etc.
 
 - `schema.sql` / `connection.js`: SQLite via Node's built-in `node:sqlite` (no new dependency).
   DB file at `data/campaign.db`, gitignored — `npm run export` is the git-diffable backup path.
-- `events.js` (`createEvent`/`listEvents`): every write is an event of one of seven types (see
+- `events.js` (`createEvent`/`listEvents`): every write is an event of one of eight types (see
   `CONTEXT.md`). `createEvent` validates shape (400 on failure), checks in-game warnings
   (`validate.js`), then writes the event and updates the relevant projection in one transaction.
 - `projections.js`: applies an event's payload onto current-state tables (`resource_totals`,
@@ -86,10 +86,11 @@ validation warns instead of blocking, why there's no auth yet, etc.
 
 No JSON files are read or written at request time. Routes: `GET`/`POST /api/events`,
 `GET /api/projections/:resource` (`stats`, `settlements`, `calendar`, `deities`, `locations` —
-current state, shaped to match the old `data/*.json` files), `GET /api/reference/:resource`
-(`buildings`, `introduction` — static, read-only, no event history), `GET /api/obligations[/:id]`.
-In production, Express also serves the built client (`client/dist`) and falls back to
-`index.html` for any non-`/api` route (SPA routing).
+current state, shaped to match the old `data/*.json` files), `GET`/`PUT /api/reference/:resource`
+(`buildings`, `introduction`, `resourceDefinitions`, `calendarStructure`, `regions` — directly
+writable, no event history, dispatched through `server/db/reference.js`'s `REFERENCE_RESOURCES`
+table), `GET /api/obligations[/:id]`. In production, Express also serves the built client
+(`client/dist`) and falls back to `index.html` for any non-`/api` route (SPA routing).
 
 `POST /api/events` also takes an optional `postToDiscord` flag (not part of the event itself,
 stripped before it reaches `createEvent`) — when true, `server/discord.js`'s `notifyDiscord`

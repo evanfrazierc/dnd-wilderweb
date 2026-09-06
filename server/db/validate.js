@@ -28,6 +28,14 @@ export function validateShape(type, { note, region, payload }) {
       if (!region) errors.push(`${type} requires a region`);
       break;
     }
+    case "BuildingAmended": {
+      if (!payload?.building) errors.push("BuildingAmended requires payload.building");
+      if (!region) errors.push("BuildingAmended requires a region");
+      if (!payload?.changes || Object.keys(payload.changes).length === 0) {
+        errors.push("BuildingAmended requires at least one entry in payload.changes (displayName and/or detail)");
+      }
+      break;
+    }
     case "CalendarAdvanced": {
       if (!payload || typeof payload.year !== "number" || typeof payload.month !== "number" || typeof payload.day !== "number") {
         errors.push("CalendarAdvanced requires payload.year, payload.month, payload.day (numbers)");
@@ -117,6 +125,15 @@ export async function checkWarnings(db, type, { region, payload }) {
       .get(region, payload.building);
     if (!present || present.count < (payload.count ?? 1)) {
       warnings.push(`Removing more "${payload.building}" from ${region} than are recorded as built`);
+    }
+  }
+
+  if (type === "BuildingAmended") {
+    const present = await db
+      .prepare("SELECT 1 FROM settlement_buildings WHERE region = ? AND building = ?")
+      .get(region, payload.building);
+    if (!present) {
+      warnings.push(`"${payload.building}" is not currently built in ${region} -- nothing to amend`);
     }
   }
 

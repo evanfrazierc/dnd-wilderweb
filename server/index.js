@@ -6,7 +6,7 @@ import { getDb } from "./db/connection.js";
 import { createEvent, listEvents } from "./db/events.js";
 import { getProjection } from "./db/read.js";
 import { listObligations, getObligation, listSettlingEvents } from "./db/obligations.js";
-import { ValidationError, REFERENCE_RESOURCES } from "./db/reference.js";
+import { ValidationError, REFERENCE_RESOURCES, ensureRegionsSeeded } from "./db/reference.js";
 import { notifyDiscord } from "./discord.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -153,7 +153,8 @@ const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPat
 if (isMain) {
   const port = process.env.PORT || 4000;
   getDb()
-    .then((db) => {
+    .then(async (db) => {
+      await ensureRegionsSeeded(db);
       createApp(db).listen(port, () => {
         console.log(`Wilderweb server listening on http://localhost:${port}`);
       });

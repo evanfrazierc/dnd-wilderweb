@@ -17,7 +17,8 @@
     "start": "npm run build && node server/index.js",
     "migrate": "node scripts/migrate.js",
     "export": "node scripts/export.js",
-    "copy-to-turso": "node scripts/copy-to-turso.js"
+    "copy-to-turso": "node scripts/copy-to-turso.js",
+    "seed-annual-effects": "node scripts/seed-annual-effects.js"
   },
   "license": "MIT",
   "dependencies": {

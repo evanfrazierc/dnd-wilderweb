@@ -97,6 +97,59 @@ test("BuildingConstructed accepts an optional displayName alongside the catalog 
   assert.equal(row.display_name, "Anora's Roost");
 });
 
+test("BuildingAmended updates displayName and detail without touching count", async () => {
+  const db = await freshDb();
+  await createEvent(db, { type: "BuildingConstructed", gameDate: "1225", region: "Old Hills", payload: { building: "Farm", count: 3 } });
+
+  const result = await createEvent(db, {
+    type: "BuildingAmended", gameDate: "1226", region: "Old Hills",
+    payload: { building: "Farm", changes: { displayName: "Anora's Roost", detail: "Watch post" } },
+  });
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.warnings, []);
+
+  const row = await db.prepare("SELECT * FROM settlement_buildings WHERE region = 'Old Hills' AND building = 'Farm'").get();
+  assert.equal(row.display_name, "Anora's Roost");
+  assert.equal(row.detail, "Watch post");
+  assert.equal(row.count, 3);
+});
+
+test("BuildingAmended merges partial changes, leaving fields not mentioned untouched", async () => {
+  const db = await freshDb();
+  await createEvent(db, {
+    type: "BuildingConstructed", gameDate: "1225", region: "Old Hills",
+    payload: { building: "Farm", displayName: "Old Name", detail: "Old detail" },
+  });
+
+  await createEvent(db, {
+    type: "BuildingAmended", gameDate: "1226", region: "Old Hills",
+    payload: { building: "Farm", changes: { displayName: "New Name" } },
+  });
+
+  const row = await db.prepare("SELECT * FROM settlement_buildings WHERE region = 'Old Hills' AND building = 'Farm'").get();
+  assert.equal(row.display_name, "New Name");
+  assert.equal(row.detail, "Old detail");
+});
+
+test("BuildingAmended warns when the building isn't currently built in that region", async () => {
+  const db = await freshDb();
+  const result = await createEvent(db, {
+    type: "BuildingAmended", gameDate: "1225", region: "Old Hills",
+    payload: { building: "Farm", changes: { detail: "x" } },
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.warnings.length, 1);
+  assert.match(result.warnings[0], /not currently built/);
+});
+
+test("BuildingAmended rejects an empty changes object", async () => {
+  const db = await freshDb();
+  const result = await createEvent(db, {
+    type: "BuildingAmended", gameDate: "1225", region: "Old Hills", payload: { building: "Farm", changes: {} },
+  });
+  assert.equal(result.ok, false);
+});
+
 test("LocationAmended requires a non-empty note, since payload.data replaces the whole document", async () => {
   const db = await freshDb();
   const missingNote = await createEvent(db, { type: "LocationAmended", gameDate: "1225", payload: { data: {} } });

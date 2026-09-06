@@ -17,6 +17,9 @@ export async function applyProjection(db, event) {
     case "BuildingRemoved":
       await applyBuildingRemoved(db, region, payload);
       break;
+    case "BuildingAmended":
+      await applyBuildingAmended(db, region, payload);
+      break;
     case "CalendarAdvanced":
       await applyCalendarAdvanced(db, payload);
       break;
@@ -89,6 +92,18 @@ async function applyBuildingRemoved(db, region, payload) {
   } else {
     await db.prepare("UPDATE settlement_buildings SET count = ? WHERE id = ?").run(next, row.id);
   }
+}
+
+async function applyBuildingAmended(db, region, payload) {
+  const row = await db.prepare("SELECT * FROM settlement_buildings WHERE region = ? AND building = ?")
+    .get(region, payload.building);
+  if (!row) return; // already surfaced as a warning
+
+  const changes = payload.changes ?? {};
+  const displayName = changes.displayName !== undefined ? changes.displayName : row.display_name;
+  const detail = changes.detail !== undefined ? changes.detail : row.detail;
+  await db.prepare("UPDATE settlement_buildings SET display_name = ?, detail = ? WHERE id = ?")
+    .run(displayName, detail, row.id);
 }
 
 async function applyCalendarAdvanced(db, payload) {

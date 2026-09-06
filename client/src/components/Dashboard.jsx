@@ -86,7 +86,7 @@ function ResourceDefinitionsEditor({ definitions, onSaved }) {
   );
 }
 
-function StatGroup({ title, icon, values, descriptions, onChange, gauge }) {
+function StatGroup({ title, icon, values, descriptions, onChange }) {
   return (
     <div className="card stat-group">
       <div className="stat-group-head">
@@ -96,7 +96,6 @@ function StatGroup({ title, icon, values, descriptions, onChange, gauge }) {
         <h3>{title}</h3>
       </div>
       {Object.entries(values).map(([key, value]) => {
-        const cap = gauge?.(key, value);
         return (
           <div className="stat-row" key={key}>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -104,11 +103,6 @@ function StatGroup({ title, icon, values, descriptions, onChange, gauge }) {
                 <Icon name={key} size={15} />
                 <span className="name">{key}</span>
               </span>
-              {cap && (
-                <div className={`meter ${cap.tone}`} style={{ marginTop: "0.35rem" }}>
-                  <span style={{ width: `${cap.pct}%` }} />
-                </div>
-              )}
             </div>
             <span className="stat-value">
               <button
@@ -204,18 +198,6 @@ export default function Dashboard() {
   if (error) return <div className="error-box">Failed to load stats: {error}</div>;
   if (!stats || !draft) return <div className="loading">Loading kingdom stats…</div>;
 
-  const population = draft.assets?.Population ?? 0;
-
-  function societyGauge(key, value) {
-    if (key === "Unrest" || key === "Loyalty") {
-      const max = Math.max(population, value, 1);
-      const pct = Math.min(100, (value / max) * 100);
-      const tone = key === "Unrest" ? (value >= population && value > 0 ? "bad" : "") : value >= population ? "good" : "bad";
-      return { pct, tone };
-    }
-    return null;
-  }
-
   return (
     <div className="fade-in">
       <div className="page-header hero-header">
@@ -266,7 +248,6 @@ export default function Dashboard() {
           values={draft.society}
           descriptions={stats.societyDescriptions}
           onChange={(k, v) => updateGroup("society", k, v)}
-          gauge={societyGauge}
         />
       </div>
 
@@ -315,9 +296,16 @@ export default function Dashboard() {
           <div className="section-header">
             <h3>Annual Income &amp; Upkeep</h3>
             <div className="rule" />
-            <span className="pill">as of {stats.annualIncomeUpkeep.asOf}</span>
           </div>
-          {stats.annualIncomeUpkeep.note && <p className="text-dim">{stats.annualIncomeUpkeep.note}</p>}
+          <p className="text-dim" style={{ fontSize: "0.82rem" }}>
+            Computed from currently-built buildings' known annual effects. Excludes anything
+            dice-based, player-invoked, or population-scaled (e.g. a Mill's farm bonus, or
+            Population/Guard food consumption) — edit a building's annual effect in the
+            catalog to include more.
+          </p>
+          {stats.annualIncomeUpkeep.lines.length === 0 ? (
+            <div className="empty-state">No buildings with a known annual effect yet.</div>
+          ) : (
           <div className="grid grid-2 ledger-grid">
             {stats.annualIncomeUpkeep.lines.map((line) => (
               <div key={line.resource} className="card ledger-line">
@@ -342,6 +330,7 @@ export default function Dashboard() {
               </div>
             ))}
           </div>
+          )}
         </>
       )}
     </div>

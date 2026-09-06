@@ -358,6 +358,12 @@ input[type="number"] {
   background: var(--warn-soft);
 }
 
+.pill.holiday {
+  border-color: var(--holiday-color, var(--accent-line));
+  color: var(--holiday-color, var(--accent-strong));
+  background: color-mix(in srgb, var(--holiday-color, var(--accent-strong)) 16%, transparent);
+}
+
 .warning-list {
   margin-top: 0.6rem;
   padding: 0.5rem 0.75rem;
@@ -655,9 +661,9 @@ input[type="number"] {
 }
 
 .day-cell.holiday {
-  border-color: var(--accent-line);
-  color: var(--accent-strong);
-  background: var(--accent-soft);
+  border-color: var(--holiday-color, var(--accent-line));
+  color: var(--holiday-color, var(--accent-strong));
+  background: color-mix(in srgb, var(--holiday-color, var(--accent-soft)) 18%, var(--accent-soft));
   font-weight: 600;
 }
 
@@ -667,7 +673,7 @@ input[type="number"] {
   width: 3px;
   height: 3px;
   border-radius: 50%;
-  background: var(--accent-strong);
+  background: var(--holiday-color, var(--accent-strong));
 }
 
 .day-cell.today {

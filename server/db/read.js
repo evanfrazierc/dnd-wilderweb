@@ -2,6 +2,8 @@
  * files. Reference-data reads live in server/db/reference.js instead -- CONTEXT.md's
  * Projection and Reference data are different lifecycles, so they get different modules. */
 
+import { computeAnnualIncomeUpkeep } from "./annualIncome.js";
+
 export async function getProjection(db, resource) {
   switch (resource) {
     case "stats":
@@ -28,6 +30,7 @@ async function readStats(db) {
   const meta = metaRow ? JSON.parse(metaRow.value) : {};
   return {
     ...meta,
+    annualIncomeUpkeep: await computeAnnualIncomeUpkeep(db),
     resources: byGroup("resources"),
     resourceDescriptions: descByGroup("resources"),
     assets: byGroup("assets"),

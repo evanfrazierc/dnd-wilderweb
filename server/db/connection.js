@@ -56,9 +56,21 @@ function wrapClient(client) {
   return wrapped;
 }
 
+// `CREATE TABLE IF NOT EXISTS` (schema.sql) can't retroactively add a column to a table
+// that already existed before the column did -- an already-migrated DB needs an explicit
+// ALTER TABLE, run at most once. Add future column migrations the same way.
+async function ensureColumn(client, table, column, definition) {
+  const info = await client.execute(`PRAGMA table_info(${table})`);
+  const exists = info.rows.some((row) => row.name === column);
+  if (!exists) {
+    await client.execute(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
+}
+
 async function initSchema(client) {
   await client.execute("PRAGMA foreign_keys = ON");
   await client.executeMultiple(readFileSync(schemaPath, "utf-8"));
+  await ensureColumn(client, "building_catalog", "annual_effect", "TEXT NOT NULL DEFAULT '{}'");
 }
 
 /** Opens a local database: `:memory:` or a filesystem path. Used by tests and local scripts. */

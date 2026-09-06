@@ -7,6 +7,9 @@ import {
   replaceResourceDefinitions,
   replaceCalendarStructure,
   replaceIntroduction,
+  readRegions,
+  replaceRegions,
+  ensureRegionsSeeded,
 } from "../../server/db/reference.js";
 
 test("replaceBuildingCatalog replaces the whole catalog", async () => {
@@ -130,4 +133,72 @@ test("replaceIntroduction upserts the introduction document", async () => {
 test("replaceIntroduction rejects a non-array paragraphs field", async () => {
   const db = await openDb(":memory:");
   await assert.rejects(() => replaceIntroduction(db, { paragraphs: "not an array" }), ValidationError);
+});
+
+test("replaceRegions adds a new region", async () => {
+  const db = await openDb(":memory:");
+  await replaceRegions(db, [{ name: "Stirling Reach", description: "The party's settlement." }]);
+  const regions = await readRegions(db);
+  assert.equal(regions.length, 1);
+  assert.equal(regions[0].name, "Stirling Reach");
+  assert.equal(regions[0].description, "The party's settlement.");
+});
+
+test("replaceRegions rejects a duplicate name", async () => {
+  const db = await openDb(":memory:");
+  await assert.rejects(
+    () => replaceRegions(db, [{ name: "Stirling Reach" }, { name: "Stirling Reach" }]),
+    ValidationError,
+  );
+});
+
+test("replaceRegions renaming (by id) cascades to every building currently in it", async () => {
+  const db = await openDb(":memory:");
+  await replaceRegions(db, [{ name: "Old Hills" }]);
+  const [region] = await readRegions(db);
+  await db.prepare("INSERT INTO settlement_buildings (region, building, count) VALUES ('Old Hills', 'Quarry', 1)").run();
+
+  await replaceRegions(db, [{ id: region.id, name: "New Hills" }]);
+
+  const regions = await readRegions(db);
+  assert.equal(regions.length, 1);
+  assert.equal(regions[0].name, "New Hills");
+  const building = await db.prepare("SELECT region FROM settlement_buildings WHERE building = 'Quarry'").get();
+  assert.equal(building.region, "New Hills");
+});
+
+test("replaceRegions refuses to remove a region that still has buildings", async () => {
+  const db = await openDb(":memory:");
+  await replaceRegions(db, [{ name: "Old Hills" }]);
+  await db.prepare("INSERT INTO settlement_buildings (region, building, count) VALUES ('Old Hills', 'Quarry', 1)").run();
+
+  await assert.rejects(() => replaceRegions(db, []), ValidationError);
+  assert.equal((await readRegions(db)).length, 1);
+});
+
+test("replaceRegions removes a region with no buildings", async () => {
+  const db = await openDb(":memory:");
+  await replaceRegions(db, [{ name: "Old Hills" }]);
+  await replaceRegions(db, []);
+  assert.equal((await readRegions(db)).length, 0);
+});
+
+test("ensureRegionsSeeded seeds from wilderlandsRegions and settlement_buildings, and is idempotent", async () => {
+  const db = await openDb(":memory:");
+  await db.prepare("INSERT INTO locations_state (id, data) VALUES (1, ?)").run(
+    JSON.stringify({ wilderlandsRegions: [{ name: "Stirling Reach", description: "Capital." }] }),
+  );
+  await db.prepare("INSERT INTO settlement_buildings (region, building, count) VALUES ('Narlmarches', 'Farm', 1)").run();
+
+  await ensureRegionsSeeded(db);
+  let regions = await readRegions(db);
+  assert.deepEqual(regions.map((r) => r.name).sort(), ["Narlmarches", "Stirling Reach"]);
+  assert.equal(regions.find((r) => r.name === "Stirling Reach").description, "Capital.");
+
+  // Second call must not clobber a DM edit made after the first seed.
+  await replaceRegions(db, regions.map((r) => (r.name === "Narlmarches" ? { ...r, description: "Edited" } : r)));
+  await ensureRegionsSeeded(db);
+  regions = await readRegions(db);
+  assert.equal(regions.length, 2);
+  assert.equal(regions.find((r) => r.name === "Narlmarches").description, "Edited");
 });
