@@ -38,7 +38,7 @@ export default function StatusBar() {
           <Icon name="Calendar" size={15} />
         </span>
         <div>
-          <div className="status-value">{calendar ? formatDate(calendar) : "—"}</div>
+          <div className="status-value">{calendar ? formatDate(calendar) : "-"}</div>
           <div className="status-caption">{calendar?.currentDate?.yearLabel}</div>
         </div>
       </div>
@@ -53,7 +53,7 @@ export default function StatusBar() {
       <div className="status-spacer" />
 
       {unrestHigh && (
-        <span className="pill bad" title="Unrest has reached the population count — rebellion risk">
+        <span className="pill bad" title="Unrest has reached the population count: rebellion risk">
           <Icon name="Unrest" size={13} />
           Unrest at threshold
         </span>

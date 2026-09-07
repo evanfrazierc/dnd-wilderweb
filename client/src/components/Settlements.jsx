@@ -321,7 +321,7 @@ function RegionsEditor({ regions, kingdomNames, onSaved }) {
           <label style={{ flex: "1 1 10rem" }}>
             Kingdom<br />
             <select value={r.kingdom} onChange={(e) => field(i, "kingdom", e.target.value)} style={{ width: "100%" }}>
-              <option value="">— unclaimed —</option>
+              <option value="">Unclaimed</option>
               {kingdomNames.map((k) => (
                 <option key={k} value={k}>{k}</option>
               ))}

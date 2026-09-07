@@ -297,7 +297,7 @@ export default function Dashboard() {
           <p className="text-dim" style={{ fontSize: "0.82rem" }}>
             Computed from currently-built buildings' known annual effects. Excludes anything
             dice-based, player-invoked, or population-scaled (e.g. a Mill's farm bonus, or
-            Population/Guard food consumption) — edit a building's annual effect in the
+            Population/Guard food consumption). Edit a building's annual effect in the
             catalog to include more.
           </p>
           {stats.annualIncomeUpkeep.lines.length === 0 ? (

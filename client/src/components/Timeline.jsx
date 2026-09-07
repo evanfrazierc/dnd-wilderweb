@@ -160,7 +160,7 @@ function NewEntryForm({ obligations, knownResourceNames, onAdd }) {
         <label style={{ display: "block", marginTop: "0.6rem" }}>
           Settles an obligation (optional)
           <select value={obligationId} onChange={(e) => setObligationId(e.target.value)} style={{ width: "100%" }}>
-            <option value="">— none —</option>
+            <option value="">None</option>
             {obligations.map((o) => (
               <option key={o.id} value={o.id}>
                 #{o.id} {o.description} ({o.amountRemaining}/{o.amountTotal} {o.repaymentResource} remaining)
