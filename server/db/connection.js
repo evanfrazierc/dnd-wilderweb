@@ -140,7 +140,11 @@ async function ensureObligationAmendedEventType(client) {
 // ensureObligationAmendedEventType above.
 async function ensureKnownDataCorrections(client) {
   const testArtifacts = [
+    { id: 99, type: "DMRuling", note: "Browser automation smoke test: DM clarification note, no resource changes." },
+    { id: 100, type: "BuildingConstructed", note: "Constructed via the Settlements view" },
+    { id: 101, type: "BuildingRemoved", note: "Cleanup: removing browser-automation test building" },
     { id: 102, type: "CalendarAdvanced", note: "Browser automation smoke test" },
+    { id: 103, type: "DeityAmended", note: "Amended via the Codex" },
     { id: 106, type: "BuildingConstructed", note: "Constructed via the Settlements view" },
     { id: 107, type: "BuildingRemoved", note: "Removed via the Settlements view" },
     { id: 108, type: "CalendarAdvanced", note: "Nothing happened…" },
@@ -178,6 +182,39 @@ async function ensureKnownDataCorrections(client) {
     });
   }
 
+  // Same idea as calendar_state above, but for `deities`: event 103's deletion (it overwrote
+  // Calistria's real note with test content) needs the projection re-derived from whatever
+  // DeityAmended event for that name now has the highest id, not left holding the deleted
+  // event's stale write.
+  const deityNames = await client.execute("SELECT DISTINCT json_extract(payload, '$.name') AS name FROM events WHERE type = 'DeityAmended'");
+  for (const { name } of deityNames.rows) {
+    if (!name) continue;
+    const latestDeity = await client.execute({
+      sql: "SELECT payload FROM events WHERE type = 'DeityAmended' AND json_extract(payload, '$.name') = ? ORDER BY id DESC LIMIT 1",
+      args: [name],
+    });
+    if (latestDeity.rows.length === 0) continue;
+    const changes = JSON.parse(latestDeity.rows[0].payload).changes ?? {};
+    const existing = await client.execute({ sql: "SELECT * FROM deities WHERE name = ?", args: [name] });
+    const current = existing.rows[0] ?? {};
+    await client.execute({
+      sql: `
+        INSERT INTO deities (name, title, alignment, confirmed, note)
+        VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT (name) DO UPDATE SET
+          title = excluded.title, alignment = excluded.alignment,
+          confirmed = excluded.confirmed, note = excluded.note
+      `,
+      args: [
+        name,
+        (changes.title !== undefined ? changes.title : current.title) ?? null,
+        (changes.alignment !== undefined ? changes.alignment : current.alignment) ?? null,
+        (changes.confirmed !== undefined ? (changes.confirmed ? 1 : 0) : current.confirmed) ?? 0,
+        (changes.note !== undefined ? changes.note : current.note) ?? null,
+      ],
+    });
+  }
+
   // The three corrupted ResourceChanged events: corrected to the campaign's actual current
   // date throughout the period they were saved (Erastus 3rd, 1227 -- the same event 79 above),
   // in the named-month format formatGameDate now produces going forward.
@@ -195,6 +232,51 @@ async function ensureKnownDataCorrections(client) {
       });
     }
   }
+}
+
+// Deleting the test CalendarAdvanced entries above rolled the campaign's current date back to
+// Erastus 3rd, 1227 (the last *formally* real advance) -- but real, non-test activity (the
+// DM's own actions saved via GameDatePicker's auto-defaulted "today") had already happened
+// dated Erastus 4th by the time that test entry was cleaned up, which made those real actions
+// look like they were set in the campaign's future relative to the rolled-back date. The DM
+// confirmed Erastus 4th as the real current date (see chat log) -- this restores it as a
+// genuine CalendarAdvanced event (not just a projection patch), gated on that exact advance
+// not already existing so it's a safe no-op after the one time it's needed.
+async function ensureCurrentDateAdvancedPastRealActivity(client) {
+  const marker = "Restored: a test CalendarAdvanced entry had briefly set this same date before being removed as test data, but real activity (events 110-114) had already happened dated Erastus 4th by then";
+  const existing = await client.execute({ sql: "SELECT id FROM events WHERE type = 'CalendarAdvanced' AND note = ?", args: [marker] });
+  if (existing.rows.length > 0) return;
+
+  // Gated on an exact content signature, not just an id range -- a database with unrelated
+  // content sitting at these same ids (this project's local dev copy, for instance, diverged
+  // from production long ago and has entirely different rows here) must never trigger this.
+  const activity = await client.execute({
+    sql: "SELECT id FROM events WHERE id = 113 AND type = 'ResourceChanged' AND note = 'Testing loan repayment'",
+  });
+  if (activity.rows.length === 0) return; // that specific real activity isn't present in this database
+
+  const payload = { year: 1227, yearLabel: "YEAR THREE", month: 2, day: 4, note: "Marked in the calendar channel as \"You are here\"" };
+  const gameDateRaw = "Erastus (2), 4th, 1227";
+  const gameDateSort = parseGameDate(gameDateRaw).sortKey;
+  const postedAt = new Date().toISOString().slice(0, 10);
+
+  await client.execute({
+    sql: `
+      INSERT INTO events (type, game_date_raw, game_date_sort, posted_at, actor, note, payload)
+      VALUES ('CalendarAdvanced', ?, ?, ?, 'Migration', ?, ?)
+    `,
+    args: [gameDateRaw, gameDateSort, postedAt, marker, JSON.stringify(payload)],
+  });
+  await client.execute({
+    sql: `
+      INSERT INTO calendar_state (id, year, year_label, month, day, note)
+      VALUES (1, ?, ?, ?, ?, ?)
+      ON CONFLICT (id) DO UPDATE SET
+        year = excluded.year, year_label = excluded.year_label,
+        month = excluded.month, day = excluded.day, note = excluded.note
+    `,
+    args: [payload.year, payload.yearLabel, payload.month, payload.day, payload.note],
+  });
 }
 
 // Returns the normalized string for a raw date, or null if this raw string isn't covered by
@@ -262,6 +344,7 @@ async function initSchema(client) {
   await ensureColumn(client, "regions", "kingdom", "TEXT");
   await ensureObligationAmendedEventType(client);
   await ensureKnownDataCorrections(client);
+  await ensureCurrentDateAdvancedPastRealActivity(client);
   await ensureConsistentDateFormatting(client);
 }
 

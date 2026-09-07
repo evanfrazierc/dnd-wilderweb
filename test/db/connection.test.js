@@ -147,6 +147,9 @@ test("ensureKnownDataCorrections removes known test artifacts and corrects the t
     `).run();
 
     // The known test artifacts.
+    await insertEvent(99, "DMRuling", "Browser automation smoke test: DM clarification note, no resource changes.", "Month 2, 4th, 1227", 441753);
+    await insertEvent(100, "BuildingConstructed", "Constructed via the Settlements view", "Month 2, 4th, 1227", 441753);
+    await insertEvent(101, "BuildingRemoved", "Cleanup: removing browser-automation test building", "Month 2, 4th, 1227", 441753);
     await insertEvent(102, "CalendarAdvanced", "Browser automation smoke test", "Month 2, 4th, 1227", 441753);
     await insertEvent(106, "BuildingConstructed", "Constructed via the Settlements view", "Month 2, 4th, 1227", 441753);
     await insertEvent(107, "BuildingRemoved", "Removed via the Settlements view", "Month 2, 4th, 1227", 441753);
@@ -158,14 +161,25 @@ test("ensureKnownDataCorrections removes known test artifacts and corrects the t
     await insertEvent(104, "ResourceChanged", null, "2026-08-23", 729360, '{"changes":{"Wood":2}}');
     await insertEvent(105, "ResourceChanged", null, "2026-08-23", 729360, '{"changes":{"Wood":-1}}');
 
+    // A real deity note, then a test artifact (id 103) overwriting it -- the same shape as the
+    // live Calistria corruption this correction fixes.
+    await insertEvent(94, "DeityAmended", null, "Month 2, 3th, 1227", 441752, JSON.stringify({ name: "Calistria", changes: { note: "Holy days: real note." } }));
+    await insertEvent(103, "DeityAmended", "Amended via the Codex", "Month 2, 4th, 1227", 441753, JSON.stringify({ name: "Calistria", changes: { note: "Holy days: real note. [browser test note]" } }));
+    await db.prepare(`
+      INSERT INTO deities (name, note) VALUES ('Calistria', 'Holy days: real note. [browser test note]')
+    `).run();
+
     db.close();
 
     const reopened = await openDb(dbPath);
 
-    for (const id of [102, 106, 107, 108, 109]) {
+    for (const id of [99, 100, 101, 102, 103, 106, 107, 108, 109]) {
       const row = await reopened.prepare("SELECT id FROM events WHERE id = ?").get(id);
       assert.equal(row, undefined, `event ${id} should have been deleted`);
     }
+
+    const calistria = await reopened.prepare("SELECT note FROM deities WHERE name = 'Calistria'").get();
+    assert.equal(calistria.note, "Holy days: real note."); // the test suffix is gone
 
     const state = await reopened.prepare("SELECT * FROM calendar_state WHERE id = 1").get();
     assert.deepEqual(
@@ -188,7 +202,7 @@ test("ensureKnownDataCorrections removes known test artifacts and corrects the t
     // Reopening a third time must not error or re-apply anything already fixed.
     const thirdOpen = await openDb(dbPath);
     const count = await thirdOpen.prepare("SELECT COUNT(*) c FROM events").get();
-    assert.equal(count.c, 4); // 79, 98, 104, 105 -- the five test artifacts are gone
+    assert.equal(count.c, 5); // 79, 94, 98, 104, 105 remain -- the nine test artifacts are gone
     thirdOpen.close();
   } finally {
     try {
@@ -319,6 +333,78 @@ test("ensureConsistentDateFormatting normalizes every known date shape to one co
     const thirdOpen = await openDb(dbPath);
     assert.equal((await thirdOpen.prepare("SELECT game_date_raw FROM events WHERE id = 1").get()).game_date_raw, "Erastus (2), 3rd, 1227");
     thirdOpen.close();
+  } finally {
+    try {
+      rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 });
+    } catch {
+      // leaked temp dir under the OS temp root; not worth failing the test over.
+    }
+  }
+});
+
+// ensureCurrentDateAdvancedPastRealActivity restores the campaign's current date to Erastus
+// 4th once it finds the specific real activity (id 113's exact signature) that had been dated
+// there before a test CalendarAdvanced entry setting that same date got cleaned up -- gated
+// tightly enough that a database without that exact content (this project's own local dev
+// copy, which has unrelated rows at these ids) must never fire it.
+test("ensureCurrentDateAdvancedPastRealActivity advances calendar_state and inserts a real CalendarAdvanced event once it finds the real activity it's restoring for", async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "wilderweb-test-"));
+  const dbPath = path.join(dir, "test.db");
+  try {
+    const db = await openDb(dbPath);
+    await db.prepare(`
+      INSERT INTO events (id, type, game_date_raw, game_date_sort, posted_at, note, payload)
+      VALUES (79, 'CalendarAdvanced', 'Erastus (2), 3rd, 1227', 441752, '2026-01-01', 'Imported from calendar.json', '{"year":1227,"month":2,"day":3}')
+    `).run();
+    await db.prepare(`
+      INSERT INTO events (id, type, game_date_raw, game_date_sort, posted_at, note, payload)
+      VALUES (113, 'ResourceChanged', 'Erastus (2), 4th, 1227', 441753, '2026-01-01', 'Testing loan repayment', '{"changes":{"Wealth":-2}}')
+    `).run();
+    await db.prepare(`
+      INSERT INTO calendar_state (id, year, year_label, month, day, note) VALUES (1, 1227, 'YEAR THREE', 2, 3, NULL)
+    `).run();
+    db.close();
+
+    const reopened = await openDb(dbPath);
+
+    const state = await reopened.prepare("SELECT year, month, day FROM calendar_state WHERE id = 1").get();
+    assert.deepEqual(state, { year: 1227, month: 2, day: 4 });
+
+    const inserted = await reopened.prepare("SELECT type, game_date_raw FROM events WHERE type = 'CalendarAdvanced' ORDER BY id DESC LIMIT 1").get();
+    assert.equal(inserted.game_date_raw, "Erastus (2), 4th, 1227");
+
+    reopened.close();
+
+    // Reopening again must not insert a second advance event.
+    const thirdOpen = await openDb(dbPath);
+    const count = await thirdOpen.prepare("SELECT COUNT(*) c FROM events WHERE type = 'CalendarAdvanced'").get();
+    assert.equal(count.c, 2); // the original (id 79) plus exactly one restoration
+    thirdOpen.close();
+  } finally {
+    try {
+      rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 });
+    } catch {
+      // leaked temp dir under the OS temp root; not worth failing the test over.
+    }
+  }
+});
+
+test("ensureCurrentDateAdvancedPastRealActivity does nothing on a database without that specific real activity", async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "wilderweb-test-"));
+  const dbPath = path.join(dir, "test.db");
+  try {
+    const db = await openDb(dbPath);
+    // id 113 exists, but with unrelated content -- must not be mistaken for the real activity.
+    await db.prepare(`
+      INSERT INTO events (id, type, game_date_raw, game_date_sort, posted_at, note, payload)
+      VALUES (113, 'DeityAmended', 'Erastus (2), 9th, 1227', 441758, '2026-01-01', 'some other note entirely', '{}')
+    `).run();
+    db.close();
+
+    const reopened = await openDb(dbPath);
+    const count = await reopened.prepare("SELECT COUNT(*) c FROM events WHERE type = 'CalendarAdvanced'").get();
+    assert.equal(count.c, 0); // no restoration event inserted
+    reopened.close();
   } finally {
     try {
       rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 });
