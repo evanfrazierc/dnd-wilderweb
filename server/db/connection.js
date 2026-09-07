@@ -197,7 +197,24 @@ async function ensureKnownDataCorrections(client) {
   }
 }
 
-// One-time normalization of every event's game_date_raw string to one consistent shape --
+// Returns the normalized string for a raw date, or null if this raw string isn't covered by
+// this pass (a bare year, a "Month X to Month Y" range, or genuinely unparseable text -- all
+// left as they already were). Shared between events.game_date_raw and
+// obligations.due_game_date_raw, which carry the exact same kind of string.
+function normalizeDate(raw, monthNames, isoCorrection) {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return isoCorrection; // a real-world "as of" date, not an in-fiction one
+  if (/^Month\s+\d+\s+to\s+Month\s+\d+,/i.test(raw) || /^\d+$/.test(raw)) return null; // range or bare year
+  const parsed = parseGameDate(raw);
+  if (!parsed.matched) return null; // genuinely unparseable -- leave the original alone
+  const name = monthNames.get(parsed.month);
+  if (!name) return null; // unknown month number -- leave the original alone
+  return parsed.hasDay
+    ? `${name} (${parsed.month}), ${parsed.day}${ordinalSuffix(parsed.day)}, ${parsed.year}`
+    : `${name} (${parsed.month}), ${parsed.year}`;
+}
+
+// One-time normalization of every event's game_date_raw (and every obligation's
+// due_game_date_raw -- the same kind of string, a separate table) to one consistent shape --
 // "MonthName (N), <day><suffix>, year" when a day was recorded, "MonthName (N), year" when
 // only month+year was -- matching what GameDatePicker/formatGameDate now always produce
 // (client/src/lib/gameDate.js). Doesn't change what date anything actually represents: every
@@ -213,33 +230,26 @@ async function ensureConsistentDateFormatting(client) {
   const monthsResult = await client.execute("SELECT number, name FROM calendar_months");
   if (monthsResult.rows.length === 0) return; // calendar structure not seeded yet
   const monthNames = new Map(monthsResult.rows.map((r) => [r.number, r.name]));
+  const isoCorrection = "Erastus (2), 3rd, 1227";
 
-  const ISO_DATE_CORRECTION = "Erastus (2), 3rd, 1227";
-  const rows = await client.execute("SELECT id, game_date_raw FROM events");
-
-  for (const row of rows.rows) {
-    const raw = row.game_date_raw;
-    let next;
-
-    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-      next = ISO_DATE_CORRECTION; // a real-world "as of" date, not an in-fiction one
-    } else if (/^Month\s+\d+\s+to\s+Month\s+\d+,/i.test(raw) || /^\d+$/.test(raw)) {
-      continue; // range or bare year -- not covered by this pass
-    } else {
-      const parsed = parseGameDate(raw);
-      if (!parsed.matched) continue; // genuinely unparseable -- leave the original alone
-      const name = monthNames.get(parsed.month);
-      if (!name) continue; // unknown month number -- leave the original alone
-      next = parsed.hasDay
-        ? `${name} (${parsed.month}), ${parsed.day}${ordinalSuffix(parsed.day)}, ${parsed.year}`
-        : `${name} (${parsed.month}), ${parsed.year}`;
-    }
-
-    if (next !== raw) {
-      const sort = parseGameDate(next).sortKey;
+  const events = await client.execute("SELECT id, game_date_raw FROM events");
+  for (const row of events.rows) {
+    const next = normalizeDate(row.game_date_raw, monthNames, isoCorrection);
+    if (next && next !== row.game_date_raw) {
       await client.execute({
         sql: "UPDATE events SET game_date_raw = ?, game_date_sort = ? WHERE id = ?",
-        args: [next, sort, row.id],
+        args: [next, parseGameDate(next).sortKey, row.id],
+      });
+    }
+  }
+
+  const obligations = await client.execute("SELECT id, due_game_date_raw FROM obligations WHERE due_game_date_raw IS NOT NULL");
+  for (const row of obligations.rows) {
+    const next = normalizeDate(row.due_game_date_raw, monthNames, isoCorrection);
+    if (next && next !== row.due_game_date_raw) {
+      await client.execute({
+        sql: "UPDATE obligations SET due_game_date_raw = ?, due_game_date_sort = ? WHERE id = ?",
+        args: [next, parseGameDate(next).sortKey, row.id],
       });
     }
   }

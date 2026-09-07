@@ -283,6 +283,13 @@ test("ensureConsistentDateFormatting normalizes every known date shape to one co
     await insertEvent(6, "2025-09-14", 729000); // real-world "as of" date, DM-supplied correction
     await insertEvent(7, "1225", 441000); // bare year -- left alone
     await insertEvent(8, "Month 6 to Month 12, 1226", 441510); // range -- left alone
+
+    // obligations.due_game_date_raw is the same kind of string in a separate table.
+    await db.prepare(`
+      INSERT INTO obligations (id, description, repayment_resource, amount_total, amount_remaining, due_game_date_raw, due_game_date_sort)
+      VALUES (1, 'Test loan', 'Wealth', 50, 50, 'Month 2, 3th, 1227', 441752)
+    `).run();
+
     db.close();
 
     const reopened = await openDb(dbPath);
@@ -301,6 +308,10 @@ test("ensureConsistentDateFormatting normalizes every known date shape to one co
     const row1 = await reopened.prepare("SELECT game_date_sort FROM events WHERE id = 1").get();
     const expected = await reopened.prepare("SELECT game_date_sort FROM events WHERE id = 5").get();
     assert.equal(row1.game_date_sort, expected.game_date_sort); // 1 and 5 now represent the same date
+
+    const obligation = await reopened.prepare("SELECT due_game_date_raw, due_game_date_sort FROM obligations WHERE id = 1").get();
+    assert.equal(obligation.due_game_date_raw, "Erastus (2), 3rd, 1227");
+    assert.equal(obligation.due_game_date_sort, row1.game_date_sort);
 
     reopened.close();
 
