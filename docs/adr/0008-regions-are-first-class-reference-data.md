@@ -6,4 +6,6 @@ Regions are now a `regions` table (`server/db/reference.js`'s `regions` resource
 
 The Settlements page now renders one card per known region, not one per region that happens to already have a building -- that's what makes adding a brand-new settlement possible without going through a workaround (add a placeholder building just to make the region "exist").
 
-The existing `wilderlandsRegions` list was seeded into the new table once (`ensureRegionsSeeded`, idempotent, only runs while `regions` is empty) and the Codex Locations tab no longer maintains its own separate copy.
+The existing `wilderlandsRegions` list was seeded into the new table once (`ensureRegionsSeeded`, idempotent, only runs while `regions` is empty).
+
+**Amendment**: the line above originally claimed the Codex Locations tab "no longer maintains its own separate copy," but the client still rendered (and would echo back on the next `LocationAmended` save) the frozen `wilderlandsRegions` array baked into `locations_state`'s document at seed time -- the seam moved server-side, but the duplication survived in the one place a person actually looks at it. Fixed: `LocationsTab` now drops `wilderlandsRegions` on load and fetches the `regions` reference resource directly for that panel, rendering it read-only there (editing stays on the Settlements page). The field is stripped from the document the next time anyone saves a `LocationAmended` edit; until then it's inert, unread leftover data.

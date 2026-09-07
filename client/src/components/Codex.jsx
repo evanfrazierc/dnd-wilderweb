@@ -295,15 +295,23 @@ function SettlementAdder({ onAdd }) {
 function LocationsTab() {
   const [locations, setLocations] = useState(null);
   const [draft, setDraft] = useState(null);
+  const [regions, setRegions] = useState(null);
   const [note, setNote] = useState("");
   const [gameDate, setGameDate] = useState("");
   const [newKingdom, setNewKingdom] = useState("");
   const [error, setError] = useState(null);
 
+  // wilderlandsRegions used to live as its own frozen copy inside this document, kept in
+  // sync with the Settlements page's regions table (CONTEXT.md's Region) only by convention
+  // -- it drifted. Regions are shown here read-only, sourced live from that same table; the
+  // kingdom/county/settlement hierarchy below is the unrelated concept this tab actually owns.
   function load() {
-    return getProjection("locations").then((data) => {
-      setLocations(data);
-      setDraft(data);
+    return Promise.all([getProjection("locations"), getReference("regions")]).then(([data, regionsData]) => {
+      // eslint-disable-next-line no-unused-vars
+      const { wilderlandsRegions, ...rest } = data;
+      setLocations(rest);
+      setDraft(rest);
+      setRegions(regionsData);
     });
   }
 
@@ -318,7 +326,7 @@ function LocationsTab() {
   });
 
   if (error) return <div className="error-box">Failed to load locations: {error}</div>;
-  if (!locations || !draft) return <div className="loading">Loading…</div>;
+  if (!locations || !draft || !regions) return <div className="loading">Loading…</div>;
 
   const dirty = JSON.stringify(draft) !== JSON.stringify(locations);
 
@@ -416,10 +424,14 @@ function LocationsTab() {
         <h3>Wilderlands Regions</h3>
         <div className="rule" />
       </div>
+      <p className="text-faint" style={{ fontSize: "0.78rem", marginTop: "-0.4rem" }}>
+        Same regions the Settlements page tracks buildings by -- edit them there (Settlements
+        → Manage regions), not here.
+      </p>
       <div className="card">
         <div className="grid grid-3">
-          {draft.wilderlandsRegions.map((r) => (
-            <div key={r.name}>
+          {regions.map((r) => (
+            <div key={r.id}>
               <strong>{r.name}</strong>
               <p className="text-dim" style={{ fontSize: "0.88rem" }}>{r.description}</p>
             </div>
