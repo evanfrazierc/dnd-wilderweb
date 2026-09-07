@@ -161,6 +161,11 @@ test("ensureKnownDataCorrections removes known test artifacts and corrects the t
     await insertEvent(104, "ResourceChanged", null, "2026-08-23", 729360, '{"changes":{"Wood":2}}');
     await insertEvent(105, "ResourceChanged", null, "2026-08-23", 729360, '{"changes":{"Wood":-1}}');
 
+    // Real, original-migration events dated ahead of the campaign's current date -- the DM
+    // asked for these moved into the past (see chat log), not deleted or treated as corrupted.
+    await insertEvent(46, "ResourceChanged", "Market Trade", "Shelune (3), 1227", 441772, '{"changes":{"Iron":-1,"Wealth":1}}');
+    await insertEvent(47, "ResourceChanged", "Forge Tool at Smithy", "Shelune (3), 1227", 441772, '{"changes":{"Iron":-1,"Tools":1}}');
+
     // A real deity note, then a test artifact (id 103) overwriting it -- the same shape as the
     // live Calistria corruption this correction fixes.
     await insertEvent(94, "DeityAmended", null, "Month 2, 3th, 1227", 441752, JSON.stringify({ name: "Calistria", changes: { note: "Holy days: real note." } }));
@@ -197,12 +202,20 @@ test("ensureKnownDataCorrections removes known test artifacts and corrects the t
     const still = await reopened.prepare("SELECT payload FROM events WHERE id = 104").get();
     assert.deepEqual(JSON.parse(still.payload), { changes: { Wood: 2 } });
 
+    for (const id of [46, 47]) {
+      const row = await reopened.prepare("SELECT game_date_raw FROM events WHERE id = ?").get(id);
+      assert.equal(row.game_date_raw, "Erastus (2), 3rd, 1227"); // moved into the past
+    }
+    // Its note (what actually happened) is untouched -- only the sort date moved.
+    const market = await reopened.prepare("SELECT note FROM events WHERE id = 46").get();
+    assert.equal(market.note, "Market Trade");
+
     reopened.close();
 
     // Reopening a third time must not error or re-apply anything already fixed.
     const thirdOpen = await openDb(dbPath);
     const count = await thirdOpen.prepare("SELECT COUNT(*) c FROM events").get();
-    assert.equal(count.c, 5); // 79, 94, 98, 104, 105 remain -- the nine test artifacts are gone
+    assert.equal(count.c, 7); // 79, 94, 98, 104, 105, 46, 47 remain -- the nine test artifacts are gone
     thirdOpen.close();
   } finally {
     try {

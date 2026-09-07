@@ -232,6 +232,30 @@ async function ensureKnownDataCorrections(client) {
       });
     }
   }
+
+  // Three real, original-migration ResourceChanged events (ids 46-48) were dated Shelune
+  // (month 3) -- genuine history, not test data, but ahead of where the campaign's current
+  // date sits, which read as "the future" once that current date was corrected elsewhere in
+  // this file. The DM asked for these moved into the past rather than left ahead of "now"
+  // (see chat log); their notes -- what actually happened -- are untouched, only the date
+  // they're sorted by.
+  const pastMoves = [
+    { id: 46, note: "Market Trade" },
+    { id: 47, note: "Forge Tool at Smithy" },
+    { id: 48, note: "Build Tower near Mettlewood — Constructs in Month 4, 1227." },
+  ];
+  for (const { id, note } of pastMoves) {
+    const result = await client.execute({
+      sql: "SELECT id FROM events WHERE id = ? AND type = 'ResourceChanged' AND note = ? AND game_date_raw = 'Shelune (3), 1227'",
+      args: [id, note],
+    });
+    if (result.rows.length > 0) {
+      await client.execute({
+        sql: "UPDATE events SET game_date_raw = ?, game_date_sort = ? WHERE id = ?",
+        args: [correctedRaw, correctedSort, id],
+      });
+    }
+  }
 }
 
 // Deleting the test CalendarAdvanced entries above rolled the campaign's current date back to
