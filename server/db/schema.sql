@@ -107,7 +107,13 @@ CREATE TABLE IF NOT EXISTS building_catalog (
 CREATE TABLE IF NOT EXISTS regions (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL UNIQUE,
-  description TEXT
+  description TEXT,
+  -- Optional: which Codex Locations kingdom (by name) claims this region, e.g. "Kingdom of
+  -- Casdenia" (docs/adr/0010). NULL means unclaimed frontier. Referenced by name, not a
+  -- foreign key, because kingdoms live inside locations_state's JSON document and have no
+  -- stable id of their own -- acceptable since there's no rename-kingdom feature to cause
+  -- drift (see ADR-0010).
+  kingdom TEXT
 );
 
 CREATE TABLE IF NOT EXISTS resource_definitions (

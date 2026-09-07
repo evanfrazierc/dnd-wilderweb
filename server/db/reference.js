@@ -166,9 +166,13 @@ export async function replaceIntroduction(db, { postedBy, postedAt, paragraphs }
  * every settlement_buildings row referencing the old name, which requires diffing by the
  * region's stable id (a name-keyed wipe-and-reinsert can't tell "renamed" from "deleted then
  * re-added under a new name").
+ *
+ * `kingdom` (docs/adr/0010) optionally names the Codex Locations kingdom that claims this
+ * region -- a plain string, not a foreign key, since kingdoms have no stable id or rename
+ * feature of their own.
  */
 export async function readRegions(db) {
-  return db.prepare("SELECT id, name, description FROM regions ORDER BY name").all();
+  return db.prepare("SELECT id, name, description, kingdom FROM regions ORDER BY name").all();
 }
 
 export async function replaceRegions(db, regions) {
@@ -199,13 +203,14 @@ export async function replaceRegions(db, regions) {
     for (const r of regions) {
       if (r.id != null && existingById.has(r.id)) {
         const old = existingById.get(r.id);
-        await tx.prepare("UPDATE regions SET name = ?, description = ? WHERE id = ?")
-          .run(r.name, r.description ?? null, r.id);
+        await tx.prepare("UPDATE regions SET name = ?, description = ?, kingdom = ? WHERE id = ?")
+          .run(r.name, r.description ?? null, r.kingdom ?? null, r.id);
         if (old.name !== r.name) {
           await tx.prepare("UPDATE settlement_buildings SET region = ? WHERE region = ?").run(r.name, old.name);
         }
       } else {
-        await tx.prepare("INSERT INTO regions (name, description) VALUES (?, ?)").run(r.name, r.description ?? null);
+        await tx.prepare("INSERT INTO regions (name, description, kingdom) VALUES (?, ?, ?)")
+          .run(r.name, r.description ?? null, r.kingdom ?? null);
       }
     }
   });

@@ -27,7 +27,7 @@ An event recording the current in-game date moving forward.
 An event recording a change to a deity's confirmed status, title, or alignment.
 
 **LocationAmended**:
-An event recording a kingdom, county, settlement, or region added or edited on the world map.
+An event recording a kingdom or county added or edited on the world map.
 
 **DMRuling**:
 An event recording a DM clarification or correction with no resource or state delta. Always carries a note; never carries `changes`. Distinguishes a deliberate no-op ruling from a `ResourceChanged` with an empty delta, which today are indistinguishable and shouldn't be.
@@ -38,8 +38,8 @@ An event recording a DM clarification or correction with no resource or state de
 The name attributed to whoever performed an event — the DM or a named player. A free-text label for now, not a full user account.
 
 **Region**:
-The place a building can be built, and the scope an event like `BuildingConstructed` is attributed to (e.g. Stirling Reach, Narlmarches); null on global events like `CalendarAdvanced`. First-class reference data (ADR-0008) -- its own name and description in `server/db/reference.js`'s `regions` resource, not a free-text label. Renaming cascades to every building currently in it; deleting one is refused while it still has buildings (mirroring how removing a resource definition is refused while its value is nonzero). The Codex Locations tab's "Wilderlands Regions" panel displays this same table read-only (ADR-0008) -- it used to keep its own frozen copy (`locations_state`'s `wilderlandsRegions`), which drifted out of sync with edits made on the Settlements page; there is now exactly one list, editable only from Settlements' "Manage regions."
-_Avoid_: conflating with the Codex Locations tab's kingdom → county → settlement hierarchy, a separate and unrelated geographic concept (a village or town within a county) that happens to share overlapping vocabulary but has no relationship to where buildings get built.
+The place a building can be built, and the scope an event like `BuildingConstructed` is attributed to (e.g. Stirling Reach, Narlmarches); null on global events like `CalendarAdvanced`. First-class reference data (ADR-0008) -- its own name and description in `server/db/reference.js`'s `regions` resource, not a free-text label. Renaming cascades to every building currently in it; deleting one is refused while it still has buildings (mirroring how removing a resource definition is refused while its value is nonzero). The Codex Locations tab's "Wilderlands Regions" panel displays this same table read-only (ADR-0008) -- it used to keep its own frozen copy (`locations_state`'s `wilderlandsRegions`), which drifted out of sync with edits made on the Settlements page; there is now exactly one list, editable only from Settlements' "Manage regions." A region can optionally be assigned straight to a Kingdom (ADR-0010) -- a plain name reference, not nested through a County, since a region is wilderness claimed (or not) by a kingdom rather than a settled place within one of its counties.
+_Avoid_: conflating with the Codex Locations tab's kingdom → county hierarchy of settled, named places (a city, a county seat) -- a Region is wilderness/frontier, tracked for building construction, that a kingdom can lay claim to but that isn't itself a place within a county.
 
 **Obligation**:
 A tracked debt: resources owed, a due date, and a running balance that decreases as later events settle it. First-class and queryable, not narrative text on the originating event, because players need to see repayment progress over time.

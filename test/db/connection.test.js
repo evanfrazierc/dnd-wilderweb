@@ -27,6 +27,9 @@ test("re-opening an already-migrated file DB does not error on the ALTER TABLE c
 
     const row = await second.prepare("SELECT annual_effect FROM building_catalog WHERE name = 'Farm'").get();
     assert.equal(row.annual_effect, '{"Food":1}');
+
+    const regionsInfo = await second.prepare("PRAGMA table_info(regions)").all();
+    assert.ok(regionsInfo.some((c) => c.name === "kingdom"));
     second.close();
   } finally {
     // Windows can hold the file handle open past close() returning; best-effort cleanup so

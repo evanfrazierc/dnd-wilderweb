@@ -71,6 +71,7 @@ async function initSchema(client) {
   await client.execute("PRAGMA foreign_keys = ON");
   await client.executeMultiple(readFileSync(schemaPath, "utf-8"));
   await ensureColumn(client, "building_catalog", "annual_effect", "TEXT NOT NULL DEFAULT '{}'");
+  await ensureColumn(client, "regions", "kingdom", "TEXT");
 }
 
 /** Opens a local database: `:memory:` or a filesystem path. Used by tests and local scripts. */

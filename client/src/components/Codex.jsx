@@ -269,29 +269,6 @@ function DeitiesTab() {
   );
 }
 
-function SettlementAdder({ onAdd }) {
-  const [name, setName] = useState("");
-  return (
-    <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.35rem" }}>
-      <input
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="New settlement"
-        style={{ fontSize: "0.85rem" }}
-      />
-      <button
-        className="btn btn-sm"
-        onClick={() => {
-          onAdd(name);
-          setName("");
-        }}
-      >
-        Add
-      </button>
-    </div>
-  );
-}
-
 function LocationsTab() {
   const [locations, setLocations] = useState(null);
   const [draft, setDraft] = useState(null);
@@ -303,14 +280,21 @@ function LocationsTab() {
 
   // wilderlandsRegions used to live as its own frozen copy inside this document, kept in
   // sync with the Settlements page's regions table (CONTEXT.md's Region) only by convention
-  // -- it drifted. Regions are shown here read-only, sourced live from that same table; the
-  // kingdom/county/settlement hierarchy below is the unrelated concept this tab actually owns.
+  // -- it drifted. Regions are shown here read-only, sourced live from that same table.
+  // Per-county settlement lists are dropped the same way: redundant now that a region can be
+  // assigned straight to a kingdom (ADR-0010), which is the more useful answer to "where is
+  // this place" than a static list of village names.
   function load() {
     return Promise.all([getProjection("locations"), getReference("regions")]).then(([data, regionsData]) => {
       // eslint-disable-next-line no-unused-vars
       const { wilderlandsRegions, ...rest } = data;
-      setLocations(rest);
-      setDraft(rest);
+      const kingdoms = rest.kingdoms.map((k) => ({
+        ...k,
+        // eslint-disable-next-line no-unused-vars
+        counties: k.counties.map(({ settlements, ...county }) => county),
+      }));
+      setLocations({ ...rest, kingdoms });
+      setDraft({ ...rest, kingdoms });
       setRegions(regionsData);
     });
   }
@@ -337,20 +321,6 @@ function LocationsTab() {
       kingdoms: [...draft.kingdoms, { name: newKingdom.trim(), capital: null, counties: [], other: [] }],
     });
     setNewKingdom("");
-  }
-
-  function addSettlement(kingdomName, countyIndex, name) {
-    if (!name.trim()) return;
-    const kingdoms = draft.kingdoms.map((k) => {
-      if (k.name !== kingdomName) return k;
-      const counties = k.counties.map((c, i) =>
-        i === countyIndex
-          ? { ...c, settlements: [...c.settlements, { name: name.trim(), type: "Settlement" }] }
-          : c,
-      );
-      return { ...k, counties };
-    });
-    setDraft({ ...draft, kingdoms });
   }
 
   function save() {
@@ -385,37 +355,45 @@ function LocationsTab() {
                 {kingdom.capital && <span className="text-faint" style={{ fontSize: "0.76rem" }}>Capital: {kingdom.capital}</span>}
               </div>
             </div>
-            {kingdom.counties.length === 0 && kingdom.other.length === 0 && (
-              <p className="text-dim">{kingdom.note || "No locations posted yet."}</p>
-            )}
-            {kingdom.counties.map((county, ci) => (
-              <div key={county.name} style={{ marginTop: "0.6rem" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  <strong>{county.name}</strong>
-                  <span className="pill">seat: {county.seat}</span>
-                </div>
-                <ul className="location-list">
-                  {county.settlements.map((s) => (
-                    <li key={s.name}>
-                      {s.name} <span className="pill">{s.type}</span>
-                    </li>
+            {(() => {
+              const kingdomRegions = regions.filter((r) => r.kingdom === kingdom.name);
+              const empty = kingdom.counties.length === 0 && kingdom.other.length === 0 && kingdomRegions.length === 0;
+              return (
+                <>
+                  {empty && <p className="text-dim">{kingdom.note || "No locations posted yet."}</p>}
+                  {kingdom.counties.map((county) => (
+                    <div key={county.name} style={{ marginTop: "0.6rem" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        <strong>{county.name}</strong>
+                        <span className="pill">seat: {county.seat}</span>
+                      </div>
+                    </div>
                   ))}
-                </ul>
-                <SettlementAdder onAdd={(name) => addSettlement(kingdom.name, ci, name)} />
-              </div>
-            ))}
-            {kingdom.other.length > 0 && (
-              <div style={{ marginTop: "0.6rem" }}>
-                <strong>Other</strong>
-                <ul className="location-list">
-                  {kingdom.other.map((o) => (
-                    <li key={o.name}>
-                      {o.name} <span className="pill">{o.type}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+                  {kingdom.other.length > 0 && (
+                    <div style={{ marginTop: "0.6rem" }}>
+                      <strong>Other</strong>
+                      <ul className="location-list">
+                        {kingdom.other.map((o) => (
+                          <li key={o.name}>
+                            {o.name} <span className="pill">{o.type}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {kingdomRegions.length > 0 && (
+                    <div style={{ marginTop: "0.6rem" }}>
+                      <strong>Regions</strong>
+                      <div className="tag-row">
+                        {kingdomRegions.map((r) => (
+                          <span key={r.id} className="pill">{r.name}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </div>
         ))}
       </div>

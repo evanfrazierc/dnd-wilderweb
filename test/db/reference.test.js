@@ -144,6 +144,17 @@ test("replaceRegions adds a new region", async () => {
   assert.equal(regions[0].description, "The party's settlement.");
 });
 
+test("replaceRegions optionally assigns a region to a kingdom by name", async () => {
+  const db = await openDb(":memory:");
+  await replaceRegions(db, [{ name: "Stirling Reach", kingdom: "Kingdom of Casdenia" }]);
+  let [region] = await readRegions(db);
+  assert.equal(region.kingdom, "Kingdom of Casdenia");
+
+  await replaceRegions(db, [{ id: region.id, name: "Stirling Reach", kingdom: null }]);
+  [region] = await readRegions(db);
+  assert.equal(region.kingdom, null);
+});
+
 test("replaceRegions rejects a duplicate name", async () => {
   const db = await openDb(":memory:");
   await assert.rejects(

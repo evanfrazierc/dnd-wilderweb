@@ -247,16 +247,17 @@ function RemoveBuildingControl({ regionName, building, label, onRemoved }) {
 }
 
 function toRegionRow(r) {
-  return { id: r.id, name: r.name || "", description: r.description || "" };
+  return { id: r.id, name: r.name || "", description: r.description || "", kingdom: r.kingdom || "" };
 }
 function fromRegionRow(r) {
-  return { id: r.id, name: r.name.trim(), description: r.description.trim() || null };
+  return { id: r.id, name: r.name.trim(), description: r.description.trim() || null, kingdom: r.kingdom || null };
 }
 
 // Reference data (CONTEXT.md, ADR-0008): edited directly, no event history. Renaming
 // cascades server-side to every building currently in that region; removing one is refused
-// while it still has buildings.
-function RegionsEditor({ regions, onSaved }) {
+// while it still has buildings. `kingdom` (ADR-0010) is an optional link to a Codex Locations
+// kingdom by name -- unclaimed frontier stays unassigned.
+function RegionsEditor({ regions, kingdomNames, onSaved }) {
   const { draft, dirty, set, addItem, removeItem } = useDraft(regions.map(toRegionRow));
   const { save, status } = useReferenceSave("regions", onSaved);
 
@@ -265,7 +266,7 @@ function RegionsEditor({ regions, onSaved }) {
   }
 
   function addRow() {
-    addItem([], () => ({ id: null, name: "", description: "" }));
+    addItem([], () => ({ id: null, name: "", description: "", kingdom: "" }));
   }
 
   function removeRow(i) {
@@ -292,6 +293,15 @@ function RegionsEditor({ regions, onSaved }) {
         <div key={i} style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem", alignItems: "flex-end", flexWrap: "wrap" }}>
           <label style={{ flex: "1 1 10rem" }}>Name<br /><input value={r.name} onChange={(e) => field(i, "name", e.target.value)} style={{ width: "100%" }} /></label>
           <label style={{ flex: "2 1 14rem" }}>Description<br /><input value={r.description} onChange={(e) => field(i, "description", e.target.value)} style={{ width: "100%" }} /></label>
+          <label style={{ flex: "1 1 10rem" }}>
+            Kingdom<br />
+            <select value={r.kingdom} onChange={(e) => field(i, "kingdom", e.target.value)} style={{ width: "100%" }}>
+              <option value="">— unclaimed —</option>
+              {kingdomNames.map((k) => (
+                <option key={k} value={k}>{k}</option>
+              ))}
+            </select>
+          </label>
           <button className="btn btn-sm btn-danger" onClick={() => removeRow(i)}>Remove</button>
         </div>
       ))}
@@ -428,18 +438,23 @@ export default function Settlements() {
   const [settlements, setSettlements] = useState(null);
   const [buildingCatalog, setBuildingCatalog] = useState([]);
   const [regions, setRegions] = useState([]);
+  const [kingdomNames, setKingdomNames] = useState([]);
   const [showCatalogEditor, setShowCatalogEditor] = useState(false);
   const [showRegionsEditor, setShowRegionsEditor] = useState(false);
   const [error, setError] = useState(null);
 
   function load() {
-    return Promise.all([getProjection("settlements"), getReference("buildings"), getReference("regions")]).then(
-      ([s, b, r]) => {
-        setSettlements(s);
-        setBuildingCatalog(b);
-        setRegions(r);
-      },
-    );
+    return Promise.all([
+      getProjection("settlements"),
+      getReference("buildings"),
+      getReference("regions"),
+      getProjection("locations"),
+    ]).then(([s, b, r, locations]) => {
+      setSettlements(s);
+      setBuildingCatalog(b);
+      setRegions(r);
+      setKingdomNames(locations.kingdoms.map((k) => k.name));
+    });
   }
 
   useEffect(() => {
@@ -468,7 +483,11 @@ export default function Settlements() {
   // One card per known region (ADR-0008), not just regions that already have a building --
   // that's what makes adding a brand-new, currently-empty settlement possible at all.
   const settlementsByRegion = new Map(settlements.map((s) => [s.region, s.buildings]));
-  const mergedRegions = regions.map((r) => ({ region: r.name, buildings: settlementsByRegion.get(r.name) ?? [] }));
+  const mergedRegions = regions.map((r) => ({
+    region: r.name,
+    kingdom: r.kingdom,
+    buildings: settlementsByRegion.get(r.name) ?? [],
+  }));
   const totalBuildings = mergedRegions.reduce((sum, r) => sum + r.buildings.length, 0);
 
   return (
@@ -502,7 +521,7 @@ export default function Settlements() {
       </div>
       <WarningsList warnings={warnings} />
 
-      {showRegionsEditor && <RegionsEditor regions={regions} onSaved={load} />}
+      {showRegionsEditor && <RegionsEditor regions={regions} kingdomNames={kingdomNames} onSaved={load} />}
       {showCatalogEditor && <BuildingCatalogEditor catalog={buildingCatalog} onSaved={load} />}
 
       <div className="grid grid-2" style={{ marginTop: "1.25rem" }}>
@@ -514,6 +533,9 @@ export default function Settlements() {
               </span>
               <div style={{ flex: 1 }}>
                 <h3 style={{ margin: 0 }}>{region.region}</h3>
+                <span className="text-faint" style={{ fontSize: "0.76rem" }}>
+                  {region.kingdom || "Unclaimed"}
+                </span>
               </div>
               <span className="pill">{region.buildings.length} buildings</span>
             </div>
