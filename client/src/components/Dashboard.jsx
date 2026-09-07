@@ -663,8 +663,6 @@ export default function Dashboard() {
           </button>
         </div>
       </div>
-      {stats.asOfNote && <p className="text-dim hero-note">{stats.asOfNote}</p>}
-
       {showResourceEditor && definitions && (
         <ResourceDefinitionsEditor definitions={definitions} onSaved={onDefinitionsSaved} />
       )}

@@ -525,3 +525,36 @@ test("ensureCurrentDateAdvancedPastRealActivity does nothing on a database witho
     }
   }
 });
+
+// ensureStaleAsOfNoteCleared strips stats_meta.asOfNote (a migration-era field the Dashboard
+// no longer displays) without touching the rest of that JSON document.
+test("ensureStaleAsOfNoteCleared removes asOfNote from stats_meta, leaving other fields intact", async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "wilderweb-test-"));
+  const dbPath = path.join(dir, "test.db");
+  try {
+    const db = await openDb(dbPath);
+    await db.prepare(`
+      INSERT INTO campaign_meta (key, value) VALUES ('stats_meta', ?)
+      ON CONFLICT (key) DO UPDATE SET value = excluded.value
+    `).run(JSON.stringify({ settlement: "Stirling Reach", asOf: "2026-08-23", asOfNote: "Stale note." }));
+    db.close();
+
+    const reopened = await openDb(dbPath);
+    const row = await reopened.prepare("SELECT value FROM campaign_meta WHERE key = 'stats_meta'").get();
+    const meta = JSON.parse(row.value);
+    assert.equal("asOfNote" in meta, false);
+    assert.equal(meta.settlement, "Stirling Reach");
+    assert.equal(meta.asOf, "2026-08-23");
+    reopened.close();
+
+    // Reopening again must not error (nothing left to clear).
+    const thirdOpen = await openDb(dbPath);
+    thirdOpen.close();
+  } finally {
+    try {
+      rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 });
+    } catch {
+      // leaked temp dir under the OS temp root; not worth failing the test over.
+    }
+  }
+});

@@ -402,6 +402,25 @@ async function ensureConsistentDateFormatting(client) {
   }
 }
 
+// stats_meta's `asOfNote` ("Latest values from the #current-stats channel, after the Trade
+// Post and Tower build orders.") was carried over from the original JSON migration and shown
+// on the Dashboard indefinitely -- stale the moment any resource changed after that one import,
+// which happened immediately (see chat log: the DM was still seeing it long after). The
+// Dashboard no longer displays this field at all; this clears it from storage too, so the dead
+// text doesn't linger in campaign_meta for someone to find later and wonder about. Gated on the
+// field actually being present, so a safe no-op forever after the one time it's needed.
+async function ensureStaleAsOfNoteCleared(client) {
+  const row = await client.execute("SELECT value FROM campaign_meta WHERE key = 'stats_meta'");
+  if (row.rows.length === 0) return;
+  const meta = JSON.parse(row.rows[0].value);
+  if (meta.asOfNote === undefined) return;
+  delete meta.asOfNote;
+  await client.execute({
+    sql: "UPDATE campaign_meta SET value = ? WHERE key = 'stats_meta'",
+    args: [JSON.stringify(meta)],
+  });
+}
+
 async function initSchema(client) {
   await client.execute("PRAGMA foreign_keys = ON");
   await client.executeMultiple(readFileSync(schemaPath, "utf-8"));
@@ -418,6 +437,7 @@ async function initSchema(client) {
   await ensureKnownDataCorrections(client);
   await ensureCurrentDateAdvancedPastRealActivity(client);
   await ensureConsistentDateFormatting(client);
+  await ensureStaleAsOfNoteCleared(client);
 }
 
 /** Opens a local database: `:memory:` or a filesystem path. Used by tests and local scripts. */
