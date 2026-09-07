@@ -168,6 +168,11 @@ async function applyObligationAmended(db, payload) {
     dueRaw = changes.dueGameDate;
     dueSort = changes.dueGameDate ? parseGameDate(changes.dueGameDate).sortKey : null;
   }
-  await db.prepare("UPDATE obligations SET description = ?, due_game_date_raw = ?, due_game_date_sort = ? WHERE id = ?")
-    .run(description, dueRaw, dueSort, payload.obligationId);
+  // `satisfied` lets a DM cancel/forgive an obligation directly -- the only "delete" this app
+  // offers for campaign state (CONTEXT.md/ADR-0013): it stops showing as active without erasing
+  // the row or the resources the original loan already granted, same as BuildingRemoved doesn't
+  // refund a building's construction cost.
+  const satisfied = changes.satisfied !== undefined ? (changes.satisfied ? 1 : 0) : existing.satisfied;
+  await db.prepare("UPDATE obligations SET description = ?, due_game_date_raw = ?, due_game_date_sort = ?, satisfied = ? WHERE id = ?")
+    .run(description, dueRaw, dueSort, satisfied, payload.obligationId);
 }

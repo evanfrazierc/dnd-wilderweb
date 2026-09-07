@@ -15,13 +15,16 @@ first-class thing" need; Obligation is equally first-class (CONTEXT.md) and was 
 that hadn't caught up. `ObligationAmended`'s `payload` is `{obligationId, changes}`, mirroring
 `DeityAmended`/`LocationAmended` down to the merge-partial-changes-onto-existing projection logic.
 
-**Deliberately narrow**: `changes` can only touch `description` and `dueGameDate`. `amountTotal`,
-`amountRemaining`, and `repaymentResource` stay entirely governed by the `ResourceChanged` events
-that created the obligation and are paying it down -- letting this event touch them would mean
-two different mechanisms could both claim to say what's owed, and retroactively changing a total
-after partial payment raises questions (does the remaining balance shrink or grow?) with no
-answer that's obviously right. Not worth the ambiguity for a feature request that only asked for
-clerical corrections.
+**Deliberately narrow**: `changes` can only touch `description`, `dueGameDate`, and (added shortly
+after, once "delete a loan" was requested) `satisfied` -- a direct DM override for cancelling or
+forgiving a debt outside the normal repayment path, since this app has no other concept of
+deleting campaign state (`BuildingRemoved` doesn't drop a row either; it's still an event).
+`amountTotal`, `amountRemaining`, and `repaymentResource` stay entirely governed by the
+`ResourceChanged` events that created the obligation and are paying it down -- letting this event
+touch them would mean two different mechanisms could both claim to say what's owed, and
+retroactively changing a total after partial payment raises questions (does the remaining balance
+shrink or grow?) with no answer that's obviously right. Not worth the ambiguity for a feature
+request that only asked for clerical corrections.
 
 ## The CHECK constraint migration
 

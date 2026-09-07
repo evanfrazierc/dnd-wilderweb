@@ -8,6 +8,7 @@ import WarningsList from "./WarningsList.jsx";
 import PostToDiscordToggle from "./PostToDiscordToggle.jsx";
 import GameDatePicker from "./GameDatePicker.jsx";
 import { formatGameDate, isCompleteGameDate } from "../lib/gameDate.js";
+import { parseChanges } from "../lib/parseChanges.js";
 
 const RESOURCE_GROUPS = ["resources", "assets", "society"];
 
@@ -134,84 +135,294 @@ function StatGroup({ title, icon, values, descriptions, onChange }) {
   );
 }
 
-// What's owed, what's been paid, and the repayment resource all stay strictly governed by
-// the ResourceChanged events that created and are settling this obligation (CONTEXT.md) --
-// only description and due date are correctable here, as their own ObligationAmended event
-// (ADR-0013), same "amend a first-class thing after the fact" shape as DeityCard/KingdomCard.
-function ObligationCard({ obligation, onSaved }) {
-  const [draft, setDraft] = useState({ description: obligation.description });
-  // Compared against instead of `obligation` directly so dirty state clears the instant this
-  // card's own save resolves, not the page-level refetch's round trip (same fix as
-  // KingdomCard/DeityCard -- see docs/adr/0011).
-  const [baseline, setBaseline] = useState(draft);
+// Edit an obligation's description/due date. Its own useEventSubmit, same as Settlements'
+// EditBuildingControl -- and, like that control, no Discord option: a correction, not
+// campaign news (CONTEXT.md/ADR-0013). Mirrors EditBuildingControl's collapsed-icon-button
+// shape so loans look and behave like every other modifiable entity on the site.
+function EditObligationControl({ obligation, label, onChanged }) {
+  const [expanded, setExpanded] = useState(false);
+  const [description, setDescription] = useState(obligation.description);
   const [newDueDate, setNewDueDate] = useState(null);
   const [gameDate, setGameDate] = useState(null);
-  const { submit, status, warnings } = useEventSubmit(onSaved);
+  const { submit, status, warnings } = useEventSubmit(() => {
+    setExpanded(false);
+    setGameDate(null);
+    setNewDueDate(null);
+    onChanged();
+  });
 
-  const dirty = draft.description !== baseline.description || newDueDate !== null;
+  const descChanged = description.trim() !== obligation.description;
+  const dueChanged = isCompleteGameDate(newDueDate);
+  const dirty = descChanged || dueChanged;
 
   function save() {
     if (!isCompleteGameDate(gameDate)) return;
     const changes = {};
-    if (draft.description !== baseline.description) changes.description = draft.description.trim();
-    if (isCompleteGameDate(newDueDate)) changes.dueGameDate = formatGameDate(newDueDate);
+    if (descChanged) changes.description = description.trim();
+    if (dueChanged) changes.dueGameDate = formatGameDate(newDueDate);
     if (Object.keys(changes).length === 0) return;
-    // No Discord option: a correction, not campaign news, matching DeityAmended/LocationAmended.
     submit({
       type: "ObligationAmended",
       gameDate: formatGameDate(gameDate),
       note: "Amended via the Dashboard",
       payload: { obligationId: obligation.id, changes },
       postToDiscord: false,
-    }).then(() => {
-      setBaseline(draft);
-      setNewDueDate(null);
-      setGameDate(null);
     });
   }
 
+  if (!expanded) {
+    return (
+      <button className="btn btn-icon" onClick={() => setExpanded(true)} aria-label={`Edit ${label}`}>
+        <Icon name="Codex" size={14} />
+      </button>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", gap: "0.4rem", alignItems: "center", flexWrap: "wrap", width: "100%", marginTop: "0.4rem" }}>
+      <input
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder="Description"
+        style={{ flex: "1 1 12rem", fontSize: "0.8rem" }}
+      />
+      <span className="text-faint" style={{ fontSize: "0.76rem" }}>Due date:</span>
+      <GameDatePicker value={newDueDate} onChange={setNewDueDate} autoDefault={false} allowClear />
+      {dirty && <GameDatePicker value={gameDate} onChange={setGameDate} />}
+      {dirty && (
+        <button className="btn btn-sm btn-primary" onClick={save} disabled={!isCompleteGameDate(gameDate)}>
+          Save
+        </button>
+      )}
+      <button className="btn btn-sm" onClick={() => setExpanded(false)}>Cancel</button>
+      {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+      <WarningsList warnings={warnings} />
+    </div>
+  );
+}
+
+// "Delete" an obligation. This app never hard-deletes campaign state (CONTEXT.md); forgiving
+// a loan sets `satisfied` via the same ObligationAmended event the edit control uses, which
+// drops it off this list (loaded with satisfied: false) without erasing the row or the
+// resources it already granted -- same non-destructive shape as BuildingRemoved.
+function RemoveObligationControl({ obligation, label, onRemoved }) {
+  const [confirming, setConfirming] = useState(false);
+  const [gameDate, setGameDate] = useState(null);
+  const { submit, status, warnings } = useEventSubmit(() => {
+    setConfirming(false);
+    setGameDate(null);
+    onRemoved();
+  });
+
+  function confirmForgive() {
+    if (!isCompleteGameDate(gameDate)) return;
+    submit({
+      type: "ObligationAmended",
+      gameDate: formatGameDate(gameDate),
+      note: "Forgiven via the Dashboard",
+      payload: { obligationId: obligation.id, changes: { satisfied: true } },
+      postToDiscord: false,
+    });
+  }
+
+  if (!confirming) {
+    return (
+      <button className="btn btn-icon btn-danger" onClick={() => setConfirming(true)} aria-label={`Forgive ${label}`}>
+        <Icon name="Trash" size={14} />
+      </button>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", gap: "0.4rem", alignItems: "center", flexWrap: "wrap", width: "100%", marginTop: "0.4rem" }}>
+      <GameDatePicker value={gameDate} onChange={setGameDate} />
+      <button className="btn btn-sm btn-danger" onClick={confirmForgive} disabled={!isCompleteGameDate(gameDate)}>
+        Confirm
+      </button>
+      <button className="btn btn-sm" onClick={() => setConfirming(false)}>
+        Cancel
+      </button>
+      {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+      <WarningsList warnings={warnings} />
+    </div>
+  );
+}
+
+// A plain wrapping .building-name div, not the always-visible single-line <input> this
+// replaced -- that input couldn't wrap, which is what was clipping loan titles on mobile.
+function ObligationRow({ obligation, onChanged }) {
   const pct = obligation.amountTotal > 0
     ? Math.min(100, ((obligation.amountTotal - obligation.amountRemaining) / obligation.amountTotal) * 100)
     : 0;
+  const label = obligation.description;
 
   return (
-    <div className="card" key={obligation.id}>
-      <div className="stat-group-head">
-        <span className={`icon-badge sm ${obligation.satisfied ? "good" : ""}`}>
-          <Icon name={obligation.repaymentResource} size={16} />
-        </span>
+    <div className="building-row" style={{ flexWrap: "wrap" }}>
+      <span className={`icon-badge sm ${obligation.satisfied ? "good" : ""}`}>
+        <Icon name={obligation.repaymentResource} size={16} />
+      </span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div className="building-name">{obligation.description}</div>
+        <div className="meter good" style={{ marginTop: "0.3rem" }}>
+          <span style={{ transform: `scaleX(${pct / 100})` }} />
+        </div>
+        <div className="text-faint building-detail">
+          {obligation.amountTotal - obligation.amountRemaining} / {obligation.amountTotal} {obligation.repaymentResource} repaid
+          {obligation.dueGameDate && ` · due ${obligation.dueGameDate}`}
+          {obligation.satisfied && " · settled"}
+        </div>
+      </div>
+      <EditObligationControl obligation={obligation} label={label} onChanged={onChanged} />
+      <RemoveObligationControl obligation={obligation} label={label} onRemoved={onChanged} />
+    </div>
+  );
+}
+
+// Collapsed "+ Add loan" affordance, mirroring Settlements' AddBuildingForm. A loan is a
+// ResourceChanged event carrying payload.newObligation (CONTEXT.md's Obligation entry: "the
+// loan is the ResourceChanged event that creates the Obligation") -- no new server-side
+// mechanism, just a dedicated entry point for the one Timeline's general-purpose form already
+// supports as a bundled checkbox.
+function AddLoanForm({ knownResourceNames, onAdded }) {
+  const [expanded, setExpanded] = useState(false);
+  const [description, setDescription] = useState("");
+  const [repaymentResource, setRepaymentResource] = useState("");
+  const [amountTotal, setAmountTotal] = useState("");
+  const [dueDate, setDueDate] = useState(null);
+  const [changesText, setChangesText] = useState("");
+  const [note, setNote] = useState("");
+  const [gameDate, setGameDate] = useState(null);
+  const { submit, status, warnings, postToDiscord, setPostToDiscord } = useEventSubmit(() => {
+    setDescription("");
+    setRepaymentResource("");
+    setAmountTotal("");
+    setDueDate(null);
+    setChangesText("");
+    setNote("");
+    setGameDate(null);
+    setExpanded(false);
+    onAdded();
+  });
+
+  const changes = parseChanges(changesText);
+  const hasChanges = Object.keys(changes).length > 0;
+  const unknownNames = knownResourceNames
+    ? Object.keys(changes).filter((name) => !knownResourceNames.has(name))
+    : [];
+  // A loan is a ResourceChanged event (CONTEXT.md's Obligation entry) -- like Timeline's
+  // equivalent checkbox, it needs at least one resource actually changing hands, not just a
+  // debt recorded in the abstract (server/db/validate.js rejects an empty payload.changes).
+  const ready = Boolean(
+    description.trim() && repaymentResource.trim() && amountTotal !== "" && isCompleteGameDate(gameDate) && hasChanges,
+  );
+
+  function submitForm(e) {
+    e.preventDefault();
+    if (!ready) return;
+    submit({
+      type: "ResourceChanged",
+      gameDate: formatGameDate(gameDate),
+      note: note.trim() || undefined,
+      payload: {
+        changes,
+        newObligation: {
+          description: description.trim(),
+          repaymentResource: repaymentResource.trim(),
+          amountTotal: Number(amountTotal),
+          dueGameDate: isCompleteGameDate(dueDate) ? formatGameDate(dueDate) : undefined,
+        },
+      },
+    });
+  }
+
+  function cancel() {
+    setDescription("");
+    setRepaymentResource("");
+    setAmountTotal("");
+    setDueDate(null);
+    setChangesText("");
+    setNote("");
+    setExpanded(false);
+  }
+
+  if (!expanded) {
+    return (
+      <div className="add-building-form">
+        <button type="button" className="btn btn-sm" onClick={() => setExpanded(true)}>
+          <Icon name="Plus" size={14} />
+          Add loan
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={submitForm} className="add-building-form" style={{ flexDirection: "column", alignItems: "stretch" }}>
+      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
         <input
-          value={draft.description}
-          onChange={(e) => setDraft({ description: e.target.value })}
-          style={{
-            flex: 1, minWidth: 0, background: "transparent", border: "none", padding: "0.1rem 0",
-            fontFamily: "var(--font-display)", fontWeight: 600, fontSize: "0.95rem", color: "var(--parchment)",
-          }}
+          placeholder="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          style={{ flex: "2 1 14rem" }}
+          autoFocus
+        />
+        <input
+          placeholder="Repayment resource"
+          value={repaymentResource}
+          onChange={(e) => setRepaymentResource(e.target.value)}
+          style={{ flex: "1 1 8rem" }}
+        />
+        <input
+          type="number"
+          placeholder="Amount owed"
+          value={amountTotal}
+          onChange={(e) => setAmountTotal(e.target.value)}
+          style={{ flex: "1 1 8rem" }}
         />
       </div>
-      <div className="meter good" style={{ marginTop: "0.4rem" }}>
-        <span style={{ transform: `scaleX(${pct / 100})` }} />
+      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.5rem", alignItems: "center" }}>
+        <span className="text-faint" style={{ fontSize: "0.76rem" }}>Due date (optional):</span>
+        <GameDatePicker value={dueDate} onChange={setDueDate} autoDefault={false} allowClear />
       </div>
-      <div className="text-faint" style={{ fontSize: "0.78rem", marginTop: "0.35rem" }}>
-        {obligation.amountTotal - obligation.amountRemaining} / {obligation.amountTotal} {obligation.repaymentResource} repaid
-        {obligation.dueGameDate && ` · due ${obligation.dueGameDate}`}
-        {obligation.satisfied && " · settled"}
-      </div>
-      <div style={{ display: "flex", gap: "0.4rem", alignItems: "center", marginTop: "0.5rem", flexWrap: "wrap" }}>
-        <span className="text-faint" style={{ fontSize: "0.76rem" }}>Change due date:</span>
-        <GameDatePicker value={newDueDate} onChange={setNewDueDate} autoDefault={false} allowClear />
-      </div>
-      {dirty && (
-        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginTop: "0.6rem", flexWrap: "wrap" }}>
-          <GameDatePicker value={gameDate} onChange={setGameDate} />
-          <button className="btn btn-sm btn-primary" onClick={save} disabled={!isCompleteGameDate(gameDate)}>
-            Save
-          </button>
-          {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+      <label style={{ display: "block", marginTop: "0.5rem" }}>
+        Resources received
+        <input
+          value={changesText}
+          onChange={(e) => setChangesText(e.target.value)}
+          placeholder="e.g. +50 Wealth -- what the loan actually paid out"
+          style={{ width: "100%" }}
+        />
+      </label>
+      {hasChanges && (
+        <div className="tag-row">
+          {Object.entries(changes).map(([res, val]) => (
+            <span key={res} className={`pill ${unknownNames.includes(res) ? "warn" : val >= 0 ? "good" : "bad"}`}>
+              {!unknownNames.includes(res) && <Icon name={res} size={12} />}
+              {val >= 0 ? "+" : ""}
+              {val} {res}
+            </span>
+          ))}
         </div>
       )}
+      <WarningsList
+        warnings={unknownNames.map((name) => `Unknown resource name "${name}" -- not in resource_totals`)}
+      />
+      <label style={{ display: "block", marginTop: "0.5rem" }}>
+        Note (optional)
+        <input value={note} onChange={(e) => setNote(e.target.value)} style={{ width: "100%" }} />
+      </label>
+      <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginTop: "0.6rem", flexWrap: "wrap" }}>
+        <GameDatePicker value={gameDate} onChange={setGameDate} />
+        <button className="btn btn-sm btn-primary" type="submit" disabled={!ready}>
+          <Icon name="Plus" size={14} />
+          Add loan
+        </button>
+        <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />
+        <button type="button" className="btn btn-sm" onClick={cancel}>Cancel</button>
+        {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+      </div>
       <WarningsList warnings={warnings} />
-    </div>
+    </form>
   );
 }
 
@@ -286,6 +497,12 @@ export default function Dashboard() {
 
   if (error) return <div className="error-box">Failed to load stats: {error}</div>;
   if (!stats || !draft) return <div className="loading">Loading kingdom stats…</div>;
+
+  const knownResourceNames = new Set([
+    ...Object.keys(stats.resources),
+    ...Object.keys(stats.assets),
+    ...Object.keys(stats.society),
+  ]);
 
   return (
     <div className="fade-in">
@@ -375,19 +592,23 @@ export default function Dashboard() {
         </div>
       )}
 
-      {obligations.length > 0 && (
-        <>
-          <div className="section-header">
-            <h3>Loan Repayment</h3>
-            <div className="rule" />
+      <div className="section-header">
+        <h3>Loan Repayment</h3>
+        <div className="rule" />
+      </div>
+      <div className="card" style={{ marginBottom: "1.5rem" }}>
+        {obligations.length === 0 && (
+          <div className="empty-state" style={{ padding: "1.25rem" }}>
+            No active loans.
           </div>
-          <div className="grid grid-2 ledger-grid">
-            {obligations.map((o) => (
-              <ObligationCard key={o.id} obligation={o} onSaved={loadObligations} />
-            ))}
-          </div>
-        </>
-      )}
+        )}
+        <div className="building-list">
+          {obligations.map((o) => (
+            <ObligationRow key={o.id} obligation={o} onChanged={loadObligations} />
+          ))}
+        </div>
+        <AddLoanForm knownResourceNames={knownResourceNames} onAdded={() => { load(); loadObligations(); }} />
+      </div>
 
       {stats.annualIncomeUpkeep && (
         <>

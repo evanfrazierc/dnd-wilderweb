@@ -213,6 +213,38 @@ test("ObligationAmended corrects description/dueGameDate without touching amount
   assert.equal(reUpdated.dueGameDate, "Month 1, 1234");
 });
 
+test("ObligationAmended can set satisfied directly, the app's only way to \"delete\" a loan", async () => {
+  const db = await freshDb();
+  const obligation = await createObligation(db, {
+    description: "Emergency grain shipment",
+    originalResources: { Food: 30 },
+    repaymentResource: "Wealth",
+    amountTotal: 40,
+    dueGameDate: "Month 3, 1226",
+  });
+
+  const forgiven = await createEvent(db, {
+    type: "ObligationAmended",
+    gameDate: "1225",
+    payload: { obligationId: obligation.id, changes: { satisfied: true } },
+  });
+  assert.equal(forgiven.ok, true);
+
+  const updated = await getObligation(db, obligation.id);
+  assert.equal(updated.satisfied, true);
+  assert.equal(updated.amountRemaining, 40); // forgiving doesn't retroactively pay it off
+  assert.equal(updated.description, "Emergency grain shipment"); // untouched -- not in `changes`
+
+  // Reversible: the row stays, so a DM can un-forgive it too.
+  await createEvent(db, {
+    type: "ObligationAmended",
+    gameDate: "1226",
+    payload: { obligationId: obligation.id, changes: { satisfied: false } },
+  });
+  const reopened = await getObligation(db, obligation.id);
+  assert.equal(reopened.satisfied, false);
+});
+
 test("LocationAmended creates a new kingdom and merges partial changes onto an existing one", async () => {
   const db = await freshDb();
   await createEvent(db, {

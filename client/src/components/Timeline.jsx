@@ -6,6 +6,7 @@ import WarningsList from "./WarningsList.jsx";
 import PostToDiscordToggle from "./PostToDiscordToggle.jsx";
 import GameDatePicker from "./GameDatePicker.jsx";
 import { formatGameDate, isCompleteGameDate } from "../lib/gameDate.js";
+import { parseChanges } from "../lib/parseChanges.js";
 
 const EVENT_TYPES = [
   "ResourceChanged",
@@ -28,19 +29,6 @@ const TYPE_ICON = {
   ObligationAmended: "Wealth",
   DMRuling: "Codex",
 };
-
-function parseChanges(text) {
-  const changes = {};
-  text
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean)
-    .forEach((part) => {
-      const match = part.match(/^([+-]?\d+)\s+(\w+)$/);
-      if (match) changes[match[2]] = Number(match[1]);
-    });
-  return changes;
-}
 
 function NewEntryForm({ obligations, knownResourceNames, onAdd }) {
   const [gameDate, setGameDate] = useState(null);
