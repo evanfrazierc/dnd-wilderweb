@@ -15,6 +15,11 @@ import { postEvent } from "../api.js";
  * corrections/tidying, not campaign news) -- a caller can pass `postToDiscord` on the
  * event object itself to force it off (or on) for one submission, overriding the
  * checkbox state entirely. Omit it to use the checkbox as normal.
+ *
+ * Every successful save also broadcasts a window "wilderweb:event-saved" CustomEvent --
+ * this is the one place all 8+ save forms funnel through, so it's the cheapest spot to
+ * let anything else in the app (StatusBar's calendar/unrest/latest-entry summary) know
+ * the record changed, without prop-drilling a refetch callback through every page.
  */
 export function useEventSubmit(onSuccess) {
   const [status, setStatus] = useState("");
@@ -35,6 +40,7 @@ export function useEventSubmit(onSuccess) {
         else parts.push("Posted to Discord.");
       }
       setStatus(parts.join(" "));
+      window.dispatchEvent(new CustomEvent("wilderweb:event-saved", { detail: result.event }));
       onSuccess?.(result.event);
       return result;
     } catch (e) {

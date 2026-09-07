@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getEvents, getObligations } from "../api.js";
+import { getEvents, getObligations, getProjection } from "../api.js";
 import { useEventSubmit } from "../lib/useEventSubmit.js";
 import Icon from "./Icon.jsx";
 import WarningsList from "./WarningsList.jsx";
@@ -40,7 +40,7 @@ function parseChanges(text) {
   return changes;
 }
 
-function NewEntryForm({ obligations, onAdd }) {
+function NewEntryForm({ obligations, knownResourceNames, onAdd }) {
   const [gameDate, setGameDate] = useState(null);
   const [region, setRegion] = useState("");
   const [note, setNote] = useState("");
@@ -55,6 +55,14 @@ function NewEntryForm({ obligations, onAdd }) {
 
   const changes = parseChanges(changesText);
   const hasChanges = Object.keys(changes).length > 0;
+  // A resource name here is free text, unlike Dashboard's steppers or Settlements'
+  // building catalog -- a typo used to be silently recorded to history and silently
+  // dropped from resource_totals (server/db/projections.js), with the only feedback
+  // being a warning shown *after* save. This surfaces the same check before submit,
+  // without blocking it (ADR-0005: warn, don't block).
+  const unknownNames = knownResourceNames
+    ? Object.keys(changes).filter((name) => !knownResourceNames.has(name))
+    : [];
   const newObligationReady = createsObligation && obDescription.trim() && obRepaymentResource.trim() && obAmountTotal !== "";
 
   function resetObligationFields() {
@@ -134,6 +142,20 @@ function NewEntryForm({ obligations, onAdd }) {
           style={{ width: "100%" }}
         />
       </label>
+      {hasChanges && (
+        <div className="tag-row">
+          {Object.entries(changes).map(([res, val]) => (
+            <span key={res} className={`pill ${unknownNames.includes(res) ? "warn" : val >= 0 ? "good" : "bad"}`}>
+              {!unknownNames.includes(res) && <Icon name={res} size={12} />}
+              {val >= 0 ? "+" : ""}
+              {val} {res}
+            </span>
+          ))}
+        </div>
+      )}
+      <WarningsList
+        warnings={unknownNames.map((name) => `Unknown resource name "${name}" -- not in resource_totals`)}
+      />
       {hasChanges && obligations.length > 0 && (
         <label style={{ display: "block", marginTop: "0.6rem" }}>
           Settles an obligation (optional)
@@ -229,6 +251,7 @@ function ObligationsPanel({ obligations }) {
 export default function Timeline() {
   const [events, setEvents] = useState(null);
   const [obligations, setObligations] = useState([]);
+  const [knownResourceNames, setKnownResourceNames] = useState(null);
   const [typeFilter, setTypeFilter] = useState("");
   const [regionFilter, setRegionFilter] = useState("");
   const [error, setError] = useState(null);
@@ -247,6 +270,15 @@ export default function Timeline() {
     load().catch((e) => setError(e.message));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [typeFilter, regionFilter]);
+
+  useEffect(() => {
+    getProjection("stats")
+      .then((stats) => {
+        const names = [...Object.keys(stats.resources), ...Object.keys(stats.assets), ...Object.keys(stats.society)];
+        setKnownResourceNames(new Set(names));
+      })
+      .catch(() => {});
+  }, []);
 
   if (error) return <div className="error-box">Failed to load the timeline: {error}</div>;
   if (!events) return <div className="loading">Loading the timeline…</div>;
@@ -268,7 +300,11 @@ export default function Timeline() {
 
       <ObligationsPanel obligations={obligations.filter((o) => !o.satisfied)} />
 
-      <NewEntryForm obligations={obligations.filter((o) => !o.satisfied)} onAdd={load} />
+      <NewEntryForm
+        obligations={obligations.filter((o) => !o.satisfied)}
+        knownResourceNames={knownResourceNames}
+        onAdd={load}
+      />
 
       <div className="section-title-row">
         <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>

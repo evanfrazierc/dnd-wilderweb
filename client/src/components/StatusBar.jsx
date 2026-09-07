@@ -9,11 +9,19 @@ export default function StatusBar() {
   const [latest, setLatest] = useState(null);
 
   useEffect(() => {
-    getProjection("calendar").then(setCalendar).catch(() => {});
-    getProjection("stats").then(setStats).catch(() => {});
-    getEvents({ limit: 500 })
-      .then((events) => setLatest(events.at(-1) ?? null))
-      .catch(() => {});
+    function load() {
+      getProjection("calendar").then(setCalendar).catch(() => {});
+      getProjection("stats").then(setStats).catch(() => {});
+      getEvents({ limit: 500 })
+        .then((events) => setLatest(events.at(-1) ?? null))
+        .catch(() => {});
+    }
+    load();
+    // Every save (any page, any event type) broadcasts this -- see useEventSubmit.js.
+    // Without it, this header only ever reflected whatever was true when the app
+    // first loaded, regardless of what got saved afterward.
+    window.addEventListener("wilderweb:event-saved", load);
+    return () => window.removeEventListener("wilderweb:event-saved", load);
   }, []);
 
   const month = currentMonth(calendar);

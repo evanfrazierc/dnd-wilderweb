@@ -117,7 +117,13 @@ function BuildingCatalogEditor({ catalog, onSaved }) {
   );
 }
 
+// Collapsed to a single "+ Add building" affordance until clicked -- with up to 9
+// regions each rendering a full 5-field form, having them all permanently open meant
+// a DM saw dozens of live fields at once just to add one building to one region
+// (critique: /impeccable critique, 2026-09-07). Mirrors the collapsed-by-default
+// pattern EditBuildingControl/RemoveBuildingControl already use for the same reason.
 function AddBuildingForm({ buildingCatalog, onAdd, postToDiscord, setPostToDiscord }) {
+  const [expanded, setExpanded] = useState(false);
   // Defaults to picking from the catalog (a real <select>, not a datalist -- datalist
   // suggestions are never enforced, so a typo used to slip through as a brand-new,
   // uncatalogued building with no warning until after the save). A building not yet in the
@@ -144,11 +150,31 @@ function AddBuildingForm({ buildingCatalog, onAdd, postToDiscord, setPostToDisco
     setName("");
     setDisplayName("");
     setDetail("");
+    setExpanded(false);
+  }
+
+  function cancel() {
+    setName("");
+    setDisplayName("");
+    setDetail("");
+    setCustomName(false);
+    setExpanded(false);
   }
 
   function toggleCustomName() {
     setCustomName(!customName);
     setName("");
+  }
+
+  if (!expanded) {
+    return (
+      <div className="add-building-form">
+        <button type="button" className="btn btn-sm" onClick={() => setExpanded(true)}>
+          <Icon name="Plus" size={14} />
+          Add building
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -159,9 +185,10 @@ function AddBuildingForm({ buildingCatalog, onAdd, postToDiscord, setPostToDisco
             placeholder="Building name"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            autoFocus
           />
         ) : (
-          <select value={name} onChange={(e) => setName(e.target.value)}>
+          <select value={name} onChange={(e) => setName(e.target.value)} autoFocus>
             <option value="" disabled>Building name…</option>
             {buildingCatalog.map((b) => (
               <option key={b.name} value={b.name}>{b.name}</option>
@@ -189,6 +216,9 @@ function AddBuildingForm({ buildingCatalog, onAdd, postToDiscord, setPostToDisco
       <button className="btn" type="submit">
         <Icon name="Plus" size={14} />
         Add
+      </button>
+      <button type="button" className="btn btn-sm" onClick={cancel}>
+        Cancel
       </button>
     </form>
   );

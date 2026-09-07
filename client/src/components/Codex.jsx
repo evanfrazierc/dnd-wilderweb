@@ -198,12 +198,18 @@ function DeityCard({ deity, onSaved }) {
   );
 }
 
+// Collapsed to a single "+ Add deity" affordance until clicked -- consistent with
+// Settlements' AddBuildingForm and LocationsTab's new-kingdom form, so "add a new X"
+// on a page whose primary content is browsing/editing existing X follows one rule
+// app-wide (critique: /impeccable critique, 2026-09-07).
 function NewDeityForm({ onAdded }) {
+  const [expanded, setExpanded] = useState(false);
   const [name, setName] = useState("");
   const [gameDate, setGameDate] = useState(null);
   const { submit, status, warnings } = useEventSubmit(() => {
     setName("");
     setGameDate(null);
+    setExpanded(false);
   });
 
   function submitForm(e) {
@@ -219,13 +225,31 @@ function NewDeityForm({ onAdded }) {
     }).then(() => onAdded());
   }
 
+  if (!expanded) {
+    return (
+      <button className="btn btn-sm" onClick={() => setExpanded(true)}>
+        <Icon name="Plus" size={14} />
+        Add deity
+      </button>
+    );
+  }
+
   return (
     <form onSubmit={submitForm} className="card" style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="New deity's name" style={{ flex: 1 }} />
+      <input
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="New deity's name"
+        style={{ flex: 1 }}
+        autoFocus
+      />
       <GameDatePicker value={gameDate} onChange={setGameDate} />
       <button className="btn btn-primary" type="submit">
         <Icon name="Plus" size={14} />
         Add deity
+      </button>
+      <button type="button" className="btn btn-sm" onClick={() => setExpanded(false)}>
+        Cancel
       </button>
       {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
       <WarningsList warnings={warnings} />

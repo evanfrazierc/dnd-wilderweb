@@ -275,6 +275,12 @@ input[type="number"] {
   color: var(--accent-strong);
 }
 
+.btn:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
 .btn:active {
   transform: translateY(1px);
 }
@@ -321,6 +327,11 @@ input[type="number"] {
 .btn-danger:hover {
   border-color: var(--bad);
   color: var(--bad);
+}
+
+.btn-danger:focus-visible {
+  border-color: var(--bad);
+  box-shadow: 0 0 0 3px var(--bad-soft);
 }
 
 .btn-sm {
@@ -856,6 +867,12 @@ input[type="number"] {
 
 .book-tab:hover {
   color: var(--text);
+}
+
+.book-tab:focus-visible {
+  outline: none;
+  color: var(--text);
+  border-color: var(--accent-line);
 }
 
 .book-tab.active {
