@@ -347,6 +347,12 @@ input[type="number"] {
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
+  /* `overflow` above resets a flex item's automatic min-width to 0 per the
+     flexbox spec, which let ordinary short pills get squeezed and clipped
+     in a tight flex row (e.g. hero-meta on mobile). flex-shrink: 0 keeps a
+     pill at its natural size and wrapping to a new line instead -- the
+     max-width above still catches the one-genuinely-oversized-value case. */
+  flex-shrink: 0;
 }
 
 .pill.accent {
@@ -610,6 +616,7 @@ input[type="number"] {
 
 .hero-meta {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
 }
 
