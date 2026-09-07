@@ -511,6 +511,9 @@ export default function Settlements() {
           </button>
         </div>
       </div>
+      {showRegionsEditor && <RegionsEditor regions={regions} kingdomNames={kingdomNames} onSaved={load} />}
+      {showCatalogEditor && <BuildingCatalogEditor catalog={buildingCatalog} onSaved={load} />}
+
       <p className="text-dim hero-note">
         Adding or removing a building here logs it as a BuildingConstructed / BuildingRemoved event
         on the Timeline.
@@ -520,9 +523,6 @@ export default function Settlements() {
         {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
       </div>
       <WarningsList warnings={warnings} />
-
-      {showRegionsEditor && <RegionsEditor regions={regions} kingdomNames={kingdomNames} onSaved={load} />}
-      {showCatalogEditor && <BuildingCatalogEditor catalog={buildingCatalog} onSaved={load} />}
 
       <div className="grid grid-2" style={{ marginTop: "1.25rem" }}>
         {mergedRegions.map((region) => (
