@@ -47,12 +47,7 @@ export function validateShape(type, { note, region, payload }) {
       break;
     }
     case "LocationAmended": {
-      if (!payload || typeof payload.data !== "object" || payload.data === null) {
-        errors.push("LocationAmended requires payload.data (the full updated locations document)");
-      }
-      if (!note || !note.trim()) {
-        errors.push("LocationAmended requires a non-empty note describing what changed -- payload.data replaces the whole document, so the note is the only readable record of the change");
-      }
+      if (!payload?.name) errors.push("LocationAmended requires payload.name (the kingdom's name)");
       break;
     }
     case "DMRuling": {

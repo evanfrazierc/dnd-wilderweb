@@ -10,6 +10,7 @@ import {
   readRegions,
   replaceRegions,
   ensureRegionsSeeded,
+  ensureKingdomsSeeded,
 } from "../../server/db/reference.js";
 
 test("replaceBuildingCatalog replaces the whole catalog", async () => {
@@ -212,4 +213,36 @@ test("ensureRegionsSeeded seeds from wilderlandsRegions and settlement_buildings
   regions = await readRegions(db);
   assert.equal(regions.length, 2);
   assert.equal(regions.find((r) => r.name === "Narlmarches").description, "Edited");
+});
+
+test("ensureKingdomsSeeded seeds from the old locations_state kingdoms array, dropping counties, and is idempotent", async () => {
+  const db = await openDb(":memory:");
+  await db.prepare("INSERT INTO locations_state (id, data) VALUES (1, ?)").run(
+    JSON.stringify({
+      kingdoms: [
+        {
+          name: "Kingdom of Casdenia",
+          capital: "Royal City of Casdenor",
+          counties: [{ name: "County of Arnestal", seat: "City of Arnestal" }],
+          other: [{ name: "Olen's Rest", type: "Landmark" }],
+        },
+        { name: "Kingdom of Galderoy", capital: null, counties: [], other: [], note: "No locations posted yet." },
+      ],
+    }),
+  );
+
+  await ensureKingdomsSeeded(db);
+  let rows = await db.prepare("SELECT * FROM kingdoms ORDER BY name").all();
+  assert.equal(rows.length, 2);
+  const casdenia = rows.find((r) => r.name === "Kingdom of Casdenia");
+  assert.equal(casdenia.capital, "Royal City of Casdenor");
+  assert.deepEqual(JSON.parse(casdenia.places), [{ name: "Olen's Rest", type: "Landmark" }]);
+  assert.equal(rows.find((r) => r.name === "Kingdom of Galderoy").note, "No locations posted yet.");
+
+  // Second call must not clobber a DM edit made after the first seed.
+  await db.prepare("UPDATE kingdoms SET note = ? WHERE name = ?").run("Edited", "Kingdom of Galderoy");
+  await ensureKingdomsSeeded(db);
+  rows = await db.prepare("SELECT * FROM kingdoms").all();
+  assert.equal(rows.length, 2);
+  assert.equal(rows.find((r) => r.name === "Kingdom of Galderoy").note, "Edited");
 });

@@ -65,9 +65,16 @@ function eventFields(event) {
       if (changes) fields.push({ name: "Changes", value: changes });
       break;
     }
-    case "LocationAmended":
+    case "LocationAmended": {
+      fields.push({ name: "Kingdom", value: payload.name, inline: true });
+      const changes = Object.entries(payload.changes || {})
+        .filter(([k]) => k !== "places")
+        .map(([k, v]) => `${k}: ${v}`).join(", ");
+      if (changes) fields.push({ name: "Changes", value: changes });
+      break;
+    }
     case "DMRuling":
-      break; // whole-document replace / note-only by construction -- the note below is the summary
+      break; // note-only by construction -- the note below is the summary
   }
 
   if (event.note) fields.push({ name: "Note", value: event.note });

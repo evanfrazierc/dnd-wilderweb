@@ -168,8 +168,9 @@ export async function replaceIntroduction(db, { postedBy, postedAt, paragraphs }
  * re-added under a new name").
  *
  * `kingdom` (docs/adr/0010) optionally names the Codex Locations kingdom that claims this
- * region -- a plain string, not a foreign key, since kingdoms have no stable id or rename
- * feature of their own.
+ * region -- a plain string, not a foreign key. Kingdoms are name-keyed (docs/adr/0011),
+ * same as deities, so this still isn't a real foreign key relationship, but it does mean
+ * this string is expected to match a `kingdoms.name` row when set.
  */
 export async function readRegions(db) {
   return db.prepare("SELECT id, name, description, kingdom FROM regions ORDER BY name").all();
@@ -248,6 +249,27 @@ export async function ensureRegionsSeeded(db) {
   const insert = db.prepare("INSERT INTO regions (name, description) VALUES (?, ?)");
   for (const s of seeds) {
     await insert.run(s.name, s.description);
+  }
+}
+
+/** One-time, idempotent data bootstrap -- only runs while `kingdoms` is empty, so it never
+ * clobbers a DM's edits. Seeds from the old locations_state document's kingdoms array
+ * (docs/adr/0011), dropping the counties/settlements layers that document also carried --
+ * a county's name/seat has no home in the new shape, and per-county settlement lists were
+ * already retired in docs/adr/0010. Called once from server/index.js's startup, same as
+ * ensureRegionsSeeded -- tests build their own kingdom data directly. */
+export async function ensureKingdomsSeeded(db) {
+  const { c } = await db.prepare("SELECT COUNT(*) c FROM kingdoms").get();
+  if (c > 0) return;
+
+  const locationsRow = await db.prepare("SELECT data FROM locations_state WHERE id = 1").get();
+  const oldKingdoms = locationsRow ? JSON.parse(locationsRow.data).kingdoms ?? [] : [];
+  if (oldKingdoms.length === 0) return;
+
+  const insert = db.prepare("INSERT INTO kingdoms (name, capital, note, places) VALUES (?, ?, ?, ?)");
+  for (const k of oldKingdoms) {
+    const places = (k.other ?? []).map((o) => ({ name: o.name, type: o.type }));
+    await insert.run(k.name, k.capital ?? null, k.note ?? null, JSON.stringify(places));
   }
 }
 

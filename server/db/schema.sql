@@ -58,12 +58,24 @@ CREATE TABLE IF NOT EXISTS deities (
   note TEXT
 );
 
--- Locations is one nested document (kingdoms > counties > settlements, plus wilderlandsRegions);
--- kept as a single JSON blob projection rather than normalized, per the low change frequency
--- and complexity of the shape (see .scratch/campaign-database/spec.md).
+-- Superseded by the `kingdoms` table below (docs/adr/0011) -- kept only because
+-- ensureRegionsSeeded (server/db/reference.js) still reads its historical
+-- wilderlandsRegions field on a from-scratch database. No longer written to.
 CREATE TABLE IF NOT EXISTS locations_state (
   id INTEGER PRIMARY KEY CHECK (id = 1),
   data TEXT NOT NULL DEFAULT '{}'
+);
+
+-- A kingdom (CONTEXT.md): campaign state, event-sourced like deities (LocationAmended,
+-- mirroring DeityAmended's shape) rather than reference data -- a kingdom's capital,
+-- notes, and named places are discovered/established facts during play, not static rules.
+-- Name-keyed like deities, not a stable integer id like regions: there's no rename-kingdom
+-- feature (docs/adr/0011), so the drift a rename would cause doesn't arise yet.
+CREATE TABLE IF NOT EXISTS kingdoms (
+  name TEXT PRIMARY KEY,
+  capital TEXT,
+  note TEXT, -- freeform flavor/rumors, especially useful before there's anything concrete
+  places TEXT NOT NULL DEFAULT '[]' -- JSON array of {name, type} -- named settled places (cities, landmarks)
 );
 
 -- Obligations: a first-class tracked debt (CONTEXT.md), settled incrementally by

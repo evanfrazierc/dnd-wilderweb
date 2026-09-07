@@ -150,15 +150,39 @@ test("BuildingAmended rejects an empty changes object", async () => {
   assert.equal(result.ok, false);
 });
 
-test("LocationAmended requires a non-empty note, since payload.data replaces the whole document", async () => {
+test("LocationAmended requires payload.name", async () => {
   const db = await freshDb();
-  const missingNote = await createEvent(db, { type: "LocationAmended", gameDate: "1225", payload: { data: {} } });
-  assert.equal(missingNote.ok, false);
+  const missingName = await createEvent(db, { type: "LocationAmended", gameDate: "1225", payload: { changes: {} } });
+  assert.equal(missingName.ok, false);
 
   const valid = await createEvent(db, {
-    type: "LocationAmended", gameDate: "1225", note: "Discovered a new village", payload: { data: { kingdoms: [] } },
+    type: "LocationAmended", gameDate: "1225", payload: { name: "Kingdom of Casdenia", changes: {} },
   });
   assert.equal(valid.ok, true);
+});
+
+test("LocationAmended creates a new kingdom and merges partial changes onto an existing one", async () => {
+  const db = await freshDb();
+  await createEvent(db, {
+    type: "LocationAmended",
+    gameDate: "1225",
+    payload: { name: "Kingdom of Casdenia", changes: { capital: "Royal City of Casdenor", note: "Friendly." } },
+  });
+  let row = await db.prepare("SELECT * FROM kingdoms WHERE name = ?").get("Kingdom of Casdenia");
+  assert.equal(row.capital, "Royal City of Casdenor");
+  assert.equal(row.note, "Friendly.");
+  assert.deepEqual(JSON.parse(row.places), []);
+
+  // A later save touching only `places` must not clobber the capital/note set earlier.
+  await createEvent(db, {
+    type: "LocationAmended",
+    gameDate: "1226",
+    payload: { name: "Kingdom of Casdenia", changes: { places: [{ name: "Olen's Rest", type: "Landmark" }] } },
+  });
+  row = await db.prepare("SELECT * FROM kingdoms WHERE name = ?").get("Kingdom of Casdenia");
+  assert.equal(row.capital, "Royal City of Casdenor");
+  assert.equal(row.note, "Friendly.");
+  assert.deepEqual(JSON.parse(row.places), [{ name: "Olen's Rest", type: "Landmark" }]);
 });
 
 test("ResourceChanged with payload.newObligation creates an Obligation tied to the event", async () => {

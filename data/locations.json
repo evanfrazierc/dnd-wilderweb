@@ -3,13 +3,7 @@
     {
       "name": "Kingdom of Casdenia",
       "capital": "Royal City of Casdenor",
-      "counties": [
-        {
-          "name": "County of Arnestal",
-          "seat": "City of Arnestal"
-        }
-      ],
-      "other": [
+      "places": [
         {
           "name": "Olen's Rest",
           "type": "Landmark"
@@ -17,30 +11,17 @@
       ]
     },
     {
-      "name": "Kingdom of Ravenstone",
-      "capital": "City of Ravenstone",
-      "counties": [],
-      "other": []
+      "name": "Kingdom of Galderoy",
+      "places": []
     },
     {
-      "name": "Kingdom of Galderoy",
-      "capital": null,
-      "counties": [],
-      "other": [],
-      "note": "No locations posted yet."
+      "name": "Kingdom of Ravenstone",
+      "capital": "City of Ravenstone",
+      "places": []
     },
     {
       "name": "Kingdom of Tremund",
-      "capital": null,
-      "counties": [],
-      "other": [],
-      "note": "No locations posted yet."
-    },
-    {
-      "name": "Test Kingdom UX Review",
-      "capital": null,
-      "counties": [],
-      "other": []
+      "places": []
     }
   ]
 }

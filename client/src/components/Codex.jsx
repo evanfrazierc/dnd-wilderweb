@@ -290,32 +290,197 @@ function DeitiesTab() {
   );
 }
 
-function LocationsTab() {
-  const [locations, setLocations] = useState(null);
-  const [draft, setDraft] = useState(null);
-  const [regions, setRegions] = useState(null);
-  const [note, setNote] = useState("");
+// One kingdom, saved independently as its own LocationAmended event (payload
+// {name, changes}, mirroring DeityAmended -- docs/adr/0011). Note is a visible field even
+// when empty, not hidden until dirty: a kingdom with nothing concrete yet is where a rumor
+// or a plan belongs, and that's the whole point of surfacing it rather than burying it.
+function KingdomCard({ kingdom, regions, onSaved }) {
+  const [draft, setDraft] = useState(kingdom);
+  // This card's own "last known saved" snapshot -- compared against instead of the
+  // `kingdom` prop directly, so dirty state clears the instant this card's own save
+  // resolves rather than waiting on the page-level refetch's round trip (which, since
+  // onSaved is shared by every kingdom card, would otherwise also risk clobbering an
+  // in-progress edit on a sibling card that hasn't saved yet).
+  const [baseline, setBaseline] = useState(kingdom);
   const [gameDate, setGameDate] = useState(null);
-  const [newKingdom, setNewKingdom] = useState("");
+  const [newPlaceName, setNewPlaceName] = useState("");
+  const [newPlaceType, setNewPlaceType] = useState("");
+  const { submit, status, warnings } = useEventSubmit(onSaved);
+
+  function field(key, value) {
+    setDraft({ ...draft, [key]: value });
+  }
+
+  function addPlace() {
+    if (!newPlaceName.trim()) return;
+    field("places", [...draft.places, { name: newPlaceName.trim(), type: newPlaceType.trim() || undefined }]);
+    setNewPlaceName("");
+    setNewPlaceType("");
+  }
+
+  function removePlace(i) {
+    field("places", draft.places.filter((_, idx) => idx !== i));
+  }
+
+  const dirty = JSON.stringify(draft) !== JSON.stringify(baseline);
+
+  function save() {
+    if (!isCompleteGameDate(gameDate)) return;
+    const changes = {};
+    if (draft.capital !== baseline.capital) changes.capital = draft.capital?.trim() || null;
+    if (draft.note !== baseline.note) changes.note = draft.note?.trim() || null;
+    if (JSON.stringify(draft.places) !== JSON.stringify(baseline.places)) changes.places = draft.places;
+    // No Discord option: lore/worldbuilding upkeep, not campaign news, matching DeityAmended.
+    submit({
+      type: "LocationAmended",
+      gameDate: formatGameDate(gameDate),
+      note: "Amended via the Codex",
+      payload: { name: kingdom.name, changes },
+      postToDiscord: false,
+    }).then(() => {
+      setBaseline(draft);
+      setGameDate(null);
+    });
+  }
+
+  const kingdomRegions = regions.filter((r) => r.kingdom === kingdom.name);
+
+  return (
+    <div className="card region-card">
+      <div className="region-card-head">
+        <span className="icon-badge">
+          <Icon name="MapPin" size={18} />
+        </span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h3 style={{ margin: 0 }}>{kingdom.name}</h3>
+          <input
+            value={draft.capital || ""}
+            onChange={(e) => field("capital", e.target.value)}
+            placeholder="Capital (optional)"
+            style={{ width: "100%", background: "transparent", border: "none", padding: "0.1rem 0", fontSize: "0.8rem" }}
+          />
+        </div>
+      </div>
+      <textarea
+        value={draft.note || ""}
+        onChange={(e) => field("note", e.target.value)}
+        placeholder="Notes, rumors, plans for this kingdom…"
+        rows={2}
+        style={{ width: "100%", fontSize: "0.85rem" }}
+      />
+      {draft.places.length > 0 && (
+        <ul className="location-list" style={{ marginTop: "0.6rem" }}>
+          {draft.places.map((p, i) => (
+            <li key={i}>
+              <span style={{ flex: 1 }}>{p.name}</span>
+              {p.type && <span className="pill">{p.type}</span>}
+              <button className="btn btn-icon btn-danger" onClick={() => removePlace(i)} aria-label={`Remove ${p.name}`}>
+                <Icon name="Trash" size={12} />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div style={{ display: "flex", gap: "0.4rem", marginTop: "0.6rem", flexWrap: "wrap" }}>
+        <input
+          value={newPlaceName}
+          onChange={(e) => setNewPlaceName(e.target.value)}
+          placeholder="Named place (city, landmark…)"
+          style={{ flex: "1 1 10rem", fontSize: "0.82rem" }}
+        />
+        <input
+          value={newPlaceType}
+          onChange={(e) => setNewPlaceType(e.target.value)}
+          placeholder="Type (optional)"
+          style={{ flex: "0 1 8rem", fontSize: "0.82rem" }}
+        />
+        <button type="button" className="btn btn-sm" onClick={addPlace} disabled={!newPlaceName.trim()}>
+          <Icon name="Plus" size={13} />
+          Add
+        </button>
+      </div>
+      {kingdomRegions.length > 0 && (
+        <div style={{ marginTop: "0.6rem" }}>
+          <strong style={{ fontSize: "0.85rem" }}>Regions</strong>
+          <div className="tag-row">
+            {kingdomRegions.map((r) => (
+              <span key={r.id} className="pill">{r.name}</span>
+            ))}
+          </div>
+        </div>
+      )}
+      {dirty && (
+        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginTop: "0.75rem", flexWrap: "wrap" }}>
+          <GameDatePicker value={gameDate} onChange={setGameDate} />
+          <button className="btn btn-sm btn-primary" onClick={save} disabled={!isCompleteGameDate(gameDate)}>
+            Save
+          </button>
+          {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+        </div>
+      )}
+      <WarningsList warnings={warnings} />
+    </div>
+  );
+}
+
+// Collapsed to a single "+ Add kingdom" affordance until clicked, matching NewDeityForm and
+// Settlements' AddBuildingForm (critique: /impeccable critique, 2026-09-07).
+function NewKingdomForm({ onAdded }) {
+  const [expanded, setExpanded] = useState(false);
+  const [name, setName] = useState("");
+  const [gameDate, setGameDate] = useState(null);
+  const { submit, status, warnings } = useEventSubmit(() => {
+    setName("");
+    setGameDate(null);
+    setExpanded(false);
+  });
+
+  function submitForm(e) {
+    e.preventDefault();
+    if (!name.trim() || !isCompleteGameDate(gameDate)) return;
+    submit({
+      type: "LocationAmended",
+      gameDate: formatGameDate(gameDate),
+      note: "Added via the Codex",
+      payload: { name: name.trim(), changes: {} },
+      postToDiscord: false,
+    }).then(() => onAdded());
+  }
+
+  if (!expanded) {
+    return (
+      <button className="btn btn-sm" onClick={() => setExpanded(true)}>
+        <Icon name="Plus" size={14} />
+        Add kingdom
+      </button>
+    );
+  }
+
+  return (
+    <form onSubmit={submitForm} className="card" style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
+      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Kingdom name" style={{ flex: 1 }} autoFocus />
+      <GameDatePicker value={gameDate} onChange={setGameDate} />
+      <button className="btn btn-primary" type="submit">
+        <Icon name="Plus" size={14} />
+        Add kingdom
+      </button>
+      <button type="button" className="btn btn-sm" onClick={() => setExpanded(false)}>
+        Cancel
+      </button>
+      {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+      <WarningsList warnings={warnings} />
+    </form>
+  );
+}
+
+function LocationsTab() {
+  const [kingdoms, setKingdoms] = useState(null);
+  const [regions, setRegions] = useState(null);
   const [error, setError] = useState(null);
 
-  // wilderlandsRegions used to live as its own frozen copy inside this document, kept in
-  // sync with the Settlements page's regions table (CONTEXT.md's Region) only by convention
-  // -- it drifted. Regions are shown here read-only, sourced live from that same table.
-  // Per-county settlement lists are dropped the same way: redundant now that a region can be
-  // assigned straight to a kingdom (ADR-0010), which is the more useful answer to "where is
-  // this place" than a static list of village names.
   function load() {
     return Promise.all([getProjection("locations"), getReference("regions")]).then(([data, regionsData]) => {
-      // eslint-disable-next-line no-unused-vars
-      const { wilderlandsRegions, ...rest } = data;
-      const kingdoms = rest.kingdoms.map((k) => ({
-        ...k,
-        // eslint-disable-next-line no-unused-vars
-        counties: k.counties.map(({ settlements, ...county }) => county),
-      }));
-      setLocations({ ...rest, kingdoms });
-      setDraft({ ...rest, kingdoms });
+      setKingdoms(data.kingdoms);
       setRegions(regionsData);
     });
   }
@@ -324,102 +489,25 @@ function LocationsTab() {
     load().catch((e) => setError(e.message));
   }, []);
 
-  const { submit, status, warnings } = useEventSubmit(() => {
-    load();
-    setNote("");
-    setGameDate(null);
-  });
-
   if (error) return <div className="error-box">Failed to load locations: {error}</div>;
-  if (!locations || !draft || !regions) return <div className="loading">Loading…</div>;
-
-  const dirty = JSON.stringify(draft) !== JSON.stringify(locations);
-
-  function addKingdom() {
-    if (!newKingdom.trim()) return;
-    setDraft({
-      ...draft,
-      kingdoms: [...draft.kingdoms, { name: newKingdom.trim(), capital: null, counties: [], other: [] }],
-    });
-    setNewKingdom("");
-  }
-
-  function save() {
-    if (!note.trim() || !isCompleteGameDate(gameDate)) return;
-    // No Discord option here: LocationAmended replaces the whole document, so it can't tell
-    // "a new settlement was founded" (news) apart from "fixed a typo" (not) -- not offered.
-    submit({
-      type: "LocationAmended",
-      gameDate: formatGameDate(gameDate),
-      note: note.trim(),
-      payload: { data: draft },
-      postToDiscord: false,
-    });
-  }
+  if (!kingdoms || !regions) return <div className="loading">Loading…</div>;
 
   return (
     <div>
       <div className="section-title-row">
         <span className="text-faint" style={{ fontSize: "0.82rem" }}>
-          Known kingdoms, counties, and settlements across the map.
+          Known kingdoms across the map -- capital, notable places, and rumors. Each kingdom
+          saves on its own as a LocationAmended event.
         </span>
       </div>
-      <div className="grid grid-2">
-        {draft.kingdoms.map((kingdom) => (
-          <div className="card region-card" key={kingdom.name}>
-            <div className="region-card-head">
-              <span className="icon-badge">
-                <Icon name="MapPin" size={18} />
-              </span>
-              <div style={{ flex: 1 }}>
-                <h3 style={{ margin: 0 }}>{kingdom.name}</h3>
-                {kingdom.capital && <span className="text-faint" style={{ fontSize: "0.76rem" }}>Capital: {kingdom.capital}</span>}
-              </div>
-            </div>
-            {(() => {
-              const kingdomRegions = regions.filter((r) => r.kingdom === kingdom.name);
-              const empty = kingdom.counties.length === 0 && kingdom.other.length === 0 && kingdomRegions.length === 0;
-              return (
-                <>
-                  {empty && <p className="text-dim">{kingdom.note || "No locations posted yet."}</p>}
-                  {kingdom.counties.map((county) => (
-                    <div key={county.name} style={{ marginTop: "0.6rem" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                        <strong>{county.name}</strong>
-                        <span className="pill">seat: {county.seat}</span>
-                      </div>
-                    </div>
-                  ))}
-                  {kingdom.other.length > 0 && (
-                    <div style={{ marginTop: "0.6rem" }}>
-                      <strong>Other</strong>
-                      <ul className="location-list">
-                        {kingdom.other.map((o) => (
-                          <li key={o.name}>
-                            {o.name} <span className="pill">{o.type}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {kingdomRegions.length > 0 && (
-                    <div style={{ marginTop: "0.6rem" }}>
-                      <strong>Regions</strong>
-                      <div className="tag-row">
-                        {kingdomRegions.map((r) => (
-                          <span key={r.id} className="pill">{r.name}</span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </>
-              );
-            })()}
-          </div>
+      <div className="grid grid-2" style={{ marginBottom: "1.25rem" }}>
+        {kingdoms.map((k) => (
+          <KingdomCard key={k.name} kingdom={k} regions={regions} onSaved={load} />
         ))}
       </div>
+      <NewKingdomForm onAdded={load} />
 
-      <div className="section-header">
+      <div className="section-header" style={{ marginTop: "1.75rem" }}>
         <h3>Wilderlands Regions</h3>
         <div className="rule" />
       </div>
@@ -437,48 +525,6 @@ function LocationsTab() {
           ))}
         </div>
       </div>
-
-      <div className="card" style={{ marginTop: "1.25rem" }}>
-        <h3>Add a new kingdom</h3>
-        <div style={{ display: "flex", gap: "0.5rem" }}>
-          <input value={newKingdom} onChange={(e) => setNewKingdom(e.target.value)} placeholder="Kingdom name" />
-          <button className="btn" onClick={addKingdom}>
-            <Icon name="Plus" size={14} />
-            Add
-          </button>
-        </div>
-      </div>
-
-      {dirty && (
-        <div className="card" style={{ marginTop: "1.25rem" }}>
-          <div className="stat-group-head">
-            <span className="icon-badge">
-              <Icon name="Scroll" size={17} />
-            </span>
-            <h3>Record this change</h3>
-          </div>
-          <p className="text-faint" style={{ fontSize: "0.8rem" }}>
-            This replaces the whole locations record, so a note describing what changed is required.
-          </p>
-          <div style={{ display: "flex", gap: "0.75rem", alignItems: "flex-end", flexWrap: "wrap" }}>
-            <label style={{ flex: "0 0 auto" }}>
-              Game date
-              <br />
-              <GameDatePicker value={gameDate} onChange={setGameDate} />
-            </label>
-            <label style={{ flex: "1 1 16rem" }}>
-              Note
-              <br />
-              <input value={note} onChange={(e) => setNote(e.target.value)} style={{ width: "100%" }} />
-            </label>
-            <button className="btn btn-primary" onClick={save} disabled={!note.trim() || !isCompleteGameDate(gameDate)}>
-              Save
-            </button>
-            {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
-          </div>
-          <WarningsList warnings={warnings} />
-        </div>
-      )}
     </div>
   );
 }

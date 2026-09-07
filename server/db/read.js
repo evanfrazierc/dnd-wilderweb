@@ -82,6 +82,13 @@ async function readDeities(db) {
 }
 
 async function readLocations(db) {
-  const row = await db.prepare("SELECT * FROM locations_state WHERE id = 1").get();
-  return row ? JSON.parse(row.data) : {};
+  const rows = await db.prepare("SELECT * FROM kingdoms ORDER BY name").all();
+  return {
+    kingdoms: rows.map((k) => ({
+      name: k.name,
+      capital: k.capital ?? undefined,
+      note: k.note ?? undefined,
+      places: JSON.parse(k.places || "[]"),
+    })),
+  };
 }

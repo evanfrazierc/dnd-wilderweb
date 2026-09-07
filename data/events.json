@@ -1548,6 +1548,60 @@
     "createdAt": "2026-09-07 13:27:50"
   },
   {
+    "id": 107,
+    "type": "LocationAmended",
+    "gameDate": "Month 2, 9th, 1227",
+    "gameDateSort": 441758,
+    "postedAt": "2026-09-07",
+    "actor": null,
+    "region": null,
+    "note": "Amended via the Codex",
+    "payload": {
+      "name": "Kingdom of Casdenia",
+      "changes": {
+        "note": "Long-time ally of Stirling Reach; sends grain during lean winters."
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-09-07 14:08:41"
+  },
+  {
+    "id": 108,
+    "type": "LocationAmended",
+    "gameDate": "Month 2, 9th, 1227",
+    "gameDateSort": 441758,
+    "postedAt": "2026-09-07",
+    "actor": null,
+    "region": null,
+    "note": "Amended via the Codex",
+    "payload": {
+      "name": "Kingdom of Casdenia",
+      "changes": {
+        "capital": "City of Ravenstone Keep"
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-09-07 14:12:02"
+  },
+  {
+    "id": 109,
+    "type": "LocationAmended",
+    "gameDate": "Month 2, 9th, 1227",
+    "gameDateSort": 441758,
+    "postedAt": "2026-09-07",
+    "actor": null,
+    "region": null,
+    "note": "Amended via the Codex",
+    "payload": {
+      "name": "Kingdom of Casdenia",
+      "changes": {
+        "capital": "Royal City of Casdenor"
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-09-07 14:13:19"
+  },
+  {
     "id": 46,
     "type": "ResourceChanged",
     "gameDate": "Month 3, 1227",

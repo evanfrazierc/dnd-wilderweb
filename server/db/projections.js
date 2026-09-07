@@ -138,8 +138,17 @@ async function applyDeityAmended(db, payload) {
 }
 
 async function applyLocationAmended(db, payload) {
+  const existing = await db.prepare("SELECT * FROM kingdoms WHERE name = ?").get(payload.name);
+  const changes = payload.changes ?? {};
+  const merged = {
+    capital: (changes.capital !== undefined ? changes.capital : existing?.capital) ?? null,
+    note: (changes.note !== undefined ? changes.note : existing?.note) ?? null,
+    places: JSON.stringify(changes.places !== undefined ? changes.places : JSON.parse(existing?.places ?? "[]")),
+  };
   await db.prepare(`
-    INSERT INTO locations_state (id, data) VALUES (1, ?)
-    ON CONFLICT (id) DO UPDATE SET data = excluded.data
-  `).run(JSON.stringify(payload.data));
+    INSERT INTO kingdoms (name, capital, note, places)
+    VALUES (?, ?, ?, ?)
+    ON CONFLICT (name) DO UPDATE SET
+      capital = excluded.capital, note = excluded.note, places = excluded.places
+  `).run(payload.name, merged.capital, merged.note, merged.places);
 }

@@ -69,7 +69,7 @@ validation warns instead of blocking, why there's no auth yet, etc.
   `CONTEXT.md`). `createEvent` validates shape (400 on failure), checks in-game warnings
   (`validate.js`), then writes the event and updates the relevant projection in one transaction.
 - `projections.js`: applies an event's payload onto current-state tables (`resource_totals`,
-  `settlement_buildings`, `calendar_state`, `deities`, `locations_state`). Never recomputed by
+  `settlement_buildings`, `calendar_state`, `deities`, `kingdoms`). Never recomputed by
   replaying the full log — see ADR-0001.
   `read.js` reads them back out in the same shape as the old `data/*.json` files.
   `obligations.js`: the tracked-debt concept from `CONTEXT.md`; a `ResourceChanged` referencing an
@@ -118,9 +118,9 @@ through `getProjection`/`getReference`/`getEvents`/`getObligations`. Per view:
   `building` field itself must match the catalog — see Q2 in the spec).
 - **Codex**'s three tabs no longer share one copy-pasted load/edit/save shape (the thing the
   earlier architecture review flagged) — each now matches its data's actual shape: Introduction is
-  read-only reference data; Deities saves per-card as `DeityAmended`; Locations batches edits into
-  one whole-document `LocationAmended`, which requires a note since the payload replaces the
-  entire document.
+  read-only reference data; Deities saves per-card as `DeityAmended`; Locations saves per-kingdom
+  as `LocationAmended` (`payload: {name, changes}`, mirroring `DeityAmended` — ADR-0011), not the
+  whole-document replace it used to be.
 - **Timeline** (replaces the old History Log): lists events newest-first, filterable by
   type/region, shows an obligation-progress panel, and its "log a new entry" form covers just
   `ResourceChanged`/`DMRuling` (auto-detected by whether resource changes were entered) — the

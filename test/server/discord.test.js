@@ -82,15 +82,17 @@ test("buildEmbed formats a DMRuling event with just its note", () => {
   assert.deepEqual(embed.fields, [{ name: "Note", value: "Clarified the trade rules" }]);
 });
 
-test("buildEmbed formats a LocationAmended event with just its note", () => {
+test("buildEmbed formats a LocationAmended event", () => {
   const embed = buildEmbed({
     type: "LocationAmended",
     gameDate: "Erastus 4, 1227",
-    note: "Added the Free City of Arnestal",
-    payload: { data: {} },
+    payload: { name: "Kingdom of Casdenia", changes: { capital: "Royal City of Casdenor" } },
   });
   assert.equal(embed.title, "Locations Updated");
-  assert.deepEqual(embed.fields, [{ name: "Note", value: "Added the Free City of Arnestal" }]);
+  assert.deepEqual(embed.fields, [
+    { name: "Kingdom", value: "Kingdom of Casdenia", inline: true },
+    { name: "Changes", value: "capital: Royal City of Casdenor" },
+  ]);
 });
 
 test("buildEmbed includes the actor when present", () => {
