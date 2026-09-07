@@ -66,8 +66,21 @@ export async function listEvents(db, { type, region, from, to, limit = 200 } = {
   }
 
   const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
+  // A plain "ORDER BY ... ASC LIMIT ?" would keep the EARLIEST-dated matching rows once a
+  // campaign has more events than the limit -- silently dropping recent (even today's) events
+  // from the result instead of paging them off the end, which is backwards for every current
+  // caller (Timeline and StatusBar both want "the recent slice of history", capped, not "the
+  // beginning of history, capped"). Take the most recent `limit` rows first, then re-sort that
+  // slice back into chronological order so the returned array's shape (oldest-to-newest) is
+  // unchanged from before -- callers that reverse it for a newest-first display, or that pass a
+  // limit far above the real row count (scripts/export.js's full-history dump), see no
+  // difference; only truncation now truncates from the right end.
   const rows = await db
-    .prepare(`SELECT * FROM events ${where} ORDER BY game_date_sort ASC, id ASC LIMIT ?`)
+    .prepare(`
+      SELECT * FROM (
+        SELECT * FROM events ${where} ORDER BY game_date_sort DESC, id DESC LIMIT ?
+      ) ORDER BY game_date_sort ASC, id ASC
+    `)
     .all(...params, limit);
 
   return rows.map(deserializeEvent);

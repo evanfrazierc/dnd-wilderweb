@@ -317,3 +317,18 @@ test("listEvents filters by type and region, sorted by game date", async () => {
   assert.equal(narlmarches.length, 1);
   assert.equal(narlmarches[0].type, "BuildingConstructed");
 });
+
+test("listEvents keeps the most recent events once there are more than `limit`, not the earliest", async () => {
+  const db = await freshDb();
+  await createEvent(db, { type: "DMRuling", gameDate: "Month 1, 1225", note: "oldest" });
+  await createEvent(db, { type: "DMRuling", gameDate: "Month 2, 1225", note: "middle" });
+  await createEvent(db, { type: "DMRuling", gameDate: "Month 3, 1225", note: "newest" });
+
+  const capped = await listEvents(db, { limit: 2 });
+  assert.equal(capped.length, 2);
+  // A plain "ORDER BY game_date_sort ASC LIMIT 2" would keep ["oldest", "middle"] --
+  // silently dropping the newest event, which is exactly backwards for a UI paging recent
+  // history (Timeline, StatusBar). Still returned oldest-first within the kept set.
+  assert.deepEqual(capped.map((e) => e.note), ["middle", "newest"]);
+  assert.ok(capped[0].gameDateSort < capped[1].gameDateSort);
+});

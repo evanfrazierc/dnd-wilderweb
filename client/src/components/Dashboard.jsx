@@ -621,10 +621,17 @@ export default function Dashboard() {
   const dirty = stats && draft && JSON.stringify(diffChanges(stats, draft)) !== "{}";
 
   async function save() {
+    // `stats.asOf` is real-world display metadata carried over from the original JSON import
+    // (server/db/read.js's stats_meta, shown as the "As of ..." pill below) -- not a valid
+    // in-fiction date. Falling back to it here once silently stored one as an event's
+    // gameDate, which parseGameDate then read as a bare future year, permanently sorting
+    // that event ahead of everything else. Require a real picked date instead, same as every
+    // other save button in the app.
+    if (!isCompleteGameDate(gameDate)) return;
     const changes = diffChanges(stats, draft);
     await submit({
       type: "ResourceChanged",
-      gameDate: isCompleteGameDate(gameDate) ? formatGameDate(gameDate) : stats.asOf,
+      gameDate: formatGameDate(gameDate),
       note: note.trim() || undefined,
       payload: { changes },
     });
@@ -716,7 +723,7 @@ export default function Dashboard() {
                 style={{ width: "100%" }}
               />
             </label>
-            <button className="btn btn-primary" onClick={save}>
+            <button className="btn btn-primary" onClick={save} disabled={!isCompleteGameDate(gameDate)}>
               <Icon name="Scroll" size={14} />
               Save changes
             </button>
