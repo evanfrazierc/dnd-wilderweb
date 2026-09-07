@@ -115,7 +115,7 @@ function BuildingCatalogEditor({ catalog, onSaved }) {
   );
 }
 
-function AddBuildingForm({ buildingCatalog, onAdd }) {
+function AddBuildingForm({ buildingCatalog, onAdd, postToDiscord, setPostToDiscord }) {
   // Defaults to picking from the catalog (a real <select>, not a datalist -- datalist
   // suggestions are never enforced, so a typo used to slip through as a brand-new,
   // uncatalogued building with no warning until after the save). A building not yet in the
@@ -126,6 +126,9 @@ function AddBuildingForm({ buildingCatalog, onAdd }) {
   const [displayName, setDisplayName] = useState("");
   const [detail, setDetail] = useState("");
   const [gameDate, setGameDate] = useState("");
+
+  // Gates the Discord toggle so it isn't permanently visible on an untouched form.
+  const dirty = Boolean(name.trim() || displayName.trim() || detail.trim() || gameDate.trim());
 
   function submit(e) {
     e.preventDefault();
@@ -185,6 +188,7 @@ function AddBuildingForm({ buildingCatalog, onAdd }) {
         onChange={(e) => setGameDate(e.target.value)}
         style={{ flex: "1 1 8rem" }}
       />
+      {dirty && <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />}
       <button className="btn" type="submit">
         <Icon name="Plus" size={14} />
         Add
@@ -518,10 +522,11 @@ export default function Settlements() {
         Adding or removing a building here logs it as a BuildingConstructed / BuildingRemoved event
         on the Timeline.
       </p>
-      <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", flexWrap: "wrap" }}>
-        <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />
-        {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
-      </div>
+      {status && (
+        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", flexWrap: "wrap" }}>
+          <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>
+        </div>
+      )}
       <WarningsList warnings={warnings} />
 
       <div className="grid grid-2" style={{ marginTop: "1.25rem" }}>
@@ -584,6 +589,8 @@ export default function Settlements() {
             <AddBuildingForm
               buildingCatalog={buildingCatalog}
               onAdd={(b) => addBuilding(region.region, b)}
+              postToDiscord={postToDiscord}
+              setPostToDiscord={setPostToDiscord}
             />
           </div>
         ))}
