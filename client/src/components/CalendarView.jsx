@@ -6,6 +6,8 @@ import { useDraft } from "../lib/useDraft.js";
 import Icon from "./Icon.jsx";
 import WarningsList from "./WarningsList.jsx";
 import PostToDiscordToggle from "./PostToDiscordToggle.jsx";
+import GameDatePicker from "./GameDatePicker.jsx";
+import { formatGameDate } from "../lib/gameDate.js";
 import { seasonColor, assignHolidayColors } from "../lib/campaign.js";
 
 function parseHolidaysText(text) {
@@ -195,14 +197,17 @@ export default function CalendarView() {
   });
 
   async function saveDate() {
-    const month = Number(draftDate.month);
-    const day = Number(draftDate.day);
-    const year = Number(draftDate.year);
     await submit({
       type: "CalendarAdvanced",
-      gameDate: `Month ${month}, ${day}th, ${year}`,
+      gameDate: formatGameDate(draftDate),
       note: note.trim() || undefined,
-      payload: { year, month, day, yearLabel: draftDate.yearLabel, note: draftDate.note },
+      payload: {
+        year: draftDate.year,
+        month: draftDate.month,
+        day: draftDate.day,
+        yearLabel: draftDate.yearLabel,
+        note: draftDate.note,
+      },
     });
   }
 
@@ -247,40 +252,9 @@ export default function CalendarView() {
         </div>
         <div style={{ display: "flex", gap: "0.75rem", alignItems: "flex-end", flexWrap: "wrap" }}>
           <label>
-            Year
+            Date
             <br />
-            <input
-              type="number"
-              value={draftDate.year}
-              onChange={(e) => setDraftDate({ ...draftDate, year: e.target.value })}
-              style={{ width: "5.5rem" }}
-            />
-          </label>
-          <label>
-            Month
-            <br />
-            <select
-              value={draftDate.month}
-              onChange={(e) => setDraftDate({ ...draftDate, month: e.target.value })}
-            >
-              {calendar.months.map((m) => (
-                <option key={m.number} value={m.number}>
-                  {m.number}. {m.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Day
-            <br />
-            <input
-              type="number"
-              min="1"
-              max="30"
-              value={draftDate.day}
-              onChange={(e) => setDraftDate({ ...draftDate, day: e.target.value })}
-              style={{ width: "4.5rem" }}
-            />
+            <GameDatePicker value={draftDate} onChange={setDraftDate} />
           </label>
           <label style={{ flex: "1 1 12rem" }}>
             Note

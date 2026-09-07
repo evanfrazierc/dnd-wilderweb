@@ -5,6 +5,8 @@ import { useReferenceSave } from "../lib/useReferenceSave.js";
 import { useDraft } from "../lib/useDraft.js";
 import Icon from "./Icon.jsx";
 import WarningsList from "./WarningsList.jsx";
+import GameDatePicker from "./GameDatePicker.jsx";
+import { formatGameDate, isCompleteGameDate } from "../lib/gameDate.js";
 
 const ALIGNMENT_ICON = {
   Good: "AlignGood",
@@ -117,7 +119,7 @@ function IntroductionTab() {
 
 function DeityCard({ deity, onSaved }) {
   const [draft, setDraft] = useState(deity);
-  const [gameDate, setGameDate] = useState("");
+  const [gameDate, setGameDate] = useState(null);
   const { submit, status, warnings } = useEventSubmit(onSaved);
 
   function field(key, value) {
@@ -131,16 +133,16 @@ function DeityCard({ deity, onSaved }) {
     for (const key of ["title", "alignment", "confirmed", "note"]) {
       if (draft[key] !== deity[key]) changes[key] = draft[key];
     }
-    if (Object.keys(changes).length === 0 || !gameDate.trim()) return;
+    if (Object.keys(changes).length === 0 || !isCompleteGameDate(gameDate)) return;
     // No Discord option here: tweaking a deity's title/alignment/confirmation is lore
     // upkeep, not campaign news, unlike most other save actions in this app.
     submit({
       type: "DeityAmended",
-      gameDate: gameDate.trim(),
+      gameDate: formatGameDate(gameDate),
       note: `Amended via the Codex`,
       payload: { name: deity.name, changes },
       postToDiscord: false,
-    }).then(() => setGameDate(""));
+    }).then(() => setGameDate(null));
   }
 
   return (
@@ -184,13 +186,8 @@ function DeityCard({ deity, onSaved }) {
       />
       {dirty && (
         <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginTop: "0.5rem", flexWrap: "wrap" }}>
-          <input
-            value={gameDate}
-            onChange={(e) => setGameDate(e.target.value)}
-            placeholder="Game date"
-            style={{ width: "8rem", fontSize: "0.8rem" }}
-          />
-          <button className="btn btn-primary btn-sm" onClick={save} disabled={!gameDate.trim()}>
+          <GameDatePicker value={gameDate} onChange={setGameDate} />
+          <button className="btn btn-primary btn-sm" onClick={save} disabled={!isCompleteGameDate(gameDate)}>
             Save
           </button>
           {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
@@ -203,19 +200,19 @@ function DeityCard({ deity, onSaved }) {
 
 function NewDeityForm({ onAdded }) {
   const [name, setName] = useState("");
-  const [gameDate, setGameDate] = useState("");
+  const [gameDate, setGameDate] = useState(null);
   const { submit, status, warnings } = useEventSubmit(() => {
     setName("");
-    setGameDate("");
+    setGameDate(null);
   });
 
   function submitForm(e) {
     e.preventDefault();
-    if (!name.trim() || !gameDate.trim()) return;
+    if (!name.trim() || !isCompleteGameDate(gameDate)) return;
     // No Discord option here, matching DeityCard -- lore upkeep, not campaign news.
     submit({
       type: "DeityAmended",
-      gameDate: gameDate.trim(),
+      gameDate: formatGameDate(gameDate),
       note: "Added via the Codex",
       payload: { name: name.trim(), changes: { alignment: "Unknown", confirmed: false } },
       postToDiscord: false,
@@ -225,7 +222,7 @@ function NewDeityForm({ onAdded }) {
   return (
     <form onSubmit={submitForm} className="card" style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="New deity's name" style={{ flex: 1 }} />
-      <input value={gameDate} onChange={(e) => setGameDate(e.target.value)} placeholder="Game date" style={{ width: "8rem" }} />
+      <GameDatePicker value={gameDate} onChange={setGameDate} />
       <button className="btn btn-primary" type="submit">
         <Icon name="Plus" size={14} />
         Add deity
@@ -274,7 +271,7 @@ function LocationsTab() {
   const [draft, setDraft] = useState(null);
   const [regions, setRegions] = useState(null);
   const [note, setNote] = useState("");
-  const [gameDate, setGameDate] = useState("");
+  const [gameDate, setGameDate] = useState(null);
   const [newKingdom, setNewKingdom] = useState("");
   const [error, setError] = useState(null);
 
@@ -306,7 +303,7 @@ function LocationsTab() {
   const { submit, status, warnings } = useEventSubmit(() => {
     load();
     setNote("");
-    setGameDate("");
+    setGameDate(null);
   });
 
   if (error) return <div className="error-box">Failed to load locations: {error}</div>;
@@ -324,12 +321,12 @@ function LocationsTab() {
   }
 
   function save() {
-    if (!note.trim() || !gameDate.trim()) return;
+    if (!note.trim() || !isCompleteGameDate(gameDate)) return;
     // No Discord option here: LocationAmended replaces the whole document, so it can't tell
     // "a new settlement was founded" (news) apart from "fixed a typo" (not) -- not offered.
     submit({
       type: "LocationAmended",
-      gameDate: gameDate.trim(),
+      gameDate: formatGameDate(gameDate),
       note: note.trim(),
       payload: { data: draft },
       postToDiscord: false,
@@ -440,17 +437,17 @@ function LocationsTab() {
             This replaces the whole locations record, so a note describing what changed is required.
           </p>
           <div style={{ display: "flex", gap: "0.75rem", alignItems: "flex-end", flexWrap: "wrap" }}>
-            <label style={{ flex: "0 0 8rem" }}>
+            <label style={{ flex: "0 0 auto" }}>
               Game date
               <br />
-              <input value={gameDate} onChange={(e) => setGameDate(e.target.value)} style={{ width: "100%" }} />
+              <GameDatePicker value={gameDate} onChange={setGameDate} />
             </label>
             <label style={{ flex: "1 1 16rem" }}>
               Note
               <br />
               <input value={note} onChange={(e) => setNote(e.target.value)} style={{ width: "100%" }} />
             </label>
-            <button className="btn btn-primary" onClick={save} disabled={!note.trim() || !gameDate.trim()}>
+            <button className="btn btn-primary" onClick={save} disabled={!note.trim() || !isCompleteGameDate(gameDate)}>
               Save
             </button>
             {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}

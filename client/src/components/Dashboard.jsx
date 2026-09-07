@@ -6,6 +6,8 @@ import { useDraft } from "../lib/useDraft.js";
 import Icon from "./Icon.jsx";
 import WarningsList from "./WarningsList.jsx";
 import PostToDiscordToggle from "./PostToDiscordToggle.jsx";
+import GameDatePicker from "./GameDatePicker.jsx";
+import { formatGameDate, isCompleteGameDate } from "../lib/gameDate.js";
 
 const RESOURCE_GROUPS = ["resources", "assets", "society"];
 
@@ -146,7 +148,7 @@ function diffChanges(loaded, draft) {
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [draft, setDraft] = useState(null);
-  const [gameDate, setGameDate] = useState("");
+  const [gameDate, setGameDate] = useState(null);
   const [note, setNote] = useState("");
   const [definitions, setDefinitions] = useState(null);
   const [showResourceEditor, setShowResourceEditor] = useState(false);
@@ -189,7 +191,7 @@ export default function Dashboard() {
     const changes = diffChanges(stats, draft);
     await submit({
       type: "ResourceChanged",
-      gameDate: gameDate.trim() || stats.asOf,
+      gameDate: isCompleteGameDate(gameDate) ? formatGameDate(gameDate) : stats.asOf,
       note: note.trim() || undefined,
       payload: { changes },
     });
@@ -260,15 +262,10 @@ export default function Dashboard() {
             <h3>Record this change</h3>
           </div>
           <div style={{ display: "flex", gap: "0.75rem", alignItems: "flex-end", flexWrap: "wrap" }}>
-            <label style={{ flex: "1 1 12rem" }}>
+            <label style={{ flex: "0 0 auto" }}>
               Game date
               <br />
-              <input
-                value={gameDate}
-                onChange={(e) => setGameDate(e.target.value)}
-                placeholder="e.g. Month 4, 1227"
-                style={{ width: "100%" }}
-              />
+              <GameDatePicker value={gameDate} onChange={setGameDate} />
             </label>
             <label style={{ flex: "2 1 16rem" }}>
               Note

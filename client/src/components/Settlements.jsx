@@ -6,6 +6,8 @@ import { useDraft } from "../lib/useDraft.js";
 import Icon from "./Icon.jsx";
 import WarningsList from "./WarningsList.jsx";
 import PostToDiscordToggle from "./PostToDiscordToggle.jsx";
+import GameDatePicker from "./GameDatePicker.jsx";
+import { formatGameDate, isCompleteGameDate } from "../lib/gameDate.js";
 
 function parseCostText(text) {
   const cost = {};
@@ -125,19 +127,19 @@ function AddBuildingForm({ buildingCatalog, onAdd, postToDiscord, setPostToDisco
   const [name, setName] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [detail, setDetail] = useState("");
-  const [gameDate, setGameDate] = useState("");
+  const [gameDate, setGameDate] = useState(null);
 
   // Gates the Discord toggle so it isn't permanently visible on an untouched form.
-  const dirty = Boolean(name.trim() || displayName.trim() || detail.trim() || gameDate.trim());
+  const dirty = Boolean(name.trim() || displayName.trim() || detail.trim());
 
   function submit(e) {
     e.preventDefault();
-    if (!name.trim() || !gameDate.trim()) return;
+    if (!name.trim() || !isCompleteGameDate(gameDate)) return;
     onAdd({
       building: name.trim(),
       displayName: displayName.trim() || undefined,
       detail: detail.trim() || undefined,
-      gameDate: gameDate.trim(),
+      gameDate: formatGameDate(gameDate),
     });
     setName("");
     setDisplayName("");
@@ -182,12 +184,7 @@ function AddBuildingForm({ buildingCatalog, onAdd, postToDiscord, setPostToDisco
         onChange={(e) => setDetail(e.target.value)}
         style={{ flex: "1 1 auto" }}
       />
-      <input
-        placeholder="Game date"
-        value={gameDate}
-        onChange={(e) => setGameDate(e.target.value)}
-        style={{ flex: "1 1 8rem" }}
-      />
+      <GameDatePicker value={gameDate} onChange={setGameDate} />
       {dirty && <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />}
       <button className="btn" type="submit">
         <Icon name="Plus" size={14} />
@@ -202,18 +199,18 @@ function AddBuildingForm({ buildingCatalog, onAdd, postToDiscord, setPostToDisco
 // should be able to decide on it independently.
 function RemoveBuildingControl({ regionName, building, label, onRemoved }) {
   const [confirming, setConfirming] = useState(false);
-  const [gameDate, setGameDate] = useState("");
+  const [gameDate, setGameDate] = useState(null);
   const { submit, status, warnings, postToDiscord, setPostToDiscord } = useEventSubmit(() => {
     setConfirming(false);
-    setGameDate("");
+    setGameDate(null);
     onRemoved();
   });
 
   function confirmRemoval() {
-    if (!gameDate.trim()) return;
+    if (!isCompleteGameDate(gameDate)) return;
     submit({
       type: "BuildingRemoved",
-      gameDate: gameDate.trim(),
+      gameDate: formatGameDate(gameDate),
       region: regionName,
       note: "Removed via the Settlements view",
       payload: { building, count: 1 },
@@ -230,15 +227,9 @@ function RemoveBuildingControl({ regionName, building, label, onRemoved }) {
 
   return (
     <div style={{ display: "flex", gap: "0.4rem", alignItems: "center", flexWrap: "wrap", width: "100%", marginTop: "0.4rem" }}>
-      <input
-        value={gameDate}
-        onChange={(e) => setGameDate(e.target.value)}
-        placeholder="Game date this was removed/lost"
-        style={{ flex: "1 1 10rem", fontSize: "0.8rem" }}
-        autoFocus
-      />
+      <GameDatePicker value={gameDate} onChange={setGameDate} />
       <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />
-      <button className="btn btn-sm btn-danger" onClick={confirmRemoval} disabled={!gameDate.trim()}>
+      <button className="btn btn-sm btn-danger" onClick={confirmRemoval} disabled={!isCompleteGameDate(gameDate)}>
         Confirm
       </button>
       <button className="btn btn-sm" onClick={() => setConfirming(false)}>
@@ -336,10 +327,10 @@ function EditBuildingControl({ regionName, building, label, regions, onChanged }
   const [displayName, setDisplayName] = useState(building.displayName || "");
   const [detail, setDetail] = useState(building.detail || "");
   const [targetRegion, setTargetRegion] = useState(regionName);
-  const [gameDate, setGameDate] = useState("");
+  const [gameDate, setGameDate] = useState(null);
   const { submit, status, warnings } = useEventSubmit(() => {
     setExpanded(false);
-    setGameDate("");
+    setGameDate(null);
     onChanged();
   });
 
@@ -349,7 +340,8 @@ function EditBuildingControl({ regionName, building, label, regions, onChanged }
   const dirty = moving || nameChanged || detailChanged;
 
   async function save() {
-    if (!gameDate.trim()) return;
+    if (!isCompleteGameDate(gameDate)) return;
+    const formattedDate = formatGameDate(gameDate);
     if (moving) {
       // A move is a BuildingRemoved from the old region immediately followed by a
       // BuildingConstructed in the new one, carrying displayName/detail across -- preserves
@@ -357,7 +349,7 @@ function EditBuildingControl({ regionName, building, label, regions, onChanged }
       // (CONTEXT.md's BuildingAmended entry / ADR-0004's precedent).
       await submit({
         type: "BuildingRemoved",
-        gameDate: gameDate.trim(),
+        gameDate: formattedDate,
         region: regionName,
         note: `Moved to ${targetRegion}`,
         payload: { building: building.name, count: building.count },
@@ -365,7 +357,7 @@ function EditBuildingControl({ regionName, building, label, regions, onChanged }
       });
       await submit({
         type: "BuildingConstructed",
-        gameDate: gameDate.trim(),
+        gameDate: formattedDate,
         region: targetRegion,
         note: `Moved from ${regionName}`,
         payload: {
@@ -382,7 +374,7 @@ function EditBuildingControl({ regionName, building, label, regions, onChanged }
       if (detailChanged) changes.detail = detail.trim() || null;
       await submit({
         type: "BuildingAmended",
-        gameDate: gameDate.trim(),
+        gameDate: formattedDate,
         region: regionName,
         note: "Edited via the Settlements view",
         payload: { building: building.name, changes },
@@ -418,16 +410,9 @@ function EditBuildingControl({ regionName, building, label, regions, onChanged }
           <option key={r.name} value={r.name}>{r.name}</option>
         ))}
       </select>
+      {dirty && <GameDatePicker value={gameDate} onChange={setGameDate} />}
       {dirty && (
-        <input
-          value={gameDate}
-          onChange={(e) => setGameDate(e.target.value)}
-          placeholder="Game date"
-          style={{ flex: "0 0 7rem", fontSize: "0.8rem" }}
-        />
-      )}
-      {dirty && (
-        <button className="btn btn-sm btn-primary" onClick={save} disabled={!gameDate.trim()}>
+        <button className="btn btn-sm btn-primary" onClick={save} disabled={!isCompleteGameDate(gameDate)}>
           Save
         </button>
       )}

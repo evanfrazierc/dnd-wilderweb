@@ -4,6 +4,8 @@ import { useEventSubmit } from "../lib/useEventSubmit.js";
 import Icon from "./Icon.jsx";
 import WarningsList from "./WarningsList.jsx";
 import PostToDiscordToggle from "./PostToDiscordToggle.jsx";
+import GameDatePicker from "./GameDatePicker.jsx";
+import { formatGameDate, isCompleteGameDate } from "../lib/gameDate.js";
 
 const EVENT_TYPES = [
   "ResourceChanged",
@@ -39,7 +41,7 @@ function parseChanges(text) {
 }
 
 function NewEntryForm({ obligations, onAdd }) {
-  const [gameDate, setGameDate] = useState("");
+  const [gameDate, setGameDate] = useState(null);
   const [region, setRegion] = useState("");
   const [note, setNote] = useState("");
   const [changesText, setChangesText] = useState("");
@@ -48,7 +50,7 @@ function NewEntryForm({ obligations, onAdd }) {
   const [obDescription, setObDescription] = useState("");
   const [obRepaymentResource, setObRepaymentResource] = useState("");
   const [obAmountTotal, setObAmountTotal] = useState("");
-  const [obDueGameDate, setObDueGameDate] = useState("");
+  const [obDueGameDate, setObDueGameDate] = useState(null);
   const { submit, status, warnings, postToDiscord, setPostToDiscord } = useEventSubmit(onAdd);
 
   const changes = parseChanges(changesText);
@@ -60,16 +62,16 @@ function NewEntryForm({ obligations, onAdd }) {
     setObDescription("");
     setObRepaymentResource("");
     setObAmountTotal("");
-    setObDueGameDate("");
+    setObDueGameDate(null);
   }
 
   function submitForm(e) {
     e.preventDefault();
-    if (!gameDate.trim() || !note.trim()) return;
+    if (!isCompleteGameDate(gameDate) || !note.trim()) return;
     if (createsObligation && !newObligationReady) return;
     submit({
       type: hasChanges ? "ResourceChanged" : "DMRuling",
-      gameDate: gameDate.trim(),
+      gameDate: formatGameDate(gameDate),
       region: region.trim() || undefined,
       note: note.trim(),
       payload: hasChanges
@@ -81,7 +83,7 @@ function NewEntryForm({ obligations, onAdd }) {
                   description: obDescription.trim(),
                   repaymentResource: obRepaymentResource.trim(),
                   amountTotal: Number(obAmountTotal),
-                  dueGameDate: obDueGameDate.trim() || undefined,
+                  dueGameDate: isCompleteGameDate(obDueGameDate) ? formatGameDate(obDueGameDate) : undefined,
                 }
               : undefined,
           }
@@ -90,7 +92,7 @@ function NewEntryForm({ obligations, onAdd }) {
       // it (unlike ResourceChanged, which shares this same form and checkbox).
       ...(hasChanges ? {} : { postToDiscord: false }),
     }).then(() => {
-      setGameDate("");
+      setGameDate(null);
       setRegion("");
       setNote("");
       setChangesText("");
@@ -115,12 +117,8 @@ function NewEntryForm({ obligations, onAdd }) {
       <div className="grid grid-2">
         <label>
           In-game date
-          <input
-            value={gameDate}
-            onChange={(e) => setGameDate(e.target.value)}
-            placeholder="e.g. Month 4, 1227"
-            style={{ width: "100%" }}
-          />
+          <br />
+          <GameDatePicker value={gameDate} onChange={setGameDate} />
         </label>
         <label>
           Region (optional)
@@ -171,7 +169,8 @@ function NewEntryForm({ obligations, onAdd }) {
               </label>
               <label>
                 Due date (optional)
-                <input value={obDueGameDate} onChange={(e) => setObDueGameDate(e.target.value)} style={{ width: "100%" }} />
+                <br />
+                <GameDatePicker value={obDueGameDate} onChange={setObDueGameDate} autoDefault={false} allowClear />
               </label>
             </div>
           )}
@@ -185,7 +184,7 @@ function NewEntryForm({ obligations, onAdd }) {
         <button
           className="btn btn-primary"
           type="submit"
-          disabled={!gameDate.trim() || !note.trim() || (createsObligation && !newObligationReady)}
+          disabled={!isCompleteGameDate(gameDate) || !note.trim() || (createsObligation && !newObligationReady)}
         >
           <Icon name="Scroll" size={14} />
           Add entry
