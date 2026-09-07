@@ -67,15 +67,16 @@ CREATE TABLE IF NOT EXISTS locations_state (
 );
 
 -- A kingdom (CONTEXT.md): campaign state, event-sourced like deities (LocationAmended,
--- mirroring DeityAmended's shape) rather than reference data -- a kingdom's capital,
--- notes, and named places are discovered/established facts during play, not static rules.
--- Name-keyed like deities, not a stable integer id like regions: there's no rename-kingdom
--- feature (docs/adr/0011), so the drift a rename would cause doesn't arise yet.
+-- mirroring DeityAmended's shape) rather than reference data -- a kingdom's capital and
+-- notes are discovered/established facts during play, not static rules. Name-keyed like
+-- deities, not a stable integer id like regions: there's no rename-kingdom feature
+-- (docs/adr/0011), so the drift a rename would cause doesn't arise yet. A kingdom's named
+-- settlements are not its own data -- they're Regions that name this kingdom via
+-- `regions.kingdom` (docs/adr/0010, docs/adr/0012).
 CREATE TABLE IF NOT EXISTS kingdoms (
   name TEXT PRIMARY KEY,
   capital TEXT,
-  note TEXT, -- freeform flavor/rumors, especially useful before there's anything concrete
-  places TEXT NOT NULL DEFAULT '[]' -- JSON array of {name, type} -- named settled places (cities, landmarks)
+  note TEXT -- freeform flavor/rumors, especially useful before there's anything concrete
 );
 
 -- Obligations: a first-class tracked debt (CONTEXT.md), settled incrementally by

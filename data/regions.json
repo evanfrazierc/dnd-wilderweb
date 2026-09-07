@@ -42,6 +42,12 @@
     "kingdom": null
   },
   {
+    "id": 10,
+    "name": "Olen's Rest",
+    "description": "Landmark",
+    "kingdom": "Kingdom of Casdenia"
+  },
+  {
     "id": 1,
     "name": "Stirling Reach",
     "description": "The party's settlement.",

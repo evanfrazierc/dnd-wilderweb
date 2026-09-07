@@ -2,26 +2,17 @@
   "kingdoms": [
     {
       "name": "Kingdom of Casdenia",
-      "capital": "Royal City of Casdenor",
-      "places": [
-        {
-          "name": "Olen's Rest",
-          "type": "Landmark"
-        }
-      ]
+      "capital": "Royal City of Casdenor"
     },
     {
-      "name": "Kingdom of Galderoy",
-      "places": []
+      "name": "Kingdom of Galderoy"
     },
     {
       "name": "Kingdom of Ravenstone",
-      "capital": "City of Ravenstone",
-      "places": []
+      "capital": "City of Ravenstone"
     },
     {
-      "name": "Kingdom of Tremund",
-      "places": []
+      "name": "Kingdom of Tremund"
     }
   ]
 }

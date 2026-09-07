@@ -258,6 +258,21 @@ export async function ensureRegionsSeeded(db) {
  * a county's name/seat has no home in the new shape, and per-county settlement lists were
  * already retired in docs/adr/0010. Called once from server/index.js's startup, same as
  * ensureRegionsSeeded -- tests build their own kingdom data directly. */
+/** Shared by ensureKingdomsSeeded and migrateKingdomPlacesToRegions (ADR-0012): creates a
+ * Region named after each place, claimed by `kingdomName`, skipping any name that's already
+ * a region (dedup, so re-running never creates duplicates). `type` becomes the region's
+ * starting description -- there's nowhere else for it to go, and the DM can refine it from
+ * Settlements' "Manage regions" afterward. */
+async function seedRegionsFromPlaces(db, kingdomName, places) {
+  for (const p of places) {
+    if (!p?.name) continue;
+    const existing = await db.prepare("SELECT id FROM regions WHERE name = ?").get(p.name);
+    if (existing) continue;
+    await db.prepare("INSERT INTO regions (name, description, kingdom) VALUES (?, ?, ?)")
+      .run(p.name, p.type ?? null, kingdomName);
+  }
+}
+
 export async function ensureKingdomsSeeded(db) {
   const { c } = await db.prepare("SELECT COUNT(*) c FROM kingdoms").get();
   if (c > 0) return;
@@ -266,10 +281,25 @@ export async function ensureKingdomsSeeded(db) {
   const oldKingdoms = locationsRow ? JSON.parse(locationsRow.data).kingdoms ?? [] : [];
   if (oldKingdoms.length === 0) return;
 
-  const insert = db.prepare("INSERT INTO kingdoms (name, capital, note, places) VALUES (?, ?, ?, ?)");
+  const insert = db.prepare("INSERT INTO kingdoms (name, capital, note) VALUES (?, ?, ?)");
   for (const k of oldKingdoms) {
-    const places = (k.other ?? []).map((o) => ({ name: o.name, type: o.type }));
-    await insert.run(k.name, k.capital ?? null, k.note ?? null, JSON.stringify(places));
+    await insert.run(k.name, k.capital ?? null, k.note ?? null);
+    await seedRegionsFromPlaces(db, k.name, k.other ?? []);
+  }
+}
+
+/** One-time migration (ADR-0012) for a database that already ran an earlier version of
+ * ensureKingdomsSeeded (ADR-0011) and so has real data sitting in a `kingdoms.places` column
+ * that schema.sql no longer creates. Not gated on a row count like the ensure* seeds --
+ * "does this column still exist" is itself the gate, so it's a safe no-op forever after the
+ * one database that needed it (this project's, local and production) has run it once. */
+export async function migrateKingdomPlacesToRegions(db) {
+  const info = await db.prepare("PRAGMA table_info(kingdoms)").all();
+  if (!info.some((col) => col.name === "places")) return;
+
+  const rows = await db.prepare("SELECT name, places FROM kingdoms").all();
+  for (const row of rows) {
+    await seedRegionsFromPlaces(db, row.name, JSON.parse(row.places || "[]"));
   }
 }
 

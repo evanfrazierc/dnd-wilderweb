@@ -88,7 +88,6 @@ async function readLocations(db) {
       name: k.name,
       capital: k.capital ?? undefined,
       note: k.note ?? undefined,
-      places: JSON.parse(k.places || "[]"),
     })),
   };
 }

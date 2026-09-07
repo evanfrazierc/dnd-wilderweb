@@ -933,22 +933,6 @@ input[type="number"] {
   margin-top: 0.75rem;
 }
 
-.location-list {
-  list-style: none;
-  margin: 0.4rem 0 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.location-list li {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-}
-
 .fade-in {
   animation: fadeIn 0.35s ease both;
 }

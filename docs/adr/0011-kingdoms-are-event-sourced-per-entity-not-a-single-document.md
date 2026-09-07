@@ -41,6 +41,10 @@ ahead of that need, same call ADR-0010 made.
 
 ## Counties are gone; "other" places become a flat `places` list
 
+**Superseded by ADR-0012**, written minutes after this one: the `places` list below turned out
+to duplicate Region rather than replace counties with something simpler. Left here for the
+history of how counties were retired; the current shape has no `places` column at all.
+
 Each kingdom's counties (name + seat) and per-county settlement lists (already gutted by
 ADR-0010) are dropped entirely, not migrated. Across five kingdoms there was exactly one real
 county; the layer wasn't earning its keep. What remains of "named things in a kingdom" is the

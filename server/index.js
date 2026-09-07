@@ -6,7 +6,9 @@ import { getDb } from "./db/connection.js";
 import { createEvent, listEvents } from "./db/events.js";
 import { getProjection } from "./db/read.js";
 import { listObligations, getObligation, listSettlingEvents } from "./db/obligations.js";
-import { ValidationError, REFERENCE_RESOURCES, ensureRegionsSeeded, ensureKingdomsSeeded } from "./db/reference.js";
+import {
+  ValidationError, REFERENCE_RESOURCES, ensureRegionsSeeded, ensureKingdomsSeeded, migrateKingdomPlacesToRegions,
+} from "./db/reference.js";
 import { notifyDiscord } from "./discord.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -156,6 +158,7 @@ if (isMain) {
     .then(async (db) => {
       await ensureRegionsSeeded(db);
       await ensureKingdomsSeeded(db);
+      await migrateKingdomPlacesToRegions(db);
       createApp(db).listen(port, () => {
         console.log(`Wilderweb server listening on http://localhost:${port}`);
       });

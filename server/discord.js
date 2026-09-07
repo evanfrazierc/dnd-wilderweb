@@ -67,9 +67,7 @@ function eventFields(event) {
     }
     case "LocationAmended": {
       fields.push({ name: "Kingdom", value: payload.name, inline: true });
-      const changes = Object.entries(payload.changes || {})
-        .filter(([k]) => k !== "places")
-        .map(([k, v]) => `${k}: ${v}`).join(", ");
+      const changes = Object.entries(payload.changes || {}).map(([k, v]) => `${k}: ${v}`).join(", ");
       if (changes) fields.push({ name: "Changes", value: changes });
       break;
     }

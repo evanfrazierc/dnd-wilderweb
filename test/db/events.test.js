@@ -171,18 +171,16 @@ test("LocationAmended creates a new kingdom and merges partial changes onto an e
   let row = await db.prepare("SELECT * FROM kingdoms WHERE name = ?").get("Kingdom of Casdenia");
   assert.equal(row.capital, "Royal City of Casdenor");
   assert.equal(row.note, "Friendly.");
-  assert.deepEqual(JSON.parse(row.places), []);
 
-  // A later save touching only `places` must not clobber the capital/note set earlier.
+  // A later save touching only `note` must not clobber the capital set earlier.
   await createEvent(db, {
     type: "LocationAmended",
     gameDate: "1226",
-    payload: { name: "Kingdom of Casdenia", changes: { places: [{ name: "Olen's Rest", type: "Landmark" }] } },
+    payload: { name: "Kingdom of Casdenia", changes: { note: "Now hostile." } },
   });
   row = await db.prepare("SELECT * FROM kingdoms WHERE name = ?").get("Kingdom of Casdenia");
   assert.equal(row.capital, "Royal City of Casdenor");
-  assert.equal(row.note, "Friendly.");
-  assert.deepEqual(JSON.parse(row.places), [{ name: "Olen's Rest", type: "Landmark" }]);
+  assert.equal(row.note, "Now hostile.");
 });
 
 test("ResourceChanged with payload.newObligation creates an Obligation tied to the event", async () => {

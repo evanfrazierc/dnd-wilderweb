@@ -313,23 +313,10 @@ function KingdomCard({ kingdom, regions, onSaved }) {
   // in-progress edit on a sibling card that hasn't saved yet).
   const [baseline, setBaseline] = useState(kingdom);
   const [gameDate, setGameDate] = useState(null);
-  const [newPlaceName, setNewPlaceName] = useState("");
-  const [newPlaceType, setNewPlaceType] = useState("");
   const { submit, status, warnings } = useEventSubmit(onSaved);
 
   function field(key, value) {
     setDraft({ ...draft, [key]: value });
-  }
-
-  function addPlace() {
-    if (!newPlaceName.trim()) return;
-    field("places", [...draft.places, { name: newPlaceName.trim(), type: newPlaceType.trim() || undefined }]);
-    setNewPlaceName("");
-    setNewPlaceType("");
-  }
-
-  function removePlace(i) {
-    field("places", draft.places.filter((_, idx) => idx !== i));
   }
 
   const dirty = JSON.stringify(draft) !== JSON.stringify(baseline);
@@ -339,7 +326,6 @@ function KingdomCard({ kingdom, regions, onSaved }) {
     const changes = {};
     if (draft.capital !== baseline.capital) changes.capital = draft.capital?.trim() || null;
     if (draft.note !== baseline.note) changes.note = draft.note?.trim() || null;
-    if (JSON.stringify(draft.places) !== JSON.stringify(baseline.places)) changes.places = draft.places;
     // No Discord option: lore/worldbuilding upkeep, not campaign news, matching DeityAmended.
     submit({
       type: "LocationAmended",
@@ -353,6 +339,8 @@ function KingdomCard({ kingdom, regions, onSaved }) {
     });
   }
 
+  // A kingdom's settlements are Regions that name it, not the kingdom's own data (ADR-0012)
+  // -- adding one happens on Settlements, not here.
   const kingdomRegions = regions.filter((r) => r.kingdom === kingdom.name);
 
   return (
@@ -378,47 +366,20 @@ function KingdomCard({ kingdom, regions, onSaved }) {
         rows={2}
         style={{ width: "100%", fontSize: "0.85rem" }}
       />
-      {draft.places.length > 0 && (
-        <ul className="location-list" style={{ marginTop: "0.6rem" }}>
-          {draft.places.map((p, i) => (
-            <li key={i}>
-              <span style={{ flex: 1 }}>{p.name}</span>
-              {p.type && <span className="pill">{p.type}</span>}
-              <button className="btn btn-icon btn-danger" onClick={() => removePlace(i)} aria-label={`Remove ${p.name}`}>
-                <Icon name="Trash" size={12} />
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-      <div style={{ display: "flex", gap: "0.4rem", marginTop: "0.6rem", flexWrap: "wrap" }}>
-        <input
-          value={newPlaceName}
-          onChange={(e) => setNewPlaceName(e.target.value)}
-          placeholder="Named place (city, landmark…)"
-          style={{ flex: "1 1 10rem", fontSize: "0.82rem" }}
-        />
-        <input
-          value={newPlaceType}
-          onChange={(e) => setNewPlaceType(e.target.value)}
-          placeholder="Type (optional)"
-          style={{ flex: "0 1 8rem", fontSize: "0.82rem" }}
-        />
-        <button type="button" className="btn btn-sm" onClick={addPlace} disabled={!newPlaceName.trim()}>
-          <Icon name="Plus" size={13} />
-          Add
-        </button>
-      </div>
-      {kingdomRegions.length > 0 && (
-        <div style={{ marginTop: "0.6rem" }}>
-          <strong style={{ fontSize: "0.85rem" }}>Regions</strong>
+      <div style={{ marginTop: "0.6rem" }}>
+        <strong style={{ fontSize: "0.85rem" }}>Settlements</strong>
+        {kingdomRegions.length > 0 ? (
           <div className="tag-row">
             {kingdomRegions.map((r) => (
               <span key={r.id} className="pill">{r.name}</span>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <p className="text-faint" style={{ fontSize: "0.78rem", margin: "0.3rem 0 0" }}>
+            None claimed yet -- add or assign one from Settlements → Manage regions.
+          </p>
+        )}
+      </div>
       {dirty && (
         <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginTop: "0.75rem", flexWrap: "wrap" }}>
           <GameDatePicker value={gameDate} onChange={setGameDate} />

@@ -11,6 +11,7 @@ import {
   replaceRegions,
   ensureRegionsSeeded,
   ensureKingdomsSeeded,
+  migrateKingdomPlacesToRegions,
 } from "../../server/db/reference.js";
 
 test("replaceBuildingCatalog replaces the whole catalog", async () => {
@@ -215,7 +216,7 @@ test("ensureRegionsSeeded seeds from wilderlandsRegions and settlement_buildings
   assert.equal(regions.find((r) => r.name === "Narlmarches").description, "Edited");
 });
 
-test("ensureKingdomsSeeded seeds from the old locations_state kingdoms array, dropping counties, and is idempotent", async () => {
+test("ensureKingdomsSeeded seeds kingdoms and turns each kingdom's old `other` places into Regions claiming it, and is idempotent", async () => {
   const db = await openDb(":memory:");
   await db.prepare("INSERT INTO locations_state (id, data) VALUES (1, ?)").run(
     JSON.stringify({
@@ -234,10 +235,14 @@ test("ensureKingdomsSeeded seeds from the old locations_state kingdoms array, dr
   await ensureKingdomsSeeded(db);
   let rows = await db.prepare("SELECT * FROM kingdoms ORDER BY name").all();
   assert.equal(rows.length, 2);
-  const casdenia = rows.find((r) => r.name === "Kingdom of Casdenia");
-  assert.equal(casdenia.capital, "Royal City of Casdenor");
-  assert.deepEqual(JSON.parse(casdenia.places), [{ name: "Olen's Rest", type: "Landmark" }]);
+  assert.equal(rows.find((r) => r.name === "Kingdom of Casdenia").capital, "Royal City of Casdenor");
   assert.equal(rows.find((r) => r.name === "Kingdom of Galderoy").note, "No locations posted yet.");
+
+  const regions = await readRegions(db);
+  assert.equal(regions.length, 1);
+  assert.equal(regions[0].name, "Olen's Rest");
+  assert.equal(regions[0].description, "Landmark");
+  assert.equal(regions[0].kingdom, "Kingdom of Casdenia");
 
   // Second call must not clobber a DM edit made after the first seed.
   await db.prepare("UPDATE kingdoms SET note = ? WHERE name = ?").run("Edited", "Kingdom of Galderoy");
@@ -245,4 +250,30 @@ test("ensureKingdomsSeeded seeds from the old locations_state kingdoms array, dr
   rows = await db.prepare("SELECT * FROM kingdoms").all();
   assert.equal(rows.length, 2);
   assert.equal(rows.find((r) => r.name === "Kingdom of Galderoy").note, "Edited");
+});
+
+test("migrateKingdomPlacesToRegions turns an already-seeded kingdom's places column into Regions, and is idempotent", async () => {
+  const db = await openDb(":memory:");
+  await db.prepare("ALTER TABLE kingdoms ADD COLUMN places TEXT NOT NULL DEFAULT '[]'").run();
+  await db.prepare("INSERT INTO kingdoms (name, capital, places) VALUES (?, ?, ?)").run(
+    "Kingdom of Casdenia", "Royal City of Casdenor", JSON.stringify([{ name: "Olen's Rest", type: "Landmark" }]),
+  );
+
+  await migrateKingdomPlacesToRegions(db);
+  let regions = await readRegions(db);
+  assert.equal(regions.length, 1);
+  assert.equal(regions[0].name, "Olen's Rest");
+  assert.equal(regions[0].kingdom, "Kingdom of Casdenia");
+
+  // Second call must not create a duplicate region.
+  await migrateKingdomPlacesToRegions(db);
+  regions = await readRegions(db);
+  assert.equal(regions.length, 1);
+});
+
+test("migrateKingdomPlacesToRegions is a no-op when kingdoms has no places column", async () => {
+  const db = await openDb(":memory:");
+  await db.prepare("INSERT INTO kingdoms (name) VALUES (?)").run("Kingdom of Casdenia");
+  await migrateKingdomPlacesToRegions(db);
+  assert.equal((await readRegions(db)).length, 0);
 });
