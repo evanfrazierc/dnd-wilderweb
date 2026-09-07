@@ -1,6 +1,28 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseGameDate } from "../../server/db/gameDate.js";
+import { parseGameDate, ordinalSuffix } from "../../server/db/gameDate.js";
+
+test("ordinalSuffix handles the 11th/12th/13th exceptions", () => {
+  assert.equal(ordinalSuffix(1), "st");
+  assert.equal(ordinalSuffix(2), "nd");
+  assert.equal(ordinalSuffix(3), "rd");
+  assert.equal(ordinalSuffix(4), "th");
+  assert.equal(ordinalSuffix(11), "th");
+  assert.equal(ordinalSuffix(12), "th");
+  assert.equal(ordinalSuffix(13), "th");
+  assert.equal(ordinalSuffix(21), "st");
+  assert.equal(ordinalSuffix(22), "nd");
+  assert.equal(ordinalSuffix(23), "rd");
+});
+
+test("parseGameDate reports hasDay so a day that was never on record isn't invented when reformatting", () => {
+  assert.equal(parseGameDate("Month 3, 15th, 1225").hasDay, true);
+  assert.equal(parseGameDate("Month 6, 1225").hasDay, false);
+  assert.equal(parseGameDate("Pelorune (1) 16, 1225").hasDay, true);
+  assert.equal(parseGameDate("Pelorune (1), 1226").hasDay, false);
+  assert.equal(parseGameDate("1226").hasDay, false);
+  assert.equal(parseGameDate("Month 6 to Month 12, 1226").hasDay, false);
+});
 
 test("parses '<Month> (<n>) <day>, <year>'", () => {
   const r = parseGameDate("Pelorune (1) 16, 1225");

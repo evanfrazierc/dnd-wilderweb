@@ -2,7 +2,7 @@ import { createClient } from "@libsql/client";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
 import { readFileSync } from "node:fs";
-import { parseGameDate } from "./gameDate.js";
+import { parseGameDate, ordinalSuffix } from "./gameDate.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const schemaPath = path.join(__dirname, "schema.sql");
@@ -197,6 +197,54 @@ async function ensureKnownDataCorrections(client) {
   }
 }
 
+// One-time normalization of every event's game_date_raw string to one consistent shape --
+// "MonthName (N), <day><suffix>, year" when a day was recorded, "MonthName (N), year" when
+// only month+year was -- matching what GameDatePicker/formatGameDate now always produce
+// (client/src/lib/gameDate.js). Doesn't change what date anything actually represents: every
+// row here already parses to a real {year, month, day}, this only re-serializes the display
+// string and fixes wrong ordinal suffixes ("3th" -> "3rd") along the way. Two things are
+// deliberately left alone: bare years (nothing to convert them from) and the one "Month X to
+// Month Y" range event (a different shape this pass doesn't cover). The "2025-09-14"-style
+// migration entries never had an in-fiction date recorded at all -- the DM supplied "Erastus
+// 3rd, 1227" for that whole batch directly (see chat log) rather than this guessing one.
+// Gated on each row's current string already matching its target shape, so this is a safe
+// no-op forever after the one time it actually needs to run.
+async function ensureConsistentDateFormatting(client) {
+  const monthsResult = await client.execute("SELECT number, name FROM calendar_months");
+  if (monthsResult.rows.length === 0) return; // calendar structure not seeded yet
+  const monthNames = new Map(monthsResult.rows.map((r) => [r.number, r.name]));
+
+  const ISO_DATE_CORRECTION = "Erastus (2), 3rd, 1227";
+  const rows = await client.execute("SELECT id, game_date_raw FROM events");
+
+  for (const row of rows.rows) {
+    const raw = row.game_date_raw;
+    let next;
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+      next = ISO_DATE_CORRECTION; // a real-world "as of" date, not an in-fiction one
+    } else if (/^Month\s+\d+\s+to\s+Month\s+\d+,/i.test(raw) || /^\d+$/.test(raw)) {
+      continue; // range or bare year -- not covered by this pass
+    } else {
+      const parsed = parseGameDate(raw);
+      if (!parsed.matched) continue; // genuinely unparseable -- leave the original alone
+      const name = monthNames.get(parsed.month);
+      if (!name) continue; // unknown month number -- leave the original alone
+      next = parsed.hasDay
+        ? `${name} (${parsed.month}), ${parsed.day}${ordinalSuffix(parsed.day)}, ${parsed.year}`
+        : `${name} (${parsed.month}), ${parsed.year}`;
+    }
+
+    if (next !== raw) {
+      const sort = parseGameDate(next).sortKey;
+      await client.execute({
+        sql: "UPDATE events SET game_date_raw = ?, game_date_sort = ? WHERE id = ?",
+        args: [next, sort, row.id],
+      });
+    }
+  }
+}
+
 async function initSchema(client) {
   await client.execute("PRAGMA foreign_keys = ON");
   await client.executeMultiple(readFileSync(schemaPath, "utf-8"));
@@ -204,6 +252,7 @@ async function initSchema(client) {
   await ensureColumn(client, "regions", "kingdom", "TEXT");
   await ensureObligationAmendedEventType(client);
   await ensureKnownDataCorrections(client);
+  await ensureConsistentDateFormatting(client);
 }
 
 /** Opens a local database: `:memory:` or a filesystem path. Used by tests and local scripts. */

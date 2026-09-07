@@ -253,3 +253,66 @@ test("ensureKnownDataCorrections' calendar_state recovery keeps a real CalendarA
     }
   }
 });
+
+// ensureConsistentDateFormatting normalizes every event's gameDate string to one shape without
+// changing what date anything actually represents -- covers every bucket found in the real
+// campaign log (numeric with/without day, old-style named with/without day, wrong ordinal
+// suffixes, the DM-supplied correction for real-world "as of" dates) plus the two things it
+// deliberately leaves alone (bare years, a month range).
+test("ensureConsistentDateFormatting normalizes every known date shape to one consistent format", async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "wilderweb-test-"));
+  const dbPath = path.join(dir, "test.db");
+  try {
+    const db = await openDb(dbPath);
+
+    async function insertEvent(id, gameDateRaw, gameDateSort) {
+      await db.prepare(`
+        INSERT INTO events (id, type, game_date_raw, game_date_sort, posted_at, payload)
+        VALUES (?, 'DMRuling', ?, ?, '2026-01-01', '{}')
+      `).run(id, gameDateRaw, gameDateSort);
+    }
+
+    // The migration needs month names to reformat with -- only months referenced below.
+    await db.prepare("INSERT INTO calendar_months (number, name) VALUES (1, 'Pelorune'), (2, 'Erastus')").run();
+
+    await insertEvent(1, "Month 2, 3th, 1227", 441752); // wrong ordinal suffix
+    await insertEvent(2, "Month 2, 1227", 441751); // numeric, no day
+    await insertEvent(3, "Pelorune (1) 16, 1225", 441015); // old named, no comma, has day
+    await insertEvent(4, "Pelorune (1), 1226", 441360); // old named, no day
+    await insertEvent(5, "Erastus (2), 3rd, 1227", 441752); // already the target shape
+    await insertEvent(6, "2025-09-14", 729000); // real-world "as of" date, DM-supplied correction
+    await insertEvent(7, "1225", 441000); // bare year -- left alone
+    await insertEvent(8, "Month 6 to Month 12, 1226", 441510); // range -- left alone
+    db.close();
+
+    const reopened = await openDb(dbPath);
+    const raw = async (id) => (await reopened.prepare("SELECT game_date_raw FROM events WHERE id = ?").get(id)).game_date_raw;
+
+    assert.equal(await raw(1), "Erastus (2), 3rd, 1227");
+    assert.equal(await raw(2), "Erastus (2), 1227");
+    assert.equal(await raw(3), "Pelorune (1), 16th, 1225");
+    assert.equal(await raw(4), "Pelorune (1), 1226");
+    assert.equal(await raw(5), "Erastus (2), 3rd, 1227"); // unchanged (was already correct)
+    assert.equal(await raw(6), "Erastus (2), 3rd, 1227");
+    assert.equal(await raw(7), "1225"); // untouched
+    assert.equal(await raw(8), "Month 6 to Month 12, 1226"); // untouched
+
+    // The sort key was recomputed to match the new string, not left stale.
+    const row1 = await reopened.prepare("SELECT game_date_sort FROM events WHERE id = 1").get();
+    const expected = await reopened.prepare("SELECT game_date_sort FROM events WHERE id = 5").get();
+    assert.equal(row1.game_date_sort, expected.game_date_sort); // 1 and 5 now represent the same date
+
+    reopened.close();
+
+    // Reopening again must not error or drift the already-normalized strings further.
+    const thirdOpen = await openDb(dbPath);
+    assert.equal((await thirdOpen.prepare("SELECT game_date_raw FROM events WHERE id = 1").get()).game_date_raw, "Erastus (2), 3rd, 1227");
+    thirdOpen.close();
+  } finally {
+    try {
+      rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 });
+    } catch {
+      // leaked temp dir under the OS temp root; not worth failing the test over.
+    }
+  }
+});
