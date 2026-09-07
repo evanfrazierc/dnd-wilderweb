@@ -15,11 +15,15 @@ export default function GameDatePicker({ value, onChange, autoDefault = true, al
   const { structure, currentDate } = useCalendarStructure();
 
   useEffect(() => {
-    if (autoDefault && !value && currentDate) {
-      onChange({ year: currentDate.year, month: currentDate.month, day: currentDate.day });
+    // Waits on `structure` too (not just `currentDate`) so the auto-filled date gets a
+    // monthName from the start -- these are two independent fetches (useCalendarStructure.js)
+    // that don't always resolve in the same tick.
+    if (autoDefault && !value && currentDate && structure) {
+      const month = structure.months.find((m) => m.number === currentDate.month);
+      onChange({ year: currentDate.year, month: currentDate.month, day: currentDate.day, monthName: month?.name });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentDate]);
+  }, [currentDate, structure]);
 
   if (!structure) {
     return <span className="text-faint" style={{ fontSize: "0.8rem" }}>Loading date…</span>;
@@ -28,7 +32,15 @@ export default function GameDatePicker({ value, onChange, autoDefault = true, al
   function field(key, raw) {
     const num = raw === "" ? "" : Number(raw);
     if (Number.isNaN(num)) return;
-    onChange({ ...value, [key]: num });
+    // The month name rides along with the number so formatGameDate (lib/gameDate.js) can show
+    // "Erastus (2)" instead of a bare "Month 2" -- the only place that name is known is here,
+    // right where the number was picked from this same `structure.months` list.
+    if (key === "month") {
+      const month = structure.months.find((m) => m.number === num);
+      onChange({ ...value, month: num, monthName: month?.name });
+    } else {
+      onChange({ ...value, [key]: num });
+    }
   }
 
   return (

@@ -7,6 +7,11 @@ const PATTERNS = [
   // "Month 3, 15th, 1225"
   { re: new RegExp(`^Month\\s+(\\d{1,2}),\\s*${ORDINAL_DAY},\\s*(\\d+)$`, "i"),
     extract: (m) => ({ month: Number(m[1]), day: Number(m[2]), year: Number(m[3]) }) },
+  // "Erastus (2), 9th, 1227" -- the named-month counterpart of the pattern above; what
+  // GameDatePicker (client/src/lib/gameDate.js) produces once it knows the campaign's actual
+  // month names, instead of always falling back to a bare "Month N".
+  { re: new RegExp(`^([A-Za-z']+)\\s*\\((\\d{1,2})\\),\\s*${ORDINAL_DAY},\\s*(\\d+)$`, "i"),
+    extract: (m) => ({ month: Number(m[2]), day: Number(m[3]), year: Number(m[4]) }) },
   // "Month 6, 1225"
   { re: /^Month\s+(\d{1,2}),\s*(\d+)$/i,
     extract: (m) => ({ month: Number(m[1]), day: 1, year: Number(m[2]) }) },

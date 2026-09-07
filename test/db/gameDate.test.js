@@ -20,6 +20,12 @@ test("parses 'Month <n>, <ordinal day>, <year>'", () => {
   assert.deepEqual({ year: r.year, month: r.month, day: r.day }, { year: 1225, month: 3, day: 15 });
 });
 
+test("parses '<Name> (<n>), <ordinal day>, <year>' -- what GameDatePicker produces once it knows month names", () => {
+  const r = parseGameDate("Erastus (2), 9th, 1227");
+  assert.equal(r.matched, true);
+  assert.deepEqual({ year: r.year, month: r.month, day: r.day }, { year: 1227, month: 2, day: 9 });
+});
+
 test("parses 'Month <n>, <year>' with no day", () => {
   const r = parseGameDate("Month 6, 1225");
   assert.equal(r.matched, true);
