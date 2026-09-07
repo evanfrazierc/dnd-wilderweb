@@ -116,6 +116,12 @@ function BuildingCatalogEditor({ catalog, onSaved }) {
 }
 
 function AddBuildingForm({ buildingCatalog, onAdd }) {
+  // Defaults to picking from the catalog (a real <select>, not a datalist -- datalist
+  // suggestions are never enforced, so a typo used to slip through as a brand-new,
+  // uncatalogued building with no warning until after the save). A building not yet in the
+  // catalog is still possible -- the DM can record it as a deliberate exception (ADR-0005) --
+  // but it's now an explicit toggle rather than whatever a stray keystroke happens to produce.
+  const [customName, setCustomName] = useState(false);
   const [name, setName] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [detail, setDetail] = useState("");
@@ -135,20 +141,32 @@ function AddBuildingForm({ buildingCatalog, onAdd }) {
     setDetail("");
   }
 
+  function toggleCustomName() {
+    setCustomName(!customName);
+    setName("");
+  }
+
   return (
     <form onSubmit={submit} className="add-building-form">
-      <input
-        list="building-catalog"
-        placeholder="Building name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        style={{ flex: "1 1 auto" }}
-      />
-      <datalist id="building-catalog">
-        {buildingCatalog.map((b) => (
-          <option key={b.name} value={b.name} />
-        ))}
-      </datalist>
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem", flex: "1 1 auto" }}>
+        {customName ? (
+          <input
+            placeholder="Building name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        ) : (
+          <select value={name} onChange={(e) => setName(e.target.value)}>
+            <option value="" disabled>Building name…</option>
+            {buildingCatalog.map((b) => (
+              <option key={b.name} value={b.name}>{b.name}</option>
+            ))}
+          </select>
+        )}
+        <button type="button" className="btn btn-sm" onClick={toggleCustomName} style={{ alignSelf: "flex-start" }}>
+          {customName ? "Use the building catalog instead" : "+ Not in the catalog"}
+        </button>
+      </div>
       <input
         placeholder="In-fiction name (optional)"
         value={displayName}
