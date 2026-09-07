@@ -135,16 +135,95 @@ function StatGroup({ title, icon, values, descriptions, onChange }) {
   );
 }
 
+// Pay down an obligation with an actual resource transfer -- a ResourceChanged event carrying
+// both the delta and obligationId (server/db/projections.js's applyResourceChanged), the same
+// mechanism Timeline's "Settles an obligation" dropdown uses. This is the only thing that
+// moves amountRemaining: CONTEXT.md's Obligation entry is explicit that what's owed and paid
+// stays strictly a function of ResourceChanged events, never ObligationAmended (which only
+// corrects description/dueGameDate/satisfied). Campaign news like any other resource change,
+// so -- unlike Edit/Remove -- this keeps the normal Discord toggle.
+function RepayObligationControl({ obligation, label, expanded, onExpand, onCollapse, onRepaid }) {
+  const [amount, setAmount] = useState("");
+  const [note, setNote] = useState("");
+  const [gameDate, setGameDate] = useState(null);
+  const { submit, status, warnings, postToDiscord, setPostToDiscord } = useEventSubmit(() => {
+    setAmount("");
+    setNote("");
+    setGameDate(null);
+    onRepaid();
+  });
+
+  const ready = Boolean(amount !== "" && Number(amount) > 0 && isCompleteGameDate(gameDate));
+
+  function submitRepay() {
+    if (!ready) return;
+    submit({
+      type: "ResourceChanged",
+      gameDate: formatGameDate(gameDate),
+      note: note.trim() || undefined,
+      payload: {
+        changes: { [obligation.repaymentResource]: -Number(amount) },
+        obligationId: obligation.id,
+      },
+    });
+  }
+
+  if (!expanded) {
+    return (
+      <button className="btn btn-icon" onClick={onExpand} aria-label={`Repay ${label}`}>
+        <Icon name="Scroll" size={14} />
+      </button>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", width: "100%", marginTop: "0.5rem" }}>
+      <label className="text-faint" style={{ fontSize: "0.76rem", display: "block" }}>
+        Repay ({obligation.repaymentResource}, up to {obligation.amountRemaining})
+        <input
+          type="number"
+          min="1"
+          max={obligation.amountRemaining}
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="Amount"
+          style={{ width: "100%", marginTop: "0.25rem" }}
+        />
+      </label>
+      <label className="text-faint" style={{ fontSize: "0.76rem", display: "block" }}>
+        Note (optional)
+        <input
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          style={{ width: "100%", marginTop: "0.25rem" }}
+        />
+      </label>
+      <div>
+        <GameDatePicker value={gameDate} onChange={setGameDate} />
+      </div>
+      <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
+        <button className="btn btn-sm btn-primary" onClick={submitRepay} disabled={!ready}>
+          Repay
+        </button>
+        <button className="btn btn-sm" onClick={onCollapse}>Cancel</button>
+        <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />
+        {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+      </div>
+      <WarningsList warnings={warnings} />
+    </div>
+  );
+}
+
 // Edit an obligation's description/due date. Its own useEventSubmit, same as Settlements'
 // EditBuildingControl -- and, like that control, no Discord option: a correction, not
 // campaign news (CONTEXT.md/ADR-0013). Mirrors EditBuildingControl's collapsed-icon-button
 // shape so loans look and behave like every other modifiable entity on the site.
 //
-// `expanded`/`onExpand`/`onCollapse` are owned by ObligationRow (rather than local state)
-// so it can keep this and RemoveObligationControl mutually exclusive -- with both able to
-// expand independently, a building-row-width GameDatePicker plus a second one for "when did
-// this edit happen" left the other control's collapsed icon stranded on its own line below
-// Save/Cancel on a narrow screen.
+// `expanded`/`onExpand`/`onCollapse` are owned by ObligationRow (rather than local state) so
+// it can keep this mutually exclusive with RepayObligationControl/RemoveObligationControl --
+// with more than one able to expand independently, a building-row-width GameDatePicker plus a
+// second one for "when did this edit happen" left the other controls' collapsed icons stranded
+// on their own line below Save/Cancel on a narrow screen.
 function EditObligationControl({ obligation, label, expanded, onExpand, onCollapse, onChanged }) {
   const [description, setDescription] = useState(obligation.description);
   const [newDueDate, setNewDueDate] = useState(null);
@@ -269,7 +348,7 @@ function RemoveObligationControl({ obligation, label, confirming, onConfirmStart
 // A plain wrapping .building-name div, not the always-visible single-line <input> this
 // replaced -- that input couldn't wrap, which is what was clipping loan titles on mobile.
 function ObligationRow({ obligation, onChanged }) {
-  const [action, setAction] = useState(null); // null | "edit" | "remove" -- see EditObligationControl's comment
+  const [action, setAction] = useState(null); // null | "repay" | "edit" | "remove" -- see EditObligationControl's comment
   const pct = obligation.amountTotal > 0
     ? Math.min(100, ((obligation.amountTotal - obligation.amountRemaining) / obligation.amountTotal) * 100)
     : 0;
@@ -291,7 +370,20 @@ function ObligationRow({ obligation, onChanged }) {
           {obligation.satisfied && " · settled"}
         </div>
       </div>
-      {action !== "remove" && (
+      {(action === null || action === "repay") && obligation.amountRemaining > 0 && (
+        <RepayObligationControl
+          obligation={obligation}
+          label={label}
+          expanded={action === "repay"}
+          onExpand={() => setAction("repay")}
+          onCollapse={() => setAction(null)}
+          onRepaid={() => {
+            setAction(null);
+            onChanged();
+          }}
+        />
+      )}
+      {(action === null || action === "edit") && (
         <EditObligationControl
           obligation={obligation}
           label={label}
@@ -304,7 +396,7 @@ function ObligationRow({ obligation, onChanged }) {
           }}
         />
       )}
-      {action !== "edit" && (
+      {(action === null || action === "remove") && (
         <RemoveObligationControl
           obligation={obligation}
           label={label}
@@ -647,7 +739,7 @@ export default function Dashboard() {
         )}
         <div className="building-list">
           {obligations.map((o) => (
-            <ObligationRow key={o.id} obligation={o} onChanged={loadObligations} />
+            <ObligationRow key={o.id} obligation={o} onChanged={() => { load(); loadObligations(); }} />
           ))}
         </div>
         <AddLoanForm knownResourceNames={knownResourceNames} onAdded={() => { load(); loadObligations(); }} />
