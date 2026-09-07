@@ -7,6 +7,7 @@ import PostToDiscordToggle from "./PostToDiscordToggle.jsx";
 import GameDatePicker from "./GameDatePicker.jsx";
 import { formatGameDate, isCompleteGameDate } from "../lib/gameDate.js";
 import { parseChanges } from "../lib/parseChanges.js";
+import { EVENT_ICON } from "../lib/eventIcon.js";
 
 const EVENT_TYPES = [
   "ResourceChanged",
@@ -18,17 +19,6 @@ const EVENT_TYPES = [
   "ObligationAmended",
   "DMRuling",
 ];
-
-const TYPE_ICON = {
-  ResourceChanged: "Scroll",
-  BuildingConstructed: "Settlements",
-  BuildingRemoved: "Trash",
-  CalendarAdvanced: "Calendar",
-  DeityAmended: "Piety",
-  LocationAmended: "MapPin",
-  ObligationAmended: "Wealth",
-  DMRuling: "Codex",
-};
 
 function NewEntryForm({ obligations, knownResourceNames, onAdd }) {
   const [gameDate, setGameDate] = useState(null);
@@ -293,7 +283,7 @@ export default function Timeline() {
                 <div className="section-title-row">
                   <div>
                     <span className="icon-badge sm" style={{ marginRight: "0.4rem" }}>
-                      <Icon name={TYPE_ICON[entry.type] || "Scroll"} size={13} />
+                      <Icon name={EVENT_ICON[entry.type] || "Scroll"} size={13} />
                     </span>
                     <span className="pill accent">{entry.gameDate}</span>{" "}
                     <span className="pill">{entry.type}</span>{" "}
