@@ -205,6 +205,7 @@ export default function Timeline() {
   const [knownResourceNames, setKnownResourceNames] = useState(null);
   const [typeFilter, setTypeFilter] = useState("");
   const [regionFilter, setRegionFilter] = useState("");
+  const [sortMode, setSortMode] = useState("gameDate"); // "gameDate" | "recent"
   const [error, setError] = useState(null);
 
   function load() {
@@ -234,7 +235,16 @@ export default function Timeline() {
   if (error) return <div className="error-box">Failed to load the timeline: {error}</div>;
   if (!events) return <div className="loading">Loading the timeline…</div>;
 
-  const newestFirst = [...events].reverse();
+  // Default (game date) matches this page's own purpose -- a chronological Campaign Timeline
+  // -- but a freeform in-fiction date string that fails to parse, or gets accidentally stored
+  // as a real-world date (a since-fixed Dashboard bug did this to a handful of existing
+  // events), sorts however that bad parse happens to land -- sometimes far in the "future",
+  // permanently burying whatever was actually just saved below it. `id` is assigned in save
+  // order and can't be corrupted this way, so it's the reliable fallback for "what did I just
+  // do," independent of how any event's game date parsed.
+  const newestFirst = sortMode === "recent"
+    ? [...events].sort((a, b) => b.id - a.id)
+    : [...events].reverse();
 
   return (
     <div className="fade-in">
@@ -269,6 +279,14 @@ export default function Timeline() {
             placeholder="Filter by region"
             style={{ width: "12rem" }}
           />
+          <select
+            value={sortMode}
+            onChange={(e) => setSortMode(e.target.value)}
+            title="A mis-parsed or corrupted game date can sort an entry out of chronological order -- switch to Recently added to find it regardless"
+          >
+            <option value="gameDate">Sort: game date</option>
+            <option value="recent">Sort: recently added</option>
+          </select>
         </div>
       </div>
 
