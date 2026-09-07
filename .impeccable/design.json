@@ -1,0 +1,174 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-06T00:00:00Z",
+  "title": "Design System: Wilderweb Kingdom Tracker",
+  "extensions": {
+    "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "Weathered Bronze",
+        "canonical": "#b8823c",
+        "tonalRamp": ["#1d160c", "#4e381b", "#835d2c", "#b8823c", "#c89e66", "#d8ba90", "#e8d6bb", "#f3eada"]
+      },
+      "parchment": {
+        "role": "neutral",
+        "displayName": "Parchment",
+        "canonical": "#ecdfc0",
+        "tonalRamp": ["#23211b", "#635d50", "#a89e88", "#ecdfc0", "#efe5cb", "#f3ead5", "#f6f0e0", "#f9f4e8"]
+      },
+      "good": {
+        "role": "success",
+        "displayName": "Good",
+        "canonical": "#7fae6c",
+        "tonalRamp": ["#161b11", "#384a2e", "#5b7c4d", "#7fae6c", "#9dbf8b", "#bad1a9", "#d8e2c8", "#eeefdf"]
+      },
+      "bad": {
+        "role": "danger",
+        "displayName": "Bad",
+        "canonical": "#c66a52",
+        "tonalRamp": ["#1f130e", "#542f24", "#8d4c3b", "#c66a52", "#d28c77", "#dfad9c", "#ebcfc1", "#f5e8dd"]
+      },
+      "warn": {
+        "role": "warning",
+        "displayName": "Warn",
+        "canonical": "#d0a23a",
+        "tonalRamp": ["#201a0b", "#58451a", "#94742a", "#d0a23a", "#dab665", "#e4ca8f", "#eedeba", "#f6eeda"]
+      },
+      "season-autumn": {
+        "role": "decorative",
+        "displayName": "Autumn Season",
+        "canonical": "#c17a3f",
+        "tonalRamp": ["#1e150c", "#52351c", "#8a582e", "#c17a3f", "#cf9869", "#dcb692", "#ead3bc", "#f4eadb"]
+      },
+      "season-winter": {
+        "role": "decorative",
+        "displayName": "Winter Season",
+        "canonical": "#7fa0b0",
+        "tonalRamp": ["#16191a", "#384449", "#5b727d", "#7fa0b0", "#9db5be", "#bac9cd", "#d8dedb", "#eeede6"]
+      },
+      "bg": {
+        "role": "neutral",
+        "displayName": "Ledger Black",
+        "canonical": "#0f0d0a",
+        "tonalRamp": ["#090806", "#0b0907", "#0d0b09", "#0f0d0a", "#474540", "#807d76", "#b8b5ad", "#e2dfd5"]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Parchment Ink Text",
+        "canonical": "#ece3d3",
+        "tonalRamp": ["#23211e", "#635f57", "#a8a195", "#ece3d3", "#efe8d9", "#f3ecdf", "#f6f1e5", "#f9f4ea"]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Border",
+        "canonical": "#362c20",
+        "tonalRamp": ["#0e0b08", "#1a1610", "#282118", "#362c20", "#655c51", "#948d82", "#c3bdb3", "#e6e2d8"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Fraunces Display", "purpose": "Headings (h1-h4) and recorded stat values -- never on interactive controls." },
+      "body": { "displayName": "Inter Body", "purpose": "All UI mechanism: labels, inputs, buttons, body copy, eyebrows." }
+    },
+    "shadows": [
+      { "name": "resting", "value": "0 1px 2px rgba(0, 0, 0, 0.35)", "purpose": "Default card shadow -- present but nearly invisible." },
+      { "name": "hover", "value": "0 6px 20px -6px rgba(0, 0, 0, 0.55)", "purpose": "Interactive card hover, current-month card resting state." },
+      { "name": "reserved-lg", "value": "0 16px 40px -12px rgba(0, 0, 0, 0.65)", "purpose": "Defined in tokens.css but not currently used anywhere." }
+    ],
+    "motion": [
+      { "name": "pulse-today", "value": "pulse-today 2.4s ease-in-out infinite", "purpose": "The calendar's current-day cell glows in a slow pulse -- the system's one persistent animation, reserved for exactly one element at a time." },
+      { "name": "fade-in", "value": "fadeIn 0.35s ease both", "purpose": "Page-level entrance transition applied to each view's root element." },
+      { "name": "ease-standard", "value": "ease", "purpose": "Default transition timing for hover/focus/border-color changes (0.15s-0.2s)." }
+    ],
+    "breakpoints": [
+      { "name": "collapse", "value": "900px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one button style carrying the accent color -- reserved for the single primary action in a form.",
+      "html": "<button class=\"ds-btn-primary\">Save changes</button>",
+      "css": ".ds-btn-primary { background: linear-gradient(180deg, #dda75a, #b8823c); border: 1px solid #b8823c; color: #1c1409; border-radius: 8px; padding: 0.45rem 0.9rem; font-family: Inter, sans-serif; font-size: 0.87rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem; transition: border-color 0.15s ease, filter 0.15s ease, transform 0.1s ease; } .ds-btn-primary:hover { filter: brightness(1.08); border-color: #dda75a; } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(184, 130, 60, 0.14); } .ds-btn-primary:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "The default, restrained button -- most buttons in the app use this, not the primary variant.",
+      "html": "<button class=\"ds-btn-secondary\">Cancel</button>",
+      "css": ".ds-btn-secondary { background: #171310; border: 1px solid #362c20; color: #ece3d3; border-radius: 8px; padding: 0.45rem 0.9rem; font-family: Inter, sans-serif; font-size: 0.87rem; font-weight: 500; transition: border-color 0.15s ease, color 0.15s ease, transform 0.1s ease; } .ds-btn-secondary:hover { border-color: #b8823c; color: #dda75a; } .ds-btn-secondary:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(184, 130, 60, 0.14); } .ds-btn-secondary:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Status Pill",
+      "kind": "chip",
+      "refersTo": "pill",
+      "description": "A soft/solid color pairing used for event types, resource deltas, and season/holiday tags.",
+      "html": "<span class=\"ds-pill ds-pill-good\">+1 Wood</span>",
+      "css": ".ds-pill { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.16rem 0.6rem; border-radius: 999px; font-family: Inter, sans-serif; font-size: 0.74rem; white-space: nowrap; background: #171310; border: 1px solid #362c20; color: #a99a83; } .ds-pill-good { border-color: rgba(127, 174, 108, 0.4); color: #7fae6c; background: rgba(127, 174, 108, 0.16); }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "The default content surface -- flat at rest, a soft shadow and border-brighten on hover for interactive cards.",
+      "html": "<div class=\"ds-card ds-card-interactive\"><h3 style=\"font-family: Fraunces, serif; font-weight: 600; color: #ecdfc0; margin: 0 0 0.4rem;\">Region name</h3><p style=\"color: #a99a83; margin: 0; font-family: Inter, sans-serif; font-size: 0.9rem;\">3 buildings</p></div>",
+      "css": ".ds-card { background: #1c1712; border: 1px solid #362c20; border-radius: 12px; padding: 1.1rem 1.3rem; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35); transition: border-color 0.2s ease, box-shadow 0.2s ease; } .ds-card-interactive:hover { border-color: #5a4426; box-shadow: 0 6px 20px -6px rgba(0, 0, 0, 0.55); }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Recessed field with an accent focus ring; used for every text/number/select field in the app.",
+      "html": "<input class=\"ds-input\" placeholder=\"Game date\" />",
+      "css": ".ds-input { font-family: Inter, sans-serif; background: #131009; color: #ece3d3; border: 1px solid #362c20; border-radius: 8px; padding: 0.45rem 0.65rem; font-size: 0.9rem; transition: border-color 0.15s ease, box-shadow 0.15s ease; } .ds-input::placeholder { color: #918575; } .ds-input:focus { outline: none; border-color: #b8823c; box-shadow: 0 0 0 3px rgba(184, 130, 60, 0.14); }"
+    },
+    {
+      "name": "Sidebar Nav Item",
+      "kind": "nav",
+      "refersTo": "nav-item",
+      "description": "Icon+label row; transparent at rest, a soft accent wash marks the active route -- one of the only backgrounds allowed to use the accent color.",
+      "html": "<button class=\"ds-nav-item ds-nav-item-active\"><svg class=\"ds-nav-icon\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"9\"/></svg><span>Settlements</span></button>",
+      "css": ".ds-nav-item { display: flex; align-items: center; gap: 0.65rem; width: 100%; text-align: left; background: none; border: 1px solid transparent; color: #a99a83; padding: 0.55rem 0.75rem; border-radius: 8px; font-family: Inter, sans-serif; font-size: 0.92rem; transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease; } .ds-nav-item:hover { background: #1c1712; color: #ece3d3; } .ds-nav-item-active { background: rgba(184, 130, 60, 0.14); border-color: rgba(221, 167, 90, 0.35); color: #dda75a; font-weight: 600; }"
+    },
+    {
+      "name": "Timeline Marker",
+      "kind": "custom",
+      "refersTo": "timeline-marker",
+      "description": "Signature component: a rivet-like dot punched through the vertical thread that runs behind the Timeline's entry cards.",
+      "html": "<div class=\"ds-timeline\"><div class=\"ds-timeline-entry\"><span class=\"ds-timeline-marker\"></span><div class=\"ds-card\" style=\"padding: 1rem 1.2rem;\">Resource changed</div></div></div>",
+      "css": ".ds-timeline { position: relative; padding-left: 1.6rem; } .ds-timeline::before { content: ''; position: absolute; left: 5px; top: 6px; bottom: 6px; width: 1px; background: linear-gradient(180deg, #5a4426, #291f16); } .ds-timeline-entry { position: relative; margin-bottom: 1rem; } .ds-timeline-marker { position: absolute; left: -1.6rem; top: 1.15rem; width: 11px; height: 11px; border-radius: 50%; background: #0f0d0a; border: 2px solid #b8823c; display: block; } .ds-card { background: #1c1712; border: 1px solid #362c20; border-radius: 12px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35); color: #ece3d3; font-family: Inter, sans-serif; font-size: 0.9rem; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Frontier Ledger",
+    "overview": "Wilderweb reads as a settler's account-book kept by firelight: ink on parchment, warm bronze fittings, a dark leather-bound cover. It is not a SaaS dashboard wearing dark mode as a theme toggle -- the palette, type, and card language are built around the idea of a physical object a DM keeps at the table, not a generic B2B admin panel. Every screen is a page in that ledger: resource totals sit like an accountant's tally, the timeline reads like a chronicle with a hand-drawn thread down its spine, and the calendar looks like a page torn from an actual almanac.\n\nThe system stays warm, lived-in, and tactile rather than glossy or corporate. Density is moderate -- this is a working tool used mid-session, not a marketing page -- so legibility and scanability come before ornamentation, but the ornamentation that exists (the parchment card variant, the circular brand seal, the season-colored calendar) is load-bearing to the \"ledger\" identity, not decoration to strip away.",
+    "keyCharacteristics": [
+      "Dark, warm-neutral base (near-black browns, not cool grays) with a single restrained bronze accent",
+      "Serif display type (Fraunces) for anything that reads as a heading or a recorded value; humanist sans (Inter) for everything functional",
+      "Flat-at-rest surfaces; shadow and glow appear only as state feedback (hover, current, focus)",
+      "Pill-shaped badges and fully rounded meters against otherwise moderately-rounded (8-12px) rectangular surfaces",
+      "A dedicated \"parchment\" surface (light, ink-on-cream) reserved for read-as-lore content, distinct from the app's dark working surfaces"
+    ],
+    "rules": [
+      { "name": "The Rarity Rule", "body": "Weathered Bronze appears only on the one actionable or currently-true thing in a given area (a primary button, the active nav item, the current day) -- never as a background wash or a decorative flourish. Its scarcity is what makes it read as gold leaf rather than paint.", "section": "colors" },
+      { "name": "The Parchment-Is-Not-a-Neutral Rule", "body": "Parchment and Ink only ever appear together, as a pair, marking content that is being read (lore, an in-fiction introduction) rather than operated (stats, forms, buttons). Never use Parchment as a text color on a dark card, or Ink as a text color anywhere but inside a .card.parchment.", "section": "colors" },
+      { "name": "The One Serif Rule", "body": "Fraunces is reserved for headings and recorded values. Every interactive control -- buttons, inputs, nav, pills -- stays in Inter, so the serif keeps its weight as \"this is a fact being recorded,\" not decoration.", "section": "typography" },
+      { "name": "The Glow-Not-Lift Rule", "body": "When something needs to stand out because of state (hover, current, focus), prefer a colored ring/glow over a heavier neutral shadow. A neutral shadow says \"this surface is physically higher\"; a colored glow says \"this is the one that matters right now.\"", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep Weathered Bronze rare -- one primary action or active state per view, never a background wash outside the sidebar's active-nav treatment.",
+      "Do pair Parchment/Ink only with each other, and only for content being read rather than operated.",
+      "Do use a colored glow (not a heavier neutral shadow) when something needs to stand out because of state, not hierarchy.",
+      "Do keep Fraunces to headings and recorded values; every interactive control stays in Inter.",
+      "Do use the soft/solid pill pairing (e.g. good-soft bg + good text) for any new status/semantic tag, rather than a solid fill."
+    ],
+    "donts": [
+      "Don't introduce a second accent color -- semantic colors (good/bad/warn) and season colors already cover meaning; Weathered Bronze stays the only \"brand\" color.",
+      "Don't add heavy drop shadows or a glassy/blurred-panel look -- the system is flat by default; the reserved-lg shadow token is intentionally unused.",
+      "Don't use gray text on a colored background, or pure black/white anywhere -- every neutral in this system is warm-tinted, not desaturated gray.",
+      "Don't put the parchment card treatment on anything operational (a form, a stat panel) -- it's reserved for lore/read-only content."
+    ]
+  }
+}

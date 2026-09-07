@@ -14,7 +14,7 @@
 
   --text: #ece3d3;
   --text-dim: #a99a83;
-  --text-faint: #766753;
+  --text-faint: #918575;
 
   --accent: #b8823c;
   --accent-strong: #dda75a;
@@ -481,10 +481,12 @@ input[type="number"] {
 
 .meter > span {
   display: block;
+  width: 100%;
   height: 100%;
   border-radius: 999px;
   background: linear-gradient(90deg, var(--accent), var(--accent-strong));
-  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: left;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .meter.good > span {
@@ -862,23 +864,19 @@ input[type="number"] {
   color: var(--parchment);
 }
 
-.deity-name-input:focus {
-  box-shadow: none;
-  outline: none;
-}
-
 .deity-title-input {
   width: 100%;
   background: transparent;
-  border: none;
+  border: 1px solid transparent;
   padding: 0;
   font-size: 0.78rem;
   color: var(--text-dim);
 }
 
 .deity-title-input:focus {
-  box-shadow: none;
   outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .deity-card-foot {

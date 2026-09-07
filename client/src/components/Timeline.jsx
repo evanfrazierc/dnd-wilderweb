@@ -212,7 +212,7 @@ function ObligationsPanel({ obligations }) {
               <h3 style={{ fontSize: "0.95rem" }}>{o.description}</h3>
             </div>
             <div className="meter good" style={{ marginTop: "0.4rem" }}>
-              <span style={{ width: `${pct}%` }} />
+              <span style={{ transform: `scaleX(${pct / 100})` }} />
             </div>
             <div className="text-faint" style={{ fontSize: "0.78rem", marginTop: "0.35rem" }}>
               {o.amountTotal - o.amountRemaining} / {o.amountTotal} {o.repaymentResource} repaid

@@ -4,3 +4,6 @@ data/campaign.db
 data/campaign.db-journal
 data/campaign.db-wal
 data/campaign.db-shm
+.impeccable/hook.cache.json
+.impeccable/config.local.json
+.impeccable/live/
