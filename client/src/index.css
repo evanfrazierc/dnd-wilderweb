@@ -341,6 +341,12 @@ input[type="number"] {
   font-size: 0.74rem;
   color: var(--text-dim);
   white-space: nowrap;
+  /* A pill's text never wraps, so an unexpectedly long value (bad data, a
+     future field) must not be able to force its container -- and on mobile,
+     the whole page -- wider than the viewport. Truncate instead. */
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .pill.accent {

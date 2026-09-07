@@ -309,7 +309,7 @@ export default function Timeline() {
                     posted {entry.postedAt}
                   </span>
                 </div>
-                {Object.keys(entry.payload?.changes || {}).length > 0 && (
+                {entry.type === "ResourceChanged" && Object.keys(entry.payload?.changes || {}).length > 0 && (
                   <div className="tag-row">
                     {Object.entries(entry.payload.changes).map(([res, val]) => (
                       <span key={res} className={`pill ${val >= 0 ? "good" : "bad"}`}>
