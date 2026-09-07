@@ -304,7 +304,7 @@ function DeitiesTab() {
 // {name, changes}, mirroring DeityAmended -- docs/adr/0011). Note is a visible field even
 // when empty, not hidden until dirty: a kingdom with nothing concrete yet is where a rumor
 // or a plan belongs, and that's the whole point of surfacing it rather than burying it.
-function KingdomCard({ kingdom, regions, onSaved }) {
+function KingdomCard({ kingdom, settlementCatalog, onSaved }) {
   const [draft, setDraft] = useState(kingdom);
   // This card's own "last known saved" snapshot -- compared against instead of the
   // `kingdom` prop directly, so dirty state clears the instant this card's own save
@@ -339,13 +339,13 @@ function KingdomCard({ kingdom, regions, onSaved }) {
     });
   }
 
-  // A kingdom's settlements are Regions that name it, not the kingdom's own data (ADR-0012)
-  // -- adding one happens on Settlements, not here.
-  const kingdomRegions = regions.filter((r) => r.kingdom === kingdom.name);
+  // A kingdom's settlements name it, not the other way around (ADR-0012) -- adding one
+  // happens on Settlements, not here.
+  const kingdomSettlements = settlementCatalog.filter((s) => s.kingdom === kingdom.name);
 
   return (
-    <div className="card region-card">
-      <div className="region-card-head">
+    <div className="card settlement-card">
+      <div className="settlement-card-head">
         <span className="icon-badge">
           <Icon name="MapPin" size={18} />
         </span>
@@ -368,15 +368,15 @@ function KingdomCard({ kingdom, regions, onSaved }) {
       />
       <div style={{ marginTop: "0.6rem" }}>
         <strong style={{ fontSize: "0.85rem" }}>Settlements</strong>
-        {kingdomRegions.length > 0 ? (
+        {kingdomSettlements.length > 0 ? (
           <div className="tag-row">
-            {kingdomRegions.map((r) => (
-              <span key={r.id} className="pill">{r.name}</span>
+            {kingdomSettlements.map((s) => (
+              <span key={s.id} className="pill">{s.name}</span>
             ))}
           </div>
         ) : (
           <p className="text-faint" style={{ fontSize: "0.78rem", margin: "0.3rem 0 0" }}>
-            None claimed yet -- add or assign one from Settlements → Manage regions.
+            None claimed yet -- add or assign one from Settlements → Manage settlements.
           </p>
         )}
       </div>
@@ -446,13 +446,13 @@ function NewKingdomForm({ onAdded }) {
 
 function LocationsTab() {
   const [kingdoms, setKingdoms] = useState(null);
-  const [regions, setRegions] = useState(null);
+  const [settlementCatalog, setSettlementCatalog] = useState(null);
   const [error, setError] = useState(null);
 
   function load() {
-    return Promise.all([getProjection("locations"), getReference("regions")]).then(([data, regionsData]) => {
+    return Promise.all([getProjection("locations"), getReference("settlements")]).then(([data, settlements]) => {
       setKingdoms(data.kingdoms);
-      setRegions(regionsData);
+      setSettlementCatalog(settlements);
     });
   }
 
@@ -461,7 +461,7 @@ function LocationsTab() {
   }, []);
 
   if (error) return <div className="error-box">Failed to load locations: {error}</div>;
-  if (!kingdoms || !regions) return <div className="loading">Loading…</div>;
+  if (!kingdoms || !settlementCatalog) return <div className="loading">Loading…</div>;
 
   return (
     <div>
@@ -473,25 +473,25 @@ function LocationsTab() {
       </div>
       <div className="grid grid-2" style={{ marginBottom: "1.25rem" }}>
         {kingdoms.map((k) => (
-          <KingdomCard key={k.name} kingdom={k} regions={regions} onSaved={load} />
+          <KingdomCard key={k.name} kingdom={k} settlementCatalog={settlementCatalog} onSaved={load} />
         ))}
       </div>
       <NewKingdomForm onAdded={load} />
 
       <div className="section-header" style={{ marginTop: "1.75rem" }}>
-        <h3>Wilderlands Regions</h3>
+        <h3>Wilderlands Settlements</h3>
         <div className="rule" />
       </div>
       <p className="text-faint" style={{ fontSize: "0.78rem", marginTop: "-0.4rem" }}>
-        Same regions the Settlements page tracks buildings by -- edit them there (Settlements
-        → Manage regions), not here.
+        Same settlements the Settlements page tracks buildings by -- edit them there
+        (Settlements → Manage settlements), not here.
       </p>
       <div className="card">
         <div className="grid grid-3">
-          {regions.map((r) => (
-            <div key={r.id}>
-              <strong>{r.name}</strong>
-              <p className="text-dim" style={{ fontSize: "0.88rem" }}>{r.description}</p>
+          {settlementCatalog.map((s) => (
+            <div key={s.id}>
+              <strong>{s.name}</strong>
+              <p className="text-dim" style={{ fontSize: "0.88rem" }}>{s.description}</p>
             </div>
           ))}
         </div>

@@ -5,7 +5,7 @@ import { buildEmbed, notifyDiscord } from "../../server/discord.js";
 test("buildEmbed formats a ResourceChanged event", () => {
   const embed = buildEmbed({
     type: "ResourceChanged",
-    region: "Stirling Reach",
+    settlement: "Stirling Reach",
     gameDate: "Erastus 4, 1227",
     note: "Trade with merchants",
     payload: { changes: { Wood: -2, Wealth: 5 } },
@@ -13,7 +13,7 @@ test("buildEmbed formats a ResourceChanged event", () => {
   assert.equal(embed.title, "Resource Change");
   assert.equal(embed.footer.text, "Erastus 4, 1227");
   assert.deepEqual(embed.fields, [
-    { name: "Region", value: "Stirling Reach", inline: true },
+    { name: "Settlement", value: "Stirling Reach", inline: true },
     { name: "Changes", value: "-2 Wood, +5 Wealth" },
     { name: "Note", value: "Trade with merchants" },
   ]);
@@ -22,13 +22,13 @@ test("buildEmbed formats a ResourceChanged event", () => {
 test("buildEmbed formats a BuildingConstructed event with a display name", () => {
   const embed = buildEmbed({
     type: "BuildingConstructed",
-    region: "Stirling Reach",
+    settlement: "Stirling Reach",
     gameDate: "Erastus 4, 1227",
     payload: { building: "Tower", displayName: "Anora's Roost", count: 1 },
   });
   assert.equal(embed.title, "Building Constructed");
   assert.deepEqual(embed.fields, [
-    { name: "Region", value: "Stirling Reach", inline: true },
+    { name: "Settlement", value: "Stirling Reach", inline: true },
     { name: "Building", value: "Anora's Roost (Tower)", inline: true },
   ]);
 });
@@ -36,12 +36,12 @@ test("buildEmbed formats a BuildingConstructed event with a display name", () =>
 test("buildEmbed includes count and detail for BuildingConstructed when present", () => {
   const embed = buildEmbed({
     type: "BuildingConstructed",
-    region: "Stirling Reach",
+    settlement: "Stirling Reach",
     gameDate: "Erastus 4, 1227",
     payload: { building: "Farm", count: 3, detail: "Along the river" },
   });
   assert.deepEqual(embed.fields, [
-    { name: "Region", value: "Stirling Reach", inline: true },
+    { name: "Settlement", value: "Stirling Reach", inline: true },
     { name: "Building", value: "Farm", inline: true },
     { name: "Count", value: "3", inline: true },
     { name: "Detail", value: "Along the river" },

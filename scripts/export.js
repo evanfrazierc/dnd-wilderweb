@@ -42,7 +42,10 @@ async function main() {
   await writeJson("locations", await getProjection(db, "locations"));
   await writeJson("buildings", await REFERENCE_RESOURCES.buildings.read(db));
   await writeJson("introduction", await REFERENCE_RESOURCES.introduction.read(db));
-  await writeJson("regions", await REFERENCE_RESOURCES.regions.read(db));
+  // "settlementCatalog", not "settlements" -- that name is already the settlements
+  // *projection* dump above (building lists per settlement, a different resource entirely
+  // that happens to share the word; see docs/adr/0014).
+  await writeJson("settlementCatalog", await REFERENCE_RESOURCES.settlements.read(db));
   await writeJson("events", await listEvents(db, { limit: 100000 }));
   await writeJson("obligations", await listObligations(db));
 

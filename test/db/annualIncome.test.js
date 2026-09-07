@@ -13,7 +13,7 @@ async function insertBuilding(db, name, annualEffect) {
 test("computeAnnualIncomeUpkeep returns no lines when no building has an annual effect", async () => {
   const db = await openDb(":memory:");
   await insertBuilding(db, "Roads", {});
-  await db.prepare("INSERT INTO settlement_buildings (region, building, count) VALUES ('Stirling Reach', 'Roads', 1)").run();
+  await db.prepare("INSERT INTO settlement_buildings (settlement, building, count) VALUES ('Stirling Reach', 'Roads', 1)").run();
 
   const result = await computeAnnualIncomeUpkeep(db);
   assert.deepEqual(result.lines, []);
@@ -22,19 +22,19 @@ test("computeAnnualIncomeUpkeep returns no lines when no building has an annual 
 test("computeAnnualIncomeUpkeep multiplies a building's rate by its count", async () => {
   const db = await openDb(":memory:");
   await insertBuilding(db, "Logging Camp", { Wood: 1 });
-  await db.prepare("INSERT INTO settlement_buildings (region, building, count) VALUES ('Stirling Reach', 'Logging Camp', 4)").run();
+  await db.prepare("INSERT INTO settlement_buildings (settlement, building, count) VALUES ('Stirling Reach', 'Logging Camp', 4)").run();
 
   const result = await computeAnnualIncomeUpkeep(db);
   assert.deepEqual(result.lines, [{ resource: "Wood", net: 4, breakdown: ["+4 (4 × Logging Camp)"] }]);
 });
 
-test("computeAnnualIncomeUpkeep sums across buildings and regions for the same resource", async () => {
+test("computeAnnualIncomeUpkeep sums across buildings and settlements for the same resource", async () => {
   const db = await openDb(":memory:");
   await insertBuilding(db, "Farm", { Food: 1 });
   await insertBuilding(db, "Fishing Dock", { Food: 1 });
-  await db.prepare("INSERT INTO settlement_buildings (region, building, count) VALUES ('Stirling Reach', 'Farm', 3)").run();
-  await db.prepare("INSERT INTO settlement_buildings (region, building, count) VALUES ('Narlmarches', 'Farm', 3)").run();
-  await db.prepare("INSERT INTO settlement_buildings (region, building, count) VALUES ('Stirling Reach', 'Fishing Dock', 2)").run();
+  await db.prepare("INSERT INTO settlement_buildings (settlement, building, count) VALUES ('Stirling Reach', 'Farm', 3)").run();
+  await db.prepare("INSERT INTO settlement_buildings (settlement, building, count) VALUES ('Narlmarches', 'Farm', 3)").run();
+  await db.prepare("INSERT INTO settlement_buildings (settlement, building, count) VALUES ('Stirling Reach', 'Fishing Dock', 2)").run();
 
   const result = await computeAnnualIncomeUpkeep(db);
   assert.equal(result.lines.length, 1);
@@ -46,7 +46,7 @@ test("computeAnnualIncomeUpkeep sums across buildings and regions for the same r
 test("computeAnnualIncomeUpkeep nets upkeep (negative) against income for the same resource", async () => {
   const db = await openDb(":memory:");
   await insertBuilding(db, "Tavern", { Wealth: 1, Food: -1 });
-  await db.prepare("INSERT INTO settlement_buildings (region, building, count) VALUES ('Stirling Reach', 'Tavern', 1)").run();
+  await db.prepare("INSERT INTO settlement_buildings (settlement, building, count) VALUES ('Stirling Reach', 'Tavern', 1)").run();
 
   const result = await computeAnnualIncomeUpkeep(db);
   const food = result.lines.find((l) => l.resource === "Food");
@@ -66,8 +66,8 @@ test("computeAnnualIncomeUpkeep sorts lines by resource name", async () => {
   const db = await openDb(":memory:");
   await insertBuilding(db, "Logging Camp", { Wood: 1 });
   await insertBuilding(db, "Quarry", { Stone: 1 });
-  await db.prepare("INSERT INTO settlement_buildings (region, building, count) VALUES ('Stirling Reach', 'Logging Camp', 1)").run();
-  await db.prepare("INSERT INTO settlement_buildings (region, building, count) VALUES ('Stirling Reach', 'Quarry', 1)").run();
+  await db.prepare("INSERT INTO settlement_buildings (settlement, building, count) VALUES ('Stirling Reach', 'Logging Camp', 1)").run();
+  await db.prepare("INSERT INTO settlement_buildings (settlement, building, count) VALUES ('Stirling Reach', 'Quarry', 1)").run();
 
   const result = await computeAnnualIncomeUpkeep(db);
   assert.deepEqual(result.lines.map((l) => l.resource), ["Stone", "Wood"]);

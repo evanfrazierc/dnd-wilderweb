@@ -743,7 +743,7 @@ input[type="number"] {
 
 /* --- Settlements --- */
 
-.region-card-head {
+.settlement-card-head {
   display: flex;
   align-items: center;
   gap: 0.75rem;

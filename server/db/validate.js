@@ -4,7 +4,7 @@ import { parseGameDate } from "./gameDate.js";
  * Structural checks: is this a well-formed event of its type at all. These reject
  * the write (400) -- they're about malformed requests, not in-game validity.
  */
-export function validateShape(type, { note, region, payload }) {
+export function validateShape(type, { note, settlement, payload }) {
   const errors = [];
 
   switch (type) {
@@ -25,12 +25,12 @@ export function validateShape(type, { note, region, payload }) {
     case "BuildingConstructed":
     case "BuildingRemoved": {
       if (!payload?.building) errors.push(`${type} requires payload.building`);
-      if (!region) errors.push(`${type} requires a region`);
+      if (!settlement) errors.push(`${type} requires a settlement`);
       break;
     }
     case "BuildingAmended": {
       if (!payload?.building) errors.push("BuildingAmended requires payload.building");
-      if (!region) errors.push("BuildingAmended requires a region");
+      if (!settlement) errors.push("BuildingAmended requires a settlement");
       if (!payload?.changes || Object.keys(payload.changes).length === 0) {
         errors.push("BuildingAmended requires at least one entry in payload.changes (displayName and/or detail)");
       }
@@ -72,7 +72,7 @@ export function validateShape(type, { note, region, payload }) {
  * In-game validity checks: warns, never blocks (docs/adr/0005-validation-warns-not-blocks.md).
  * Returns a list of warning strings to store alongside the event.
  */
-export async function checkWarnings(db, type, { region, payload }) {
+export async function checkWarnings(db, type, { settlement, payload }) {
   const warnings = [];
 
   if (type === "ResourceChanged") {
@@ -109,10 +109,10 @@ export async function checkWarnings(db, type, { region, payload }) {
       const requires = JSON.parse(catalog.requires || "[]");
       for (const req of requires) {
         const present = await db
-          .prepare("SELECT 1 FROM settlement_buildings WHERE region = ? AND building = ?")
-          .get(region, req);
+          .prepare("SELECT 1 FROM settlement_buildings WHERE settlement = ? AND building = ?")
+          .get(settlement, req);
         if (!present) {
-          warnings.push(`"${payload.building}" requires "${req}", not yet built in ${region}`);
+          warnings.push(`"${payload.building}" requires "${req}", not yet built in ${settlement}`);
         }
       }
     }
@@ -120,19 +120,19 @@ export async function checkWarnings(db, type, { region, payload }) {
 
   if (type === "BuildingRemoved") {
     const present = await db
-      .prepare("SELECT count FROM settlement_buildings WHERE region = ? AND building = ?")
-      .get(region, payload.building);
+      .prepare("SELECT count FROM settlement_buildings WHERE settlement = ? AND building = ?")
+      .get(settlement, payload.building);
     if (!present || present.count < (payload.count ?? 1)) {
-      warnings.push(`Removing more "${payload.building}" from ${region} than are recorded as built`);
+      warnings.push(`Removing more "${payload.building}" from ${settlement} than are recorded as built`);
     }
   }
 
   if (type === "BuildingAmended") {
     const present = await db
-      .prepare("SELECT 1 FROM settlement_buildings WHERE region = ? AND building = ?")
-      .get(region, payload.building);
+      .prepare("SELECT 1 FROM settlement_buildings WHERE settlement = ? AND building = ?")
+      .get(settlement, payload.building);
     if (!present) {
-      warnings.push(`"${payload.building}" is not currently built in ${region} -- nothing to amend`);
+      warnings.push(`"${payload.building}" is not currently built in ${settlement} -- nothing to amend`);
     }
   }
 

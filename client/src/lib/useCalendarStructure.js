@@ -5,8 +5,8 @@ import { getReference, getProjection } from "../api.js";
 // names and days-per-month (not the Gregorian calendar), plus the current calendar date
 // to default a fresh picker to.
 //
-// A page can mount many pickers at once (one per region on Settlements), and each used
-// to fire its own independent fetch of the same two resources -- 9 regions meant 18
+// A page can mount many pickers at once (one per settlement on Settlements), and each used
+// to fire its own independent fetch of the same two resources -- 9 settlements meant 18
 // duplicate requests on a single page load. These two module-level promises are shared
 // across every hook instance instead, so concurrent mounts collapse into one real
 // request each.

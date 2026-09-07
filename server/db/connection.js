@@ -68,6 +68,47 @@ async function ensureColumn(client, table, column, definition) {
   }
 }
 
+// "Region" retired in favor of "Settlement" as the campaign's one name for a buildable place
+// (docs/adr/0014, reversing ADR-0008's original choice) -- the `regions` table becomes
+// `settlements` (settlement_buildings already had the right name; only its `region` column
+// needed to follow), and events.region becomes events.settlement. Plain ALTER TABLE RENAME
+// (SQLite/libSQL support this natively, including updating the UNIQUE constraint and index
+// definitions that reference the renamed columns) rather than the CREATE-copy-DROP-rename
+// dance ensureObligationAmendedEventType needs below -- that one exists only because CHECK
+// constraints specifically can't be altered in place; a plain column or table rename has no
+// such restriction. Gated on the OLD name still existing, so a fresh database (schema.sql
+// already creates `settlements`/`settlement`) or an already-migrated one is a safe no-op.
+async function ensureSettlementRename(client) {
+  const oldTable = await client.execute("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'regions'");
+  if (oldTable.rows.length > 0) {
+    // schema.sql's own `CREATE TABLE IF NOT EXISTS settlements` (initSchema runs it before any
+    // migration, including this one) doesn't see the old `regions` table as "already existing"
+    // -- different name -- so on a database still mid-migration it unconditionally creates a
+    // second, empty `settlements` table moments before this function runs, which the rename
+    // below would otherwise collide with. Safe to drop: nothing has had a chance to write to
+    // it yet at this point in a single initSchema call.
+    await client.execute("DROP TABLE IF EXISTS settlements");
+    await client.execute("ALTER TABLE regions RENAME TO settlements");
+  }
+
+  const eventsInfo = await client.execute("PRAGMA table_info(events)");
+  if (eventsInfo.rows.some((c) => c.name === "region")) {
+    await client.execute("ALTER TABLE events RENAME COLUMN region TO settlement");
+    await client.execute("DROP INDEX IF EXISTS idx_events_region");
+  }
+  // Unconditional, not just inside the `if` above: schema.sql deliberately doesn't create
+  // this index itself (a fresh database's events table already has the right column name by
+  // the time this runs, but schema.sql's own statements execute earlier in initSchema, before
+  // any rename has happened, which is too early for an existing database still on `region`).
+  // By this point the column is guaranteed to be `settlement` either way.
+  await client.execute("CREATE INDEX IF NOT EXISTS idx_events_settlement ON events (settlement)");
+
+  const buildingsInfo = await client.execute("PRAGMA table_info(settlement_buildings)");
+  if (buildingsInfo.rows.some((c) => c.name === "region")) {
+    await client.execute("ALTER TABLE settlement_buildings RENAME COLUMN region TO settlement");
+  }
+}
+
 // SQLite can't ALTER a CHECK constraint in place -- adding 'ObligationAmended' to events.type's
 // allowed values (schema.sql) only takes effect on a table CREATEd fresh with the new list. An
 // already-existing events table (this project's local dev DB, and production once deployed)
@@ -365,8 +406,15 @@ async function initSchema(client) {
   await client.execute("PRAGMA foreign_keys = ON");
   await client.executeMultiple(readFileSync(schemaPath, "utf-8"));
   await ensureColumn(client, "building_catalog", "annual_effect", "TEXT NOT NULL DEFAULT '{}'");
-  await ensureColumn(client, "regions", "kingdom", "TEXT");
+  // Must run before ensureSettlementRename: its events-table rebuild still hardcodes the old
+  // `region` column name (it predates the rename and only needs to run once, ever, on a
+  // database old enough to still be missing ObligationAmended from the CHECK constraint --
+  // renaming region to settlement first would break that rebuild's column list).
   await ensureObligationAmendedEventType(client);
+  await ensureSettlementRename(client);
+  // Must run after ensureSettlementRename: by now the table is named `settlements` either
+  // way (freshly created that way, or just renamed), never the old `regions`.
+  await ensureColumn(client, "settlements", "kingdom", "TEXT");
   await ensureKnownDataCorrections(client);
   await ensureCurrentDateAdvancedPastRealActivity(client);
   await ensureConsistentDateFormatting(client);

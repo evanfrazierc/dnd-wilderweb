@@ -53,17 +53,17 @@ campaign news without needing the app themselves.
 ## Brand Commitments
 
 - Product name: "Wilderweb" / "Wilderweb Kingdom Tracker" (browser tab title).
-- In-fiction names already committed by play: the region "the Wilderlands," the settlement
-  "Stirling Reach," the "Valusian Era" calendar era, and the deity/kingdom/region names already
-  recorded in the Codex and Settlements data. These are existing campaign facts, not up for
-  redesign.
+- In-fiction names already committed by play: "the Wilderlands" (the party's home area), the
+  settlement "Stirling Reach," the "Valusian Era" calendar era, and the deity/kingdom/settlement
+  names already recorded in the Codex and Settlements data. These are existing campaign facts,
+  not up for redesign.
 - Built specifically for the Wilderweb campaign (confirmed) -- no requirement to keep it generic
   or reusable for a future, different campaign.
 
 ## Evidence on Hand
 
 Real campaign data already lives in the database: about 100 recorded events, a populated building
-catalog, 9+ regions, a full deity pantheon, and a calendar structure with named months/holidays
+catalog, 9+ settlements, a full deity pantheon, and a calendar structure with named months/holidays
 (see the Settlements, Codex, and Calendar views). No testimonials, press, or marketing assets
 exist or are needed -- this isn't a marketed product.
 

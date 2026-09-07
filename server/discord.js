@@ -42,7 +42,7 @@ function eventFields(event) {
   const { type, payload } = event;
   const fields = [];
 
-  if (event.region) fields.push({ name: "Region", value: event.region, inline: true });
+  if (event.settlement) fields.push({ name: "Settlement", value: event.settlement, inline: true });
 
   switch (type) {
     case "ResourceChanged": {

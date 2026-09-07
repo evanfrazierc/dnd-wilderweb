@@ -6,20 +6,20 @@ import { parseGameDate } from "./gameDate.js";
  * same transaction as the event's insert (docs/adr/0001-hybrid-event-log-with-projections.md).
  */
 export async function applyProjection(db, event) {
-  const { type, region, payload } = event;
+  const { type, settlement, payload } = event;
 
   switch (type) {
     case "ResourceChanged":
       await applyResourceChanged(db, event);
       break;
     case "BuildingConstructed":
-      await applyBuildingConstructed(db, region, payload);
+      await applyBuildingConstructed(db, settlement, payload);
       break;
     case "BuildingRemoved":
-      await applyBuildingRemoved(db, region, payload);
+      await applyBuildingRemoved(db, settlement, payload);
       break;
     case "BuildingAmended":
-      await applyBuildingAmended(db, region, payload);
+      await applyBuildingAmended(db, settlement, payload);
       break;
     case "CalendarAdvanced":
       await applyCalendarAdvanced(db, payload);
@@ -73,22 +73,22 @@ async function applyResourceChanged(db, event) {
   }
 }
 
-async function applyBuildingConstructed(db, region, payload) {
+async function applyBuildingConstructed(db, settlement, payload) {
   const count = payload.count ?? 1;
   await db.prepare(`
-    INSERT INTO settlement_buildings (region, building, display_name, count, detail)
+    INSERT INTO settlement_buildings (settlement, building, display_name, count, detail)
     VALUES (?, ?, ?, ?, ?)
-    ON CONFLICT (region, building) DO UPDATE SET
+    ON CONFLICT (settlement, building) DO UPDATE SET
       count = count + excluded.count,
       display_name = COALESCE(excluded.display_name, settlement_buildings.display_name),
       detail = COALESCE(excluded.detail, settlement_buildings.detail)
-  `).run(region, payload.building, payload.displayName ?? null, count, payload.detail ?? null);
+  `).run(settlement, payload.building, payload.displayName ?? null, count, payload.detail ?? null);
 }
 
-async function applyBuildingRemoved(db, region, payload) {
+async function applyBuildingRemoved(db, settlement, payload) {
   const count = payload.count ?? 1;
-  const row = await db.prepare("SELECT * FROM settlement_buildings WHERE region = ? AND building = ?")
-    .get(region, payload.building);
+  const row = await db.prepare("SELECT * FROM settlement_buildings WHERE settlement = ? AND building = ?")
+    .get(settlement, payload.building);
   if (!row) return; // already surfaced as a warning
   const next = row.count - count;
   if (next <= 0) {
@@ -98,9 +98,9 @@ async function applyBuildingRemoved(db, region, payload) {
   }
 }
 
-async function applyBuildingAmended(db, region, payload) {
-  const row = await db.prepare("SELECT * FROM settlement_buildings WHERE region = ? AND building = ?")
-    .get(region, payload.building);
+async function applyBuildingAmended(db, settlement, payload) {
+  const row = await db.prepare("SELECT * FROM settlement_buildings WHERE settlement = ? AND building = ?")
+    .get(settlement, payload.building);
   if (!row) return; // already surfaced as a warning
 
   const changes = payload.changes ?? {};

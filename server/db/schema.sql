@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS events (
   game_date_sort INTEGER NOT NULL,
   posted_at TEXT NOT NULL,
   actor TEXT,
-  region TEXT,
+  settlement TEXT,
   note TEXT,
   payload TEXT NOT NULL DEFAULT '{}',
   warnings TEXT NOT NULL DEFAULT '[]',
@@ -19,7 +19,12 @@ CREATE TABLE IF NOT EXISTS events (
 
 CREATE INDEX IF NOT EXISTS idx_events_game_date_sort ON events (game_date_sort);
 CREATE INDEX IF NOT EXISTS idx_events_type ON events (type);
-CREATE INDEX IF NOT EXISTS idx_events_region ON events (region);
+-- idx_events_settlement is NOT created here: on a database that still has the pre-rename
+-- `region` column (connection.js's ensureSettlementRename hasn't run yet at this point in
+-- initSchema), this statement would fail outright -- IF NOT EXISTS only guards the index's
+-- own name, not whether the column it indexes currently exists. ensureSettlementRename
+-- creates it instead, unconditionally, after the column is guaranteed to be `settlement`
+-- (freshly created that way, or just renamed).
 
 -- Projections: current state, updated transactionally alongside the event that caused the change.
 -- Never recomputed by replaying the full log on read (ADR-0001).
@@ -33,12 +38,12 @@ CREATE TABLE IF NOT EXISTS resource_totals (
 
 CREATE TABLE IF NOT EXISTS settlement_buildings (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  region TEXT NOT NULL,
+  settlement TEXT NOT NULL,
   building TEXT NOT NULL, -- must match building_catalog.name
   display_name TEXT, -- optional in-fiction name, e.g. "Anora's Roost" for a Tower
   count INTEGER NOT NULL DEFAULT 1,
   detail TEXT,
-  UNIQUE (region, building)
+  UNIQUE (settlement, building)
 );
 
 CREATE TABLE IF NOT EXISTS calendar_state (
@@ -59,7 +64,7 @@ CREATE TABLE IF NOT EXISTS deities (
 );
 
 -- Superseded by the `kingdoms` table below (docs/adr/0011) -- kept only because
--- ensureRegionsSeeded (server/db/reference.js) still reads its historical
+-- ensureSettlementsSeeded (server/db/reference.js) still reads its historical
 -- wilderlandsRegions field on a from-scratch database. No longer written to.
 CREATE TABLE IF NOT EXISTS locations_state (
   id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -69,10 +74,10 @@ CREATE TABLE IF NOT EXISTS locations_state (
 -- A kingdom (CONTEXT.md): campaign state, event-sourced like deities (LocationAmended,
 -- mirroring DeityAmended's shape) rather than reference data -- a kingdom's capital and
 -- notes are discovered/established facts during play, not static rules. Name-keyed like
--- deities, not a stable integer id like regions: there's no rename-kingdom feature
+-- deities, not a stable integer id like settlements: there's no rename-kingdom feature
 -- (docs/adr/0011), so the drift a rename would cause doesn't arise yet. A kingdom's named
--- settlements are not its own data -- they're Regions that name this kingdom via
--- `regions.kingdom` (docs/adr/0010, docs/adr/0012).
+-- places are not its own data -- they're Settlements that name this kingdom via
+-- `settlements.kingdom` (docs/adr/0010, docs/adr/0012).
 CREATE TABLE IF NOT EXISTS kingdoms (
   name TEXT PRIMARY KEY,
   capital TEXT,
@@ -113,16 +118,18 @@ CREATE TABLE IF NOT EXISTS building_catalog (
   annual_effect TEXT NOT NULL DEFAULT '{}'
 );
 
--- Regions a building can be built in -- first-class reference data (docs/adr/0008) rather
--- than a free-text label on settlement_buildings.region. A stable id separate from the
+-- Settlements a building can be built in -- first-class reference data (docs/adr/0008) rather
+-- than a free-text label on settlement_buildings.settlement. A stable id separate from the
 -- mutable name is what lets a rename cascade to every settlement_buildings row referencing
--- the old name (see replaceRegions in server/db/reference.js).
-CREATE TABLE IF NOT EXISTS regions (
+-- the old name (see replaceSettlements in server/db/reference.js). Named "Settlement" rather
+-- than the earlier "Region" (docs/adr/0014) -- covers both wilderness frontier and a
+-- kingdom's own named places alike, same concept either way (docs/adr/0012).
+CREATE TABLE IF NOT EXISTS settlements (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL UNIQUE,
   description TEXT,
-  -- Optional: which Codex Locations kingdom (by name) claims this region, e.g. "Kingdom of
-  -- Casdenia" (docs/adr/0010). NULL means unclaimed frontier. Referenced by name, not a
+  -- Optional: which Codex Locations kingdom (by name) claims this settlement, e.g. "Kingdom
+  -- of Casdenia" (docs/adr/0010). NULL means unclaimed frontier. Referenced by name, not a
   -- foreign key, because kingdoms live inside locations_state's JSON document and have no
   -- stable id of their own -- acceptable since there's no rename-kingdom feature to cause
   -- drift (see ADR-0010).

@@ -70,45 +70,45 @@ test("DMRuling requires a note and must not carry changes", async () => {
 test("BuildingConstructed records the building and warns on an unmet prerequisite", async () => {
   const db = await freshDb();
   const result = await createEvent(db, {
-    type: "BuildingConstructed", gameDate: "1225", region: "Stirling Reach",
+    type: "BuildingConstructed", gameDate: "1225", settlement: "Stirling Reach",
     payload: { building: "Mill" },
   });
   assert.equal(result.ok, true);
   assert.equal(result.warnings.length, 1);
   assert.match(result.warnings[0], /requires "Farm"/);
-  const row = await db.prepare("SELECT * FROM settlement_buildings WHERE region = 'Stirling Reach' AND building = 'Mill'").get();
+  const row = await db.prepare("SELECT * FROM settlement_buildings WHERE settlement = 'Stirling Reach' AND building = 'Mill'").get();
   assert.equal(row.count, 1);
 });
 
 test("BuildingConstructed with its prerequisite present raises no warning", async () => {
   const db = await freshDb();
-  await createEvent(db, { type: "BuildingConstructed", gameDate: "1225", region: "Stirling Reach", payload: { building: "Farm" } });
-  const result = await createEvent(db, { type: "BuildingConstructed", gameDate: "1226", region: "Stirling Reach", payload: { building: "Mill" } });
+  await createEvent(db, { type: "BuildingConstructed", gameDate: "1225", settlement: "Stirling Reach", payload: { building: "Farm" } });
+  const result = await createEvent(db, { type: "BuildingConstructed", gameDate: "1226", settlement: "Stirling Reach", payload: { building: "Mill" } });
   assert.deepEqual(result.warnings, []);
 });
 
 test("BuildingConstructed accepts an optional displayName alongside the catalog name", async () => {
   const db = await freshDb();
   await createEvent(db, {
-    type: "BuildingConstructed", gameDate: "1225", region: "Old Hills",
+    type: "BuildingConstructed", gameDate: "1225", settlement: "Old Hills",
     payload: { building: "Farm", displayName: "Anora's Roost" },
   });
-  const row = await db.prepare("SELECT display_name FROM settlement_buildings WHERE region = 'Old Hills'").get();
+  const row = await db.prepare("SELECT display_name FROM settlement_buildings WHERE settlement = 'Old Hills'").get();
   assert.equal(row.display_name, "Anora's Roost");
 });
 
 test("BuildingAmended updates displayName and detail without touching count", async () => {
   const db = await freshDb();
-  await createEvent(db, { type: "BuildingConstructed", gameDate: "1225", region: "Old Hills", payload: { building: "Farm", count: 3 } });
+  await createEvent(db, { type: "BuildingConstructed", gameDate: "1225", settlement: "Old Hills", payload: { building: "Farm", count: 3 } });
 
   const result = await createEvent(db, {
-    type: "BuildingAmended", gameDate: "1226", region: "Old Hills",
+    type: "BuildingAmended", gameDate: "1226", settlement: "Old Hills",
     payload: { building: "Farm", changes: { displayName: "Anora's Roost", detail: "Watch post" } },
   });
   assert.equal(result.ok, true);
   assert.deepEqual(result.warnings, []);
 
-  const row = await db.prepare("SELECT * FROM settlement_buildings WHERE region = 'Old Hills' AND building = 'Farm'").get();
+  const row = await db.prepare("SELECT * FROM settlement_buildings WHERE settlement = 'Old Hills' AND building = 'Farm'").get();
   assert.equal(row.display_name, "Anora's Roost");
   assert.equal(row.detail, "Watch post");
   assert.equal(row.count, 3);
@@ -117,24 +117,24 @@ test("BuildingAmended updates displayName and detail without touching count", as
 test("BuildingAmended merges partial changes, leaving fields not mentioned untouched", async () => {
   const db = await freshDb();
   await createEvent(db, {
-    type: "BuildingConstructed", gameDate: "1225", region: "Old Hills",
+    type: "BuildingConstructed", gameDate: "1225", settlement: "Old Hills",
     payload: { building: "Farm", displayName: "Old Name", detail: "Old detail" },
   });
 
   await createEvent(db, {
-    type: "BuildingAmended", gameDate: "1226", region: "Old Hills",
+    type: "BuildingAmended", gameDate: "1226", settlement: "Old Hills",
     payload: { building: "Farm", changes: { displayName: "New Name" } },
   });
 
-  const row = await db.prepare("SELECT * FROM settlement_buildings WHERE region = 'Old Hills' AND building = 'Farm'").get();
+  const row = await db.prepare("SELECT * FROM settlement_buildings WHERE settlement = 'Old Hills' AND building = 'Farm'").get();
   assert.equal(row.display_name, "New Name");
   assert.equal(row.detail, "Old detail");
 });
 
-test("BuildingAmended warns when the building isn't currently built in that region", async () => {
+test("BuildingAmended warns when the building isn't currently built in that settlement", async () => {
   const db = await freshDb();
   const result = await createEvent(db, {
-    type: "BuildingAmended", gameDate: "1225", region: "Old Hills",
+    type: "BuildingAmended", gameDate: "1225", settlement: "Old Hills",
     payload: { building: "Farm", changes: { detail: "x" } },
   });
   assert.equal(result.ok, true);
@@ -145,7 +145,7 @@ test("BuildingAmended warns when the building isn't currently built in that regi
 test("BuildingAmended rejects an empty changes object", async () => {
   const db = await freshDb();
   const result = await createEvent(db, {
-    type: "BuildingAmended", gameDate: "1225", region: "Old Hills", payload: { building: "Farm", changes: {} },
+    type: "BuildingAmended", gameDate: "1225", settlement: "Old Hills", payload: { building: "Farm", changes: {} },
   });
   assert.equal(result.ok, false);
 });
@@ -303,17 +303,17 @@ test("ResourceChanged rejects a malformed newObligation", async () => {
   assert.equal(result.ok, false);
 });
 
-test("listEvents filters by type and region, sorted by game date", async () => {
+test("listEvents filters by type and settlement, sorted by game date", async () => {
   const db = await freshDb();
   await createEvent(db, { type: "ResourceChanged", gameDate: "Month 6, 1226", payload: { changes: { Wood: 1 } } });
   await createEvent(db, { type: "ResourceChanged", gameDate: "Month 1, 1225", payload: { changes: { Wood: 1 } } });
-  await createEvent(db, { type: "BuildingConstructed", gameDate: "Month 1, 1225", region: "Narlmarches", payload: { building: "Farm" } });
+  await createEvent(db, { type: "BuildingConstructed", gameDate: "Month 1, 1225", settlement: "Narlmarches", payload: { building: "Farm" } });
 
   const resourceEvents = await listEvents(db, { type: "ResourceChanged" });
   assert.equal(resourceEvents.length, 2);
   assert.ok(resourceEvents[0].gameDateSort < resourceEvents[1].gameDateSort);
 
-  const narlmarches = await listEvents(db, { region: "Narlmarches" });
+  const narlmarches = await listEvents(db, { settlement: "Narlmarches" });
   assert.equal(narlmarches.length, 1);
   assert.equal(narlmarches[0].type, "BuildingConstructed");
 });
