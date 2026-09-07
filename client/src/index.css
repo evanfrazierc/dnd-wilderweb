@@ -292,6 +292,15 @@ input[type="number"] {
   justify-content: center;
 }
 
+/* Coarse pointers (touch) get the full 44px comfortable tap target; fine
+   pointers (mouse/trackpad) keep the denser desktop sizing. */
+@media (pointer: coarse) {
+  .btn-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}
+
 .btn-primary {
   background: linear-gradient(180deg, var(--accent-strong), var(--accent));
   border-color: var(--accent);
@@ -467,6 +476,13 @@ input[type="number"] {
   justify-content: center;
   border-radius: 6px;
   line-height: 1;
+}
+
+@media (pointer: coarse) {
+  .stepper {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
 }
 
 /* --- Progress / gauge bars --- */
