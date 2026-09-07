@@ -139,13 +139,17 @@ function StatGroup({ title, icon, values, descriptions, onChange }) {
 // EditBuildingControl -- and, like that control, no Discord option: a correction, not
 // campaign news (CONTEXT.md/ADR-0013). Mirrors EditBuildingControl's collapsed-icon-button
 // shape so loans look and behave like every other modifiable entity on the site.
-function EditObligationControl({ obligation, label, onChanged }) {
-  const [expanded, setExpanded] = useState(false);
+//
+// `expanded`/`onExpand`/`onCollapse` are owned by ObligationRow (rather than local state)
+// so it can keep this and RemoveObligationControl mutually exclusive -- with both able to
+// expand independently, a building-row-width GameDatePicker plus a second one for "when did
+// this edit happen" left the other control's collapsed icon stranded on its own line below
+// Save/Cancel on a narrow screen.
+function EditObligationControl({ obligation, label, expanded, onExpand, onCollapse, onChanged }) {
   const [description, setDescription] = useState(obligation.description);
   const [newDueDate, setNewDueDate] = useState(null);
   const [gameDate, setGameDate] = useState(null);
   const { submit, status, warnings } = useEventSubmit(() => {
-    setExpanded(false);
     setGameDate(null);
     setNewDueDate(null);
     onChanged();
@@ -172,30 +176,46 @@ function EditObligationControl({ obligation, label, onChanged }) {
 
   if (!expanded) {
     return (
-      <button className="btn btn-icon" onClick={() => setExpanded(true)} aria-label={`Edit ${label}`}>
+      <button className="btn btn-icon" onClick={onExpand} aria-label={`Edit ${label}`}>
         <Icon name="Codex" size={14} />
       </button>
     );
   }
 
   return (
-    <div style={{ display: "flex", gap: "0.4rem", alignItems: "center", flexWrap: "wrap", width: "100%", marginTop: "0.4rem" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", width: "100%", marginTop: "0.5rem" }}>
       <input
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Description"
-        style={{ flex: "1 1 12rem", fontSize: "0.8rem" }}
+        style={{ width: "100%", fontSize: "0.8rem" }}
       />
-      <span className="text-faint" style={{ fontSize: "0.76rem" }}>Due date:</span>
-      <GameDatePicker value={newDueDate} onChange={setNewDueDate} autoDefault={false} allowClear />
-      {dirty && <GameDatePicker value={gameDate} onChange={setGameDate} />}
+      {/* Each date picker gets its own labeled, full-width row rather than sharing a line
+          with the description/buttons -- a picker plus its clear button is wide enough on
+          its own to crowd a mobile card when squeezed alongside anything else. */}
+      <label className="text-faint" style={{ fontSize: "0.76rem", display: "block" }}>
+        Due date
+        <div style={{ marginTop: "0.25rem" }}>
+          <GameDatePicker value={newDueDate} onChange={setNewDueDate} autoDefault={false} allowClear />
+        </div>
+      </label>
       {dirty && (
-        <button className="btn btn-sm btn-primary" onClick={save} disabled={!isCompleteGameDate(gameDate)}>
-          Save
-        </button>
+        <label className="text-faint" style={{ fontSize: "0.76rem", display: "block" }}>
+          Recorded on
+          <div style={{ marginTop: "0.25rem" }}>
+            <GameDatePicker value={gameDate} onChange={setGameDate} />
+          </div>
+        </label>
       )}
-      <button className="btn btn-sm" onClick={() => setExpanded(false)}>Cancel</button>
-      {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+      <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
+        {dirty && (
+          <button className="btn btn-sm btn-primary" onClick={save} disabled={!isCompleteGameDate(gameDate)}>
+            Save
+          </button>
+        )}
+        <button className="btn btn-sm" onClick={onCollapse}>Cancel</button>
+        {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+      </div>
       <WarningsList warnings={warnings} />
     </div>
   );
@@ -205,11 +225,9 @@ function EditObligationControl({ obligation, label, onChanged }) {
 // a loan sets `satisfied` via the same ObligationAmended event the edit control uses, which
 // drops it off this list (loaded with satisfied: false) without erasing the row or the
 // resources it already granted -- same non-destructive shape as BuildingRemoved.
-function RemoveObligationControl({ obligation, label, onRemoved }) {
-  const [confirming, setConfirming] = useState(false);
+function RemoveObligationControl({ obligation, label, confirming, onConfirmStart, onCancel, onRemoved }) {
   const [gameDate, setGameDate] = useState(null);
   const { submit, status, warnings } = useEventSubmit(() => {
-    setConfirming(false);
     setGameDate(null);
     onRemoved();
   });
@@ -227,22 +245,22 @@ function RemoveObligationControl({ obligation, label, onRemoved }) {
 
   if (!confirming) {
     return (
-      <button className="btn btn-icon btn-danger" onClick={() => setConfirming(true)} aria-label={`Forgive ${label}`}>
+      <button className="btn btn-icon btn-danger" onClick={onConfirmStart} aria-label={`Forgive ${label}`}>
         <Icon name="Trash" size={14} />
       </button>
     );
   }
 
   return (
-    <div style={{ display: "flex", gap: "0.4rem", alignItems: "center", flexWrap: "wrap", width: "100%", marginTop: "0.4rem" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", width: "100%", marginTop: "0.5rem" }}>
       <GameDatePicker value={gameDate} onChange={setGameDate} />
-      <button className="btn btn-sm btn-danger" onClick={confirmForgive} disabled={!isCompleteGameDate(gameDate)}>
-        Confirm
-      </button>
-      <button className="btn btn-sm" onClick={() => setConfirming(false)}>
-        Cancel
-      </button>
-      {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+      <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
+        <button className="btn btn-sm btn-danger" onClick={confirmForgive} disabled={!isCompleteGameDate(gameDate)}>
+          Confirm
+        </button>
+        <button className="btn btn-sm" onClick={onCancel}>Cancel</button>
+        {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+      </div>
       <WarningsList warnings={warnings} />
     </div>
   );
@@ -251,6 +269,7 @@ function RemoveObligationControl({ obligation, label, onRemoved }) {
 // A plain wrapping .building-name div, not the always-visible single-line <input> this
 // replaced -- that input couldn't wrap, which is what was clipping loan titles on mobile.
 function ObligationRow({ obligation, onChanged }) {
+  const [action, setAction] = useState(null); // null | "edit" | "remove" -- see EditObligationControl's comment
   const pct = obligation.amountTotal > 0
     ? Math.min(100, ((obligation.amountTotal - obligation.amountRemaining) / obligation.amountTotal) * 100)
     : 0;
@@ -272,8 +291,32 @@ function ObligationRow({ obligation, onChanged }) {
           {obligation.satisfied && " · settled"}
         </div>
       </div>
-      <EditObligationControl obligation={obligation} label={label} onChanged={onChanged} />
-      <RemoveObligationControl obligation={obligation} label={label} onRemoved={onChanged} />
+      {action !== "remove" && (
+        <EditObligationControl
+          obligation={obligation}
+          label={label}
+          expanded={action === "edit"}
+          onExpand={() => setAction("edit")}
+          onCollapse={() => setAction(null)}
+          onChanged={() => {
+            setAction(null);
+            onChanged();
+          }}
+        />
+      )}
+      {action !== "edit" && (
+        <RemoveObligationControl
+          obligation={obligation}
+          label={label}
+          confirming={action === "remove"}
+          onConfirmStart={() => setAction("remove")}
+          onCancel={() => setAction(null)}
+          onRemoved={() => {
+            setAction(null);
+            onChanged();
+          }}
+        />
+      )}
     </div>
   );
 }

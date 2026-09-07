@@ -32,7 +32,7 @@ export default function GameDatePicker({ value, onChange, autoDefault = true, al
   }
 
   return (
-    <span style={{ display: "inline-flex", gap: "0.35rem", alignItems: "center", ...style }}>
+    <span style={{ display: "inline-flex", flexWrap: "wrap", gap: "0.35rem", alignItems: "center", ...style }}>
       <select value={value?.month ?? ""} onChange={(e) => field("month", e.target.value)}>
         <option value="" disabled>Month…</option>
         {structure.months.map((m) => (
