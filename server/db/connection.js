@@ -2,6 +2,7 @@ import { createClient } from "@libsql/client";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
 import { readFileSync } from "node:fs";
+import { parseGameDate } from "./gameDate.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const schemaPath = path.join(__dirname, "schema.sql");
@@ -125,12 +126,84 @@ async function ensureObligationAmendedEventType(client) {
   }
 }
 
+// One-time cleanup of a handful of specific, known-bad rows discovered in the live campaign
+// log: a browser-testing session's CalendarAdvanced entries and a build-then-immediately-
+// remove Ferry test (both confirmed by the DM to be test artifacts, not campaign history --
+// see chat log), plus three ResourceChanged events whose gameDate got corrupted into a
+// real-world display string ("2026-08-23") instead of an in-fiction date by a Dashboard bug
+// (since fixed -- it fell back to stats.asOf when the date picker hadn't resolved yet).
+//
+// Every row is matched on id AND its exact note (or, for the ResourceChanged rows, its exact
+// corrupted game_date_raw) before being touched, so this can never fire against a different
+// database that happens to reuse one of these ids for something else -- a safe no-op forever
+// after the one time this specific campaign's data actually needs it, same gating approach as
+// ensureObligationAmendedEventType above.
+async function ensureKnownDataCorrections(client) {
+  const testArtifacts = [
+    { id: 102, type: "CalendarAdvanced", note: "Browser automation smoke test" },
+    { id: 106, type: "BuildingConstructed", note: "Constructed via the Settlements view" },
+    { id: 107, type: "BuildingRemoved", note: "Removed via the Settlements view" },
+    { id: 108, type: "CalendarAdvanced", note: "Nothing happened…" },
+    { id: 109, type: "CalendarAdvanced", note: "Going back" },
+  ];
+  for (const { id, type, note } of testArtifacts) {
+    const result = await client.execute({
+      sql: "SELECT id FROM events WHERE id = ? AND type = ? AND note = ?",
+      args: [id, type, note],
+    });
+    if (result.rows.length > 0) {
+      await client.execute({ sql: "DELETE FROM events WHERE id = ?", args: [id] });
+    }
+  }
+
+  // calendar_state is a plain last-write-wins projection (applyCalendarAdvanced in
+  // projections.js) -- deleting CalendarAdvanced events above doesn't recompute it on its own,
+  // it just keeps showing whatever the last one to run wrote. Not hardcoded to any particular
+  // remaining event: this re-derives it from whichever CalendarAdvanced event now has the
+  // highest id (the actual applied-order tiebreak createEvent itself uses), so it comes out
+  // correct whether that's the original migration's entry (nothing else legitimate on record,
+  // production's case) or some other real advance this cleanup didn't touch.
+  const latest = await client.execute("SELECT payload FROM events WHERE type = 'CalendarAdvanced' ORDER BY id DESC LIMIT 1");
+  if (latest.rows.length > 0) {
+    const p = JSON.parse(latest.rows[0].payload);
+    await client.execute({
+      sql: `
+        INSERT INTO calendar_state (id, year, year_label, month, day, note)
+        VALUES (1, ?, ?, ?, ?, ?)
+        ON CONFLICT (id) DO UPDATE SET
+          year = excluded.year, year_label = excluded.year_label,
+          month = excluded.month, day = excluded.day, note = excluded.note
+      `,
+      args: [p.year, p.yearLabel ?? null, p.month, p.day, p.note ?? null],
+    });
+  }
+
+  // The three corrupted ResourceChanged events: corrected to the campaign's actual current
+  // date throughout the period they were saved (Erastus 3rd, 1227 -- the same event 79 above),
+  // in the named-month format formatGameDate now produces going forward.
+  const correctedRaw = "Erastus (2), 3rd, 1227";
+  const correctedSort = parseGameDate(correctedRaw).sortKey;
+  for (const id of [98, 104, 105]) {
+    const result = await client.execute({
+      sql: "SELECT id FROM events WHERE id = ? AND type = 'ResourceChanged' AND game_date_raw = '2026-08-23'",
+      args: [id],
+    });
+    if (result.rows.length > 0) {
+      await client.execute({
+        sql: "UPDATE events SET game_date_raw = ?, game_date_sort = ? WHERE id = ?",
+        args: [correctedRaw, correctedSort, id],
+      });
+    }
+  }
+}
+
 async function initSchema(client) {
   await client.execute("PRAGMA foreign_keys = ON");
   await client.executeMultiple(readFileSync(schemaPath, "utf-8"));
   await ensureColumn(client, "building_catalog", "annual_effect", "TEXT NOT NULL DEFAULT '{}'");
   await ensureColumn(client, "regions", "kingdom", "TEXT");
   await ensureObligationAmendedEventType(client);
+  await ensureKnownDataCorrections(client);
 }
 
 /** Opens a local database: `:memory:` or a filesystem path. Used by tests and local scripts. */

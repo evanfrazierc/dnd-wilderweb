@@ -114,3 +114,142 @@ test("re-opening a database with the pre-ObligationAmended events schema migrate
     }
   }
 });
+
+// ensureKnownDataCorrections (server/db/connection.js) is a one-time cleanup of specific rows
+// discovered in the live campaign log: a testing session's leftover events, and a handful of
+// ResourceChanged events whose gameDate got corrupted into a real-world date by the (since
+// fixed) Dashboard stats.asOf bug. This reproduces that exact shape in a fresh temp DB, opens
+// it (which finds nothing to do -- the target rows don't exist yet), inserts them, then
+// reopens (which is when the migration actually fires), same two-open pattern as the
+// ObligationAmended test above.
+test("ensureKnownDataCorrections removes known test artifacts and corrects the three corrupted ResourceChanged dates", async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "wilderweb-test-"));
+  const dbPath = path.join(dir, "test.db");
+  try {
+    const db = await openDb(dbPath);
+
+    async function insertEvent(id, type, note, gameDateRaw, gameDateSort, payload = "{}") {
+      await db.prepare(`
+        INSERT INTO events (id, type, game_date_raw, game_date_sort, posted_at, note, payload)
+        VALUES (?, ?, ?, ?, '2026-01-01', ?, ?)
+      `).run(id, type, gameDateRaw, gameDateSort, note, payload);
+    }
+
+    // The original migration's real calendar entry -- the anchor the correction restores
+    // calendar_state to once the test CalendarAdvanced entries below are removed.
+    await insertEvent(
+      79, "CalendarAdvanced", "Imported from calendar.json", "Month 2, 3th, 1227", 441752,
+      JSON.stringify({ year: 1227, yearLabel: "YEAR THREE", month: 2, day: 3, note: "You are here" }),
+    );
+    await db.prepare(`
+      INSERT INTO calendar_state (id, year, year_label, month, day, note)
+      VALUES (1, 1227, 'YEAR THREE', 2, 5, 'stale test value')
+    `).run();
+
+    // The known test artifacts.
+    await insertEvent(102, "CalendarAdvanced", "Browser automation smoke test", "Month 2, 4th, 1227", 441753);
+    await insertEvent(106, "BuildingConstructed", "Constructed via the Settlements view", "Month 2, 4th, 1227", 441753);
+    await insertEvent(107, "BuildingRemoved", "Removed via the Settlements view", "Month 2, 4th, 1227", 441753);
+    await insertEvent(108, "CalendarAdvanced", "Nothing happened…", "Month 2, 5th, 1227", 441754);
+    await insertEvent(109, "CalendarAdvanced", "Going back", "Month 2, 4th, 1227", 441753);
+
+    // The three corrupted ResourceChanged events.
+    await insertEvent(98, "ResourceChanged", null, "2026-08-23", 729360, '{"changes":{"Wood":1}}');
+    await insertEvent(104, "ResourceChanged", null, "2026-08-23", 729360, '{"changes":{"Wood":2}}');
+    await insertEvent(105, "ResourceChanged", null, "2026-08-23", 729360, '{"changes":{"Wood":-1}}');
+
+    db.close();
+
+    const reopened = await openDb(dbPath);
+
+    for (const id of [102, 106, 107, 108, 109]) {
+      const row = await reopened.prepare("SELECT id FROM events WHERE id = ?").get(id);
+      assert.equal(row, undefined, `event ${id} should have been deleted`);
+    }
+
+    const state = await reopened.prepare("SELECT * FROM calendar_state WHERE id = 1").get();
+    assert.deepEqual(
+      { year: state.year, year_label: state.year_label, month: state.month, day: state.day },
+      { year: 1227, year_label: "YEAR THREE", month: 2, day: 3 },
+    );
+
+    for (const id of [98, 104, 105]) {
+      const row = await reopened.prepare("SELECT game_date_raw, game_date_sort FROM events WHERE id = ?").get(id);
+      assert.equal(row.game_date_raw, "Erastus (2), 3rd, 1227");
+      assert.ok(row.game_date_sort < 729360); // no longer sorts as a fake future date
+    }
+
+    // The original resource deltas were never touched -- only the date.
+    const still = await reopened.prepare("SELECT payload FROM events WHERE id = 104").get();
+    assert.deepEqual(JSON.parse(still.payload), { changes: { Wood: 2 } });
+
+    reopened.close();
+
+    // Reopening a third time must not error or re-apply anything already fixed.
+    const thirdOpen = await openDb(dbPath);
+    const count = await thirdOpen.prepare("SELECT COUNT(*) c FROM events").get();
+    assert.equal(count.c, 4); // 79, 98, 104, 105 -- the five test artifacts are gone
+    thirdOpen.close();
+  } finally {
+    try {
+      rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 });
+    } catch {
+      // leaked temp dir under the OS temp root; not worth failing the test over.
+    }
+  }
+});
+
+// The recovered calendar_state must reflect whatever CalendarAdvanced event is actually left
+// after cleanup, not always fall back to event 79 -- a database with its own separate, real
+// (non-test) calendar advance beyond id 79 must keep it, not get silently reverted.
+test("ensureKnownDataCorrections' calendar_state recovery keeps a real CalendarAdvanced event that isn't one of the known test artifacts", async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "wilderweb-test-"));
+  const dbPath = path.join(dir, "test.db");
+  try {
+    const db = await openDb(dbPath);
+
+    async function insertEvent(id, type, note, gameDateRaw, gameDateSort, payload = "{}") {
+      await db.prepare(`
+        INSERT INTO events (id, type, game_date_raw, game_date_sort, posted_at, note, payload)
+        VALUES (?, ?, ?, ?, '2026-01-01', ?, ?)
+      `).run(id, type, gameDateRaw, gameDateSort, note, payload);
+    }
+
+    await insertEvent(
+      79, "CalendarAdvanced", "Imported from calendar.json", "Month 2, 3th, 1227", 441752,
+      JSON.stringify({ year: 1227, yearLabel: "YEAR THREE", month: 2, day: 3, note: "You are here" }),
+    );
+    // The one known-bad test artifact this database happens to also carry.
+    await insertEvent(102, "CalendarAdvanced", "Browser automation smoke test", "Month 2, 4th, 1227", 441753);
+    // A real, later calendar advance -- not on the known-artifact list, so it must survive.
+    await insertEvent(
+      150, "CalendarAdvanced", "Advanced in session", "Month 2, 9th, 1227", 441758,
+      JSON.stringify({ year: 1227, yearLabel: "YEAR THREE", month: 2, day: 9, note: null }),
+    );
+    await db.prepare(`
+      INSERT INTO calendar_state (id, year, year_label, month, day, note)
+      VALUES (1, 1227, 'YEAR THREE', 2, 9, NULL)
+    `).run();
+
+    db.close();
+
+    const reopened = await openDb(dbPath);
+
+    const artifact = await reopened.prepare("SELECT id FROM events WHERE id = 102").get();
+    assert.equal(artifact, undefined);
+
+    const real = await reopened.prepare("SELECT id FROM events WHERE id = 150").get();
+    assert.ok(real, "the real, non-test calendar advance must not be deleted");
+
+    const state = await reopened.prepare("SELECT year, month, day FROM calendar_state WHERE id = 1").get();
+    assert.deepEqual(state, { year: 1227, month: 2, day: 9 }); // still the real advance, not reverted to event 79
+
+    reopened.close();
+  } finally {
+    try {
+      rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 });
+    } catch {
+      // leaked temp dir under the OS temp root; not worth failing the test over.
+    }
+  }
+});
