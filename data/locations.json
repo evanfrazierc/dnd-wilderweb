@@ -6,17 +6,14 @@
       "counties": [
         {
           "name": "County of Arnestal",
-          "seat": "City of Arnestal",
-          "settlements": [
-            { "name": "Village of Hornstead", "type": "Village" },
-            { "name": "Village of Belmore", "type": "Village" },
-            { "name": "Village of Emerstook", "type": "Village" },
-            { "name": "Village of Carthrun", "type": "Village" }
-          ]
+          "seat": "City of Arnestal"
         }
       ],
       "other": [
-        { "name": "Olen's Rest", "type": "Landmark" }
+        {
+          "name": "Olen's Rest",
+          "type": "Landmark"
+        }
       ]
     },
     {
@@ -38,17 +35,12 @@
       "counties": [],
       "other": [],
       "note": "No locations posted yet."
+    },
+    {
+      "name": "Test Kingdom UX Review",
+      "capital": null,
+      "counties": [],
+      "other": []
     }
-  ],
-  "wilderlandsRegions": [
-    { "name": "Stirling Reach", "description": "The party's settlement." },
-    { "name": "Narlmarches", "description": "Forest region north/adjacent to Stirling Reach." },
-    { "name": "Wilderwood", "description": "Forest region." },
-    { "name": "Mettlewood", "description": "Home to a small village, farmland and logging." },
-    { "name": "Faerweald", "description": "Forest region with iron deposits." },
-    { "name": "Carthrun", "description": "Region near the Village of Carthrun, has iron deposits." },
-    { "name": "Lake Silverstep", "description": "Lake region with fishing." },
-    { "name": "Argent River", "description": "River region southwest of Stirling Reach, crossed by a stone bridge." },
-    { "name": "Old Hills", "description": "Hill region with a quarry and a watch post (Anora's Roost)." }
   ]
 }

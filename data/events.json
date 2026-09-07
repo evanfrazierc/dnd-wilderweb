@@ -1,0 +1,2199 @@
+[
+  {
+    "id": 80,
+    "type": "DeityAmended",
+    "gameDate": "1225",
+    "gameDateSort": 441000,
+    "postedAt": "2026-08-29",
+    "actor": "Migration",
+    "region": null,
+    "note": "Imported from deities.json",
+    "payload": {
+      "name": "Pelor",
+      "changes": {
+        "title": "Dawnfather",
+        "alignment": "Good",
+        "confirmed": true
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 81,
+    "type": "DeityAmended",
+    "gameDate": "1225",
+    "gameDateSort": 441000,
+    "postedAt": "2026-08-29",
+    "actor": "Migration",
+    "region": null,
+    "note": "Imported from deities.json",
+    "payload": {
+      "name": "Erastil",
+      "changes": {
+        "title": "Old Deadeye",
+        "alignment": "Good",
+        "confirmed": true
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 82,
+    "type": "DeityAmended",
+    "gameDate": "1225",
+    "gameDateSort": 441000,
+    "postedAt": "2026-08-29",
+    "actor": "Migration",
+    "region": null,
+    "note": "Imported from deities.json",
+    "payload": {
+      "name": "Desna",
+      "changes": {
+        "title": "Wandering Dreamer",
+        "alignment": "Good",
+        "confirmed": true
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 83,
+    "type": "DeityAmended",
+    "gameDate": "1225",
+    "gameDateSort": 441000,
+    "postedAt": "2026-08-29",
+    "actor": "Migration",
+    "region": null,
+    "note": "Imported from deities.json",
+    "payload": {
+      "name": "Bahamut",
+      "changes": {
+        "title": "Platinum Dragon",
+        "alignment": "Good",
+        "confirmed": true
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 84,
+    "type": "DeityAmended",
+    "gameDate": "1225",
+    "gameDateSort": 441000,
+    "postedAt": "2026-08-29",
+    "actor": "Migration",
+    "region": null,
+    "note": "Imported from deities.json",
+    "payload": {
+      "name": "Abadar",
+      "changes": {
+        "title": "Father of Wealth and Order",
+        "alignment": "Good",
+        "confirmed": true
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 85,
+    "type": "DeityAmended",
+    "gameDate": "1225",
+    "gameDateSort": 441000,
+    "postedAt": "2026-08-29",
+    "actor": "Migration",
+    "region": null,
+    "note": "Imported from deities.json",
+    "payload": {
+      "name": "Kord",
+      "changes": {
+        "title": "Stormlord",
+        "alignment": "Good",
+        "confirmed": true
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 86,
+    "type": "DeityAmended",
+    "gameDate": "1225",
+    "gameDateSort": 441000,
+    "postedAt": "2026-08-29",
+    "actor": "Migration",
+    "region": null,
+    "note": "Imported from deities.json",
+    "payload": {
+      "name": "Pharasma",
+      "changes": {
+        "title": "Lady of Graves",
+        "alignment": "Good",
+        "confirmed": true
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 87,
+    "type": "DeityAmended",
+    "gameDate": "1225",
+    "gameDateSort": 441000,
+    "postedAt": "2026-08-29",
+    "actor": "Migration",
+    "region": null,
+    "note": "Imported from deities.json",
+    "payload": {
+      "name": "Shelyn",
+      "changes": {
+        "title": "Eternal Rose",
+        "alignment": "Good",
+        "confirmed": true
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 88,
+    "type": "DeityAmended",
+    "gameDate": "1225",
+    "gameDateSort": 441000,
+    "postedAt": "2026-08-29",
+    "actor": "Migration",
+    "region": null,
+    "note": "Imported from deities.json",
+    "payload": {
+      "name": "Lamashtu",
+      "changes": {
+        "title": "Mother of Monsters",
+        "alignment": "Evil",
+        "confirmed": true
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 89,
+    "type": "DeityAmended",
+    "gameDate": "1225",
+    "gameDateSort": 441000,
+    "postedAt": "2026-08-29",
+    "actor": "Migration",
+    "region": null,
+    "note": "Imported from deities.json",
+    "payload": {
+      "name": "Melora",
+      "changes": {
+        "title": null,
+        "alignment": "Unknown",
+        "confirmed": false,
+        "note": "Holy days on the calendar (Wildernight, Garland Day, Tidestill, Green Pact, Winterbloom) but not yet listed in the religions channel."
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 90,
+    "type": "DeityAmended",
+    "gameDate": "1225",
+    "gameDateSort": 441000,
+    "postedAt": "2026-08-29",
+    "actor": "Migration",
+    "region": null,
+    "note": "Imported from deities.json",
+    "payload": {
+      "name": "Andoletta",
+      "changes": {
+        "title": null,
+        "alignment": "Unknown",
+        "confirmed": false,
+        "note": "Holy days: Hearth Day, Hallow's Eve."
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 91,
+    "type": "DeityAmended",
+    "gameDate": "1225",
+    "gameDateSort": 441000,
+    "postedAt": "2026-08-29",
+    "actor": "Migration",
+    "region": null,
+    "note": "Imported from deities.json",
+    "payload": {
+      "name": "Sarenrae",
+      "changes": {
+        "title": null,
+        "alignment": "Unknown",
+        "confirmed": false,
+        "note": "Holy days: Confession Day, Burningwind Festival."
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 92,
+    "type": "DeityAmended",
+    "gameDate": "1225",
+    "gameDateSort": 441000,
+    "postedAt": "2026-08-29",
+    "actor": "Migration",
+    "region": null,
+    "note": "Imported from deities.json",
+    "payload": {
+      "name": "Ioun",
+      "changes": {
+        "title": null,
+        "alignment": "Unknown",
+        "confirmed": false,
+        "note": "Holy day: Quill Day."
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 93,
+    "type": "DeityAmended",
+    "gameDate": "1225",
+    "gameDateSort": 441000,
+    "postedAt": "2026-08-29",
+    "actor": "Migration",
+    "region": null,
+    "note": "Imported from deities.json",
+    "payload": {
+      "name": "Sehanine",
+      "changes": {
+        "title": null,
+        "alignment": "Unknown",
+        "confirmed": false,
+        "note": "Holy day: Shadowlight."
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 94,
+    "type": "DeityAmended",
+    "gameDate": "1225",
+    "gameDateSort": 441000,
+    "postedAt": "2026-08-29",
+    "actor": "Migration",
+    "region": null,
+    "note": "Imported from deities.json",
+    "payload": {
+      "name": "Calistria",
+      "changes": {
+        "title": null,
+        "alignment": "Unknown",
+        "confirmed": false,
+        "note": "Holy days: Challenge Day, Feast of Vigor."
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 95,
+    "type": "DeityAmended",
+    "gameDate": "1225",
+    "gameDateSort": 441000,
+    "postedAt": "2026-08-29",
+    "actor": "Migration",
+    "region": null,
+    "note": "Imported from deities.json",
+    "payload": {
+      "name": "Corellon",
+      "changes": {
+        "title": null,
+        "alignment": "Unknown",
+        "confirmed": false,
+        "note": "Holy day: Day of the Arch-Heart."
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 96,
+    "type": "DeityAmended",
+    "gameDate": "1225",
+    "gameDateSort": 441000,
+    "postedAt": "2026-08-29",
+    "actor": "Migration",
+    "region": null,
+    "note": "Imported from deities.json",
+    "payload": {
+      "name": "Moradin",
+      "changes": {
+        "title": null,
+        "alignment": "Unknown",
+        "confirmed": false,
+        "note": "Holy days: Forge Festival, Oath Day."
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 97,
+    "type": "LocationAmended",
+    "gameDate": "1225",
+    "gameDateSort": 441000,
+    "postedAt": "2026-08-29",
+    "actor": "Migration",
+    "region": null,
+    "note": "Imported from locations.json",
+    "payload": {
+      "data": {
+        "kingdoms": [
+          {
+            "name": "Kingdom of Casdenia",
+            "capital": "Royal City of Casdenor",
+            "counties": [
+              {
+                "name": "County of Arnestal",
+                "seat": "City of Arnestal",
+                "settlements": [
+                  {
+                    "name": "Village of Hornstead",
+                    "type": "Village"
+                  },
+                  {
+                    "name": "Village of Belmore",
+                    "type": "Village"
+                  },
+                  {
+                    "name": "Village of Emerstook",
+                    "type": "Village"
+                  },
+                  {
+                    "name": "Village of Carthrun",
+                    "type": "Village"
+                  }
+                ]
+              }
+            ],
+            "other": [
+              {
+                "name": "Olen's Rest",
+                "type": "Landmark"
+              }
+            ]
+          },
+          {
+            "name": "Kingdom of Ravenstone",
+            "capital": "City of Ravenstone",
+            "counties": [],
+            "other": []
+          },
+          {
+            "name": "Kingdom of Galderoy",
+            "capital": null,
+            "counties": [],
+            "other": [],
+            "note": "No locations posted yet."
+          },
+          {
+            "name": "Kingdom of Tremund",
+            "capital": null,
+            "counties": [],
+            "other": [],
+            "note": "No locations posted yet."
+          }
+        ],
+        "wilderlandsRegions": [
+          {
+            "name": "Stirling Reach",
+            "description": "The party's settlement."
+          },
+          {
+            "name": "Narlmarches",
+            "description": "Forest region north/adjacent to Stirling Reach."
+          },
+          {
+            "name": "Wilderwood",
+            "description": "Forest region."
+          },
+          {
+            "name": "Mettlewood",
+            "description": "Home to a small village, farmland and logging."
+          },
+          {
+            "name": "Faerweald",
+            "description": "Forest region with iron deposits."
+          },
+          {
+            "name": "Carthrun",
+            "description": "Region near the Village of Carthrun, has iron deposits."
+          },
+          {
+            "name": "Lake Silverstep",
+            "description": "Lake region with fishing."
+          },
+          {
+            "name": "Argent River",
+            "description": "River region southwest of Stirling Reach, crossed by a stone bridge."
+          },
+          {
+            "name": "Old Hills",
+            "description": "Hill region with a quarry and a watch post (Anora's Roost)."
+          }
+        ]
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 50,
+    "type": "ResourceChanged",
+    "gameDate": "Month 1, 15th, 1225",
+    "gameDateSort": 441014,
+    "postedAt": "2026-08-29",
+    "actor": "Migration",
+    "region": null,
+    "note": "Reconciliation adjustment: history.json's tracked deltas don't reconcile with stats.json's snapshot (an unlogged starting grant and/or transcription gaps). This one-time entry closes that gap so the database's totals match the last known-good snapshot; see .scratch/campaign-database/spec.md.",
+    "payload": {
+      "changes": {
+        "Horses": 1,
+        "Population": 1,
+        "Tools": 7,
+        "Weapons": 1,
+        "Food": 10,
+        "Iron": 6,
+        "Stone": 18,
+        "Wealth": -3,
+        "Wood": 25,
+        "Intrigue": 2,
+        "Loyalty": 1
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 1,
+    "type": "ResourceChanged",
+    "gameDate": "Pelorune (1) 16, 1225",
+    "gameDateSort": 441015,
+    "postedAt": "2025-09-14",
+    "actor": null,
+    "region": null,
+    "note": "Confirmed Build Order — Town Hall -1 Wood, Farm -1 Wood, Logging Camp -1 Wood, Stone Bridge -2 Stone, Tower -1 Stone",
+    "payload": {
+      "changes": {
+        "Wood": -3,
+        "Stone": -3
+      }
+    },
+    "warnings": [
+      "Wood would go negative (0 -> -3)",
+      "Stone would go negative (0 -> -3)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 2,
+    "type": "ResourceChanged",
+    "gameDate": "Pelorune (1) 16, 1225",
+    "gameDateSort": 441015,
+    "postedAt": "2025-09-14",
+    "actor": null,
+    "region": null,
+    "note": "Month 1 Expenses — -3 Wood (buildings), -2 Stone (bridge over Argent River), -1 Stone (tower)",
+    "payload": {
+      "changes": {
+        "Wood": -3,
+        "Stone": -3
+      }
+    },
+    "warnings": [
+      "Wood would go negative (-3 -> -6)",
+      "Stone would go negative (-3 -> -6)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 4,
+    "type": "ResourceChanged",
+    "gameDate": "Erastus (2) 15, 1225",
+    "gameDateSort": 441044,
+    "postedAt": "2025-11-09",
+    "actor": null,
+    "region": null,
+    "note": "Confirmed Build Order — Tavern -1 Wood -1 Food, Market -1 Wood -1 Wealth, Fishing Dock -1 Wood, Quarry -1 Wood and -1 Tool",
+    "payload": {
+      "changes": {
+        "Wood": -3,
+        "Food": -1,
+        "Wealth": -1,
+        "Tools": -1
+      }
+    },
+    "warnings": [
+      "Wood would go negative (-6 -> -9)",
+      "Food would go negative (0 -> -1)",
+      "Wealth would go negative (0 -> -1)",
+      "Tools would go negative (0 -> -1)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 3,
+    "type": "ResourceChanged",
+    "gameDate": "Erastus (2) 16, 1225",
+    "gameDateSort": 441045,
+    "postedAt": "2025-09-14",
+    "actor": null,
+    "region": null,
+    "note": "Month 1 Income — +1 Diplomacy (town hall), +1 Militia, +1 Intrigue (from Tavern)",
+    "payload": {
+      "changes": {
+        "Diplomacy": 1
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 5,
+    "type": "ResourceChanged",
+    "gameDate": "Month 3, 15th, 1225",
+    "gameDateSort": 441074,
+    "postedAt": "2025-11-09",
+    "actor": null,
+    "region": null,
+    "note": "Confirmed Build Order — Roads -3 Tools",
+    "payload": {
+      "changes": {
+        "Tools": -3
+      }
+    },
+    "warnings": [
+      "Tools would go negative (-1 -> -4)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 6,
+    "type": "ResourceChanged",
+    "gameDate": "Month 4, 15th, 1225",
+    "gameDateSort": 441104,
+    "postedAt": "2025-11-09",
+    "actor": null,
+    "region": null,
+    "note": "Confirmed Build Order — Logging Camps -2 Wood, Herbalist -1 Wood",
+    "payload": {
+      "changes": {
+        "Wood": -3
+      }
+    },
+    "warnings": [
+      "Wood would go negative (-9 -> -12)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 7,
+    "type": "ResourceChanged",
+    "gameDate": "Month 5, 16th, 1225",
+    "gameDateSort": 441135,
+    "postedAt": "2025-12-27",
+    "actor": null,
+    "region": null,
+    "note": "Confirmed Build Order — Farm -1 Wood",
+    "payload": {
+      "changes": {
+        "Wood": -1
+      }
+    },
+    "warnings": [
+      "Wood would go negative (-12 -> -13)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 8,
+    "type": "ResourceChanged",
+    "gameDate": "Month 6, 1st, 1225",
+    "gameDateSort": 441150,
+    "postedAt": "2025-12-27",
+    "actor": "weduhman",
+    "region": null,
+    "note": "Confirmed Build Order — Stone walls -1 stone x6 (around settlement hex), Smithy -1 Wood, Prison -1 Stone -1 Iron (near Tower), Ranch -1 Wood -1 Wealth, Stables -1 Wood, Fishing Dock -1 Wood, Mills -1 Wood x2, Farms -1 Wood x2",
+    "payload": {
+      "changes": {
+        "Stone": -6,
+        "Wood": -6,
+        "Iron": -1,
+        "Wealth": -1
+      }
+    },
+    "warnings": [
+      "Stone would go negative (-6 -> -12)",
+      "Wood would go negative (-13 -> -19)",
+      "Iron would go negative (0 -> -1)",
+      "Wealth would go negative (-1 -> -2)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 11,
+    "type": "ResourceChanged",
+    "gameDate": "Month 6, 1225",
+    "gameDateSort": 441150,
+    "postedAt": "2026-01-29",
+    "actor": null,
+    "region": null,
+    "note": "Month 6 Income — +1 Horse (from Stables)",
+    "payload": {
+      "changes": {
+        "Horses": 1
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 49,
+    "type": "ResourceChanged",
+    "gameDate": "Meloron (6) 16, 1225",
+    "gameDateSort": 441165,
+    "postedAt": "2025-12-27",
+    "actor": null,
+    "region": null,
+    "note": "Month 6 Loaned Resources — Initial payback amount will be 50 Wealth in 8 years (10 for each resource + 10 Wealth).",
+    "payload": {
+      "changes": {
+        "Wood": 20,
+        "Stone": 20,
+        "Iron": 20,
+        "Wealth": 20
+      }
+    },
+    "warnings": [
+      "Wood would go negative (-33 -> -13)",
+      "Stone would go negative (-26 -> -6)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 9,
+    "type": "DMRuling",
+    "gameDate": "Meloron (6) 30, 1225",
+    "gameDateSort": 441179,
+    "postedAt": "2026-01-29",
+    "actor": null,
+    "region": null,
+    "note": "DM clarification: Mills don't stack — Only building 1 Mill has any effect around Stirling Reach (non-stacking +50% farm output per settlement), so only 1 Mill's resources were deducted instead of 2.",
+    "payload": {},
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 10,
+    "type": "ResourceChanged",
+    "gameDate": "Meloron (6) 30, 1225",
+    "gameDateSort": 441179,
+    "postedAt": "2026-01-29",
+    "actor": null,
+    "region": null,
+    "note": "Month 5 and 6 Expenses — -8 Wood (buildings), -1 Stone (prison), -6 Stone (walls), -1 Iron (prison), -1 Wealth (ranch)",
+    "payload": {
+      "changes": {
+        "Wood": -8,
+        "Stone": -7,
+        "Iron": -1,
+        "Wealth": -1
+      }
+    },
+    "warnings": [
+      "Wood would go negative (-19 -> -27)",
+      "Stone would go negative (-12 -> -19)",
+      "Iron would go negative (-1 -> -2)",
+      "Wealth would go negative (-2 -> -3)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 12,
+    "type": "ResourceChanged",
+    "gameDate": "Pelorune (1), 1226",
+    "gameDateSort": 441360,
+    "postedAt": "2026-01-29",
+    "actor": null,
+    "region": null,
+    "note": "Year 1 Income — Stable rolled a 3 to generate a horse, needed a 1.",
+    "payload": {
+      "changes": {
+        "Wood": 3,
+        "Stone": 1,
+        "Food": 2,
+        "Wealth": 1,
+        "Medicine": 1,
+        "Horses": 1
+      }
+    },
+    "warnings": [
+      "Wood would go negative (-27 -> -24)",
+      "Stone would go negative (-19 -> -18)",
+      "Wealth would go negative (-3 -> -2)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 13,
+    "type": "ResourceChanged",
+    "gameDate": "Month 1, 1226",
+    "gameDateSort": 441360,
+    "postedAt": "2026-01-31",
+    "actor": null,
+    "region": null,
+    "note": "Payment for knights",
+    "payload": {
+      "changes": {
+        "Food": -1
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 14,
+    "type": "ResourceChanged",
+    "gameDate": "Month 1, 1226",
+    "gameDateSort": 441360,
+    "postedAt": "2026-01-31",
+    "actor": null,
+    "region": null,
+    "note": "Making Tools",
+    "payload": {
+      "changes": {
+        "Iron": -1,
+        "Tools": 1
+      }
+    },
+    "warnings": [
+      "Iron would go negative (-2 -> -3)",
+      "Tools would go negative (-4 -> -3)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 16,
+    "type": "ResourceChanged",
+    "gameDate": "Month 1, 1226",
+    "gameDateSort": 441360,
+    "postedAt": "2026-01-31",
+    "actor": null,
+    "region": null,
+    "note": "Market Exchange",
+    "payload": {
+      "changes": {
+        "Stone": -1,
+        "Wealth": 1
+      }
+    },
+    "warnings": [
+      "Stone would go negative (-18 -> -19)",
+      "Wealth would go negative (-2 -> -1)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 19,
+    "type": "ResourceChanged",
+    "gameDate": "Month 1, 1226",
+    "gameDateSort": 441360,
+    "postedAt": "2026-02-28",
+    "actor": null,
+    "region": null,
+    "note": "Build Order — Road -1 Tool",
+    "payload": {
+      "changes": {
+        "Tools": -1
+      }
+    },
+    "warnings": [
+      "Tools would go negative (-4 -> -5)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 33,
+    "type": "ResourceChanged",
+    "gameDate": "1226",
+    "gameDateSort": 441360,
+    "postedAt": "2026-06-28",
+    "actor": null,
+    "region": null,
+    "note": "Forge Weapons at Smithy",
+    "payload": {
+      "changes": {
+        "Iron": -3,
+        "Weapons": 3
+      }
+    },
+    "warnings": [
+      "Iron would go negative (-3 -> -6)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 35,
+    "type": "ResourceChanged",
+    "gameDate": "1226",
+    "gameDateSort": 441360,
+    "postedAt": "2026-06-30",
+    "actor": null,
+    "region": null,
+    "note": "Annual trade with Carthrun",
+    "payload": {
+      "changes": {
+        "Wood": 1,
+        "Iron": -1
+      }
+    },
+    "warnings": [
+      "Wood would go negative (-31 -> -30)",
+      "Iron would go negative (-7 -> -8)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 36,
+    "type": "ResourceChanged",
+    "gameDate": "1226",
+    "gameDateSort": 441360,
+    "postedAt": "2026-06-30",
+    "actor": null,
+    "region": null,
+    "note": "Building Iron Mine near Carthrun",
+    "payload": {
+      "changes": {
+        "Wood": -1,
+        "Stone": -1,
+        "Tools": -1
+      }
+    },
+    "warnings": [
+      "Wood would go negative (-30 -> -31)",
+      "Stone would go negative (-24 -> -25)",
+      "Tools would go negative (-6 -> -7)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 15,
+    "type": "ResourceChanged",
+    "gameDate": "Month 2, 1226",
+    "gameDateSort": 441390,
+    "postedAt": "2026-01-31",
+    "actor": null,
+    "region": null,
+    "note": "Building Road",
+    "payload": {
+      "changes": {
+        "Tools": -1
+      }
+    },
+    "warnings": [
+      "Tools would go negative (-3 -> -4)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 17,
+    "type": "ResourceChanged",
+    "gameDate": "Month 2, 1226",
+    "gameDateSort": 441390,
+    "postedAt": "2026-02-28",
+    "actor": null,
+    "region": null,
+    "note": "Market Exchange",
+    "payload": {
+      "changes": {
+        "Stone": -1,
+        "Wealth": 1
+      }
+    },
+    "warnings": [
+      "Stone would go negative (-19 -> -20)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 18,
+    "type": "ResourceChanged",
+    "gameDate": "Month 2, 1226",
+    "gameDateSort": 441390,
+    "postedAt": "2026-02-28",
+    "actor": null,
+    "region": null,
+    "note": "Building Apothecary — Built Month 3, 1226.",
+    "payload": {
+      "changes": {
+        "Wood": -1
+      }
+    },
+    "warnings": [
+      "Wood would go negative (-24 -> -25)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 20,
+    "type": "ResourceChanged",
+    "gameDate": "Month 2, 1226",
+    "gameDateSort": 441390,
+    "postedAt": "2026-02-28",
+    "actor": null,
+    "region": null,
+    "note": "Build Order — Apothecary -1 Wood",
+    "payload": {
+      "changes": {
+        "Wood": -1
+      }
+    },
+    "warnings": [
+      "Wood would go negative (-25 -> -26)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 21,
+    "type": "ResourceChanged",
+    "gameDate": "Month 3, 1226",
+    "gameDateSort": 441420,
+    "postedAt": "2026-04-18",
+    "actor": null,
+    "region": null,
+    "note": "Market Exchange",
+    "payload": {
+      "changes": {
+        "Stone": -1,
+        "Wealth": 1
+      }
+    },
+    "warnings": [
+      "Stone would go negative (-20 -> -21)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 22,
+    "type": "ResourceChanged",
+    "gameDate": "Month 3, 1226",
+    "gameDateSort": 441420,
+    "postedAt": "2026-04-18",
+    "actor": null,
+    "region": null,
+    "note": "Gained from Temple of Elk preservation",
+    "payload": {
+      "changes": {
+        "Loyalty": 1,
+        "Piety": 1
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 23,
+    "type": "ResourceChanged",
+    "gameDate": "Month 3, 1226",
+    "gameDateSort": 441420,
+    "postedAt": "2026-04-18",
+    "actor": null,
+    "region": null,
+    "note": "From Building Apothecary",
+    "payload": {
+      "changes": {
+        "Medicine": 1
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 24,
+    "type": "ResourceChanged",
+    "gameDate": "Month 3, 1226",
+    "gameDateSort": 441420,
+    "postedAt": "2026-04-18",
+    "actor": null,
+    "region": null,
+    "note": "Building Iron Mine — Built Month 4, 1226.",
+    "payload": {
+      "changes": {
+        "Stone": -1,
+        "Wood": -1,
+        "Tools": -1
+      }
+    },
+    "warnings": [
+      "Stone would go negative (-21 -> -22)",
+      "Wood would go negative (-26 -> -27)",
+      "Tools would go negative (-5 -> -6)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 25,
+    "type": "ResourceChanged",
+    "gameDate": "Month 4, 1226",
+    "gameDateSort": 441450,
+    "postedAt": "2026-04-18",
+    "actor": null,
+    "region": null,
+    "note": "Market Exchange",
+    "payload": {
+      "changes": {
+        "Medicine": -1,
+        "Wealth": 1
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 26,
+    "type": "ResourceChanged",
+    "gameDate": "Month 4, 1226",
+    "gameDateSort": 441450,
+    "postedAt": "2026-04-18",
+    "actor": null,
+    "region": null,
+    "note": "Rebuilding Nettlewood / Mettlewood — Building on Month 5, 1226.",
+    "payload": {
+      "changes": {
+        "Wood": -1
+      }
+    },
+    "warnings": [
+      "Wood would go negative (-27 -> -28)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 27,
+    "type": "ResourceChanged",
+    "gameDate": "Month 5, 1226",
+    "gameDateSort": 441480,
+    "postedAt": "2026-04-18",
+    "actor": null,
+    "region": null,
+    "note": "Build Logging Camp at Mettlewood — Building on Month 6, 1226.",
+    "payload": {
+      "changes": {
+        "Wood": -1
+      }
+    },
+    "warnings": [
+      "Wood would go negative (-28 -> -29)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 28,
+    "type": "ResourceChanged",
+    "gameDate": "Month 5, 1226",
+    "gameDateSort": 441480,
+    "postedAt": "2026-05-31",
+    "actor": null,
+    "region": null,
+    "note": "Build Scout's Nest at Narlmarches - Argent River — Building on Month 6, 1226.",
+    "payload": {
+      "changes": {
+        "Wood": -2
+      }
+    },
+    "warnings": [
+      "Wood would go negative (-29 -> -31)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 29,
+    "type": "ResourceChanged",
+    "gameDate": "Month 5, 1226",
+    "gameDateSort": 441480,
+    "postedAt": "2026-05-31",
+    "actor": null,
+    "region": null,
+    "note": "Visiting the Countess",
+    "payload": {
+      "changes": {
+        "Diplomacy": 1
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 31,
+    "type": "ResourceChanged",
+    "gameDate": "Month 5, 1226",
+    "gameDateSort": 441480,
+    "postedAt": "2026-06-28",
+    "actor": null,
+    "region": null,
+    "note": "Build Farm at Mettlewood — Building on Month 6, 1226.",
+    "payload": {
+      "changes": {
+        "Wood": -1
+      }
+    },
+    "warnings": [
+      "Wood would go negative (-26 -> -27)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 30,
+    "type": "ResourceChanged",
+    "gameDate": "Month 6, 1226",
+    "gameDateSort": 441510,
+    "postedAt": "2026-05-31",
+    "actor": null,
+    "region": null,
+    "note": "Shipment of Resources from Countess — Delivered on Month 6, 1226.",
+    "payload": {
+      "changes": {
+        "Wood": 5
+      }
+    },
+    "warnings": [
+      "Wood would go negative (-31 -> -26)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 32,
+    "type": "ResourceChanged",
+    "gameDate": "Month 6, 1226",
+    "gameDateSort": 441510,
+    "postedAt": "2026-06-28",
+    "actor": null,
+    "region": null,
+    "note": "Build Farm Apiary at Stirling Reach — Building on Month 7, 1226.",
+    "payload": {
+      "changes": {
+        "Wood": -1
+      }
+    },
+    "warnings": [
+      "Wood would go negative (-27 -> -28)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 34,
+    "type": "ResourceChanged",
+    "gameDate": "Month 6 to Month 12, 1226",
+    "gameDateSort": 441510,
+    "postedAt": "2026-06-30",
+    "actor": null,
+    "region": null,
+    "note": "Market Exchanges",
+    "payload": {
+      "changes": {
+        "Wealth": 7,
+        "Wood": -3,
+        "Stone": -2,
+        "Iron": -1,
+        "Medicine": -1
+      }
+    },
+    "warnings": [
+      "Wood would go negative (-28 -> -31)",
+      "Stone would go negative (-22 -> -24)",
+      "Iron would go negative (-6 -> -7)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 38,
+    "type": "ResourceChanged",
+    "gameDate": "Month 12, 1226",
+    "gameDateSort": 441690,
+    "postedAt": "2026-07-24",
+    "actor": null,
+    "region": null,
+    "note": "Build Training Yard — Constructed Month 1, 1227.",
+    "payload": {
+      "changes": {
+        "Wood": -1,
+        "Wealth": -1
+      }
+    },
+    "warnings": [
+      "Wood would go negative (-27 -> -28)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 39,
+    "type": "ResourceChanged",
+    "gameDate": "Month 12, 1226",
+    "gameDateSort": 441690,
+    "postedAt": "2026-07-24",
+    "actor": null,
+    "region": null,
+    "note": "Market Exchange",
+    "payload": {
+      "changes": {
+        "Iron": -1,
+        "Tools": 1
+      }
+    },
+    "warnings": [
+      "Iron would go negative (-6 -> -7)",
+      "Tools would go negative (-7 -> -6)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 42,
+    "type": "ResourceChanged",
+    "gameDate": "Month 12, 1226",
+    "gameDateSort": 441690,
+    "postedAt": "2026-07-24",
+    "actor": null,
+    "region": null,
+    "note": "Build Shipyard — Constructed Month 1, 1227.",
+    "payload": {
+      "changes": {
+        "Wood": -2
+      }
+    },
+    "warnings": [
+      "Wood would go negative (-29 -> -31)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 37,
+    "type": "ResourceChanged",
+    "gameDate": "Pelorune (1), 1227",
+    "gameDateSort": 441720,
+    "postedAt": "2026-06-30",
+    "actor": null,
+    "region": null,
+    "note": "End of Year 2 Income — Stables, 1-on-1d4 generates 1 Horse: rolled a 1, new horses were born (extra +1 Horse). Scout's Nest, 1-on-1d6 generates 1 Intrigue: rolled a 4, no new intriguing intel.",
+    "payload": {
+      "changes": {
+        "Population": 1,
+        "Wood": 4,
+        "Stone": 1,
+        "Food": 3,
+        "Iron": 2,
+        "Wealth": 1,
+        "Medicine": 1,
+        "Horses": 2
+      }
+    },
+    "warnings": [
+      "Wood would go negative (-31 -> -27)",
+      "Stone would go negative (-25 -> -24)",
+      "Iron would go negative (-8 -> -6)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 40,
+    "type": "ResourceChanged",
+    "gameDate": "Month 1, 1227",
+    "gameDateSort": 441720,
+    "postedAt": "2026-07-24",
+    "actor": null,
+    "region": null,
+    "note": "Guard Upgrade to Troop",
+    "payload": {
+      "changes": {
+        "Wealth": -1
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 41,
+    "type": "ResourceChanged",
+    "gameDate": "Month 1, 1227",
+    "gameDateSort": 441720,
+    "postedAt": "2026-07-24",
+    "actor": null,
+    "region": null,
+    "note": "Rebuild Temple of the Elk",
+    "payload": {
+      "changes": {
+        "Wood": -1,
+        "Stone": -1
+      }
+    },
+    "warnings": [
+      "Wood would go negative (-28 -> -29)",
+      "Stone would go negative (-24 -> -25)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 43,
+    "type": "ResourceChanged",
+    "gameDate": "Month 2, 1227",
+    "gameDateSort": 441750,
+    "postedAt": "2026-07-24",
+    "actor": null,
+    "region": null,
+    "note": "Market Trade",
+    "payload": {
+      "changes": {
+        "Iron": -1,
+        "Wealth": 1
+      }
+    },
+    "warnings": [
+      "Iron would go negative (-7 -> -8)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 44,
+    "type": "ResourceChanged",
+    "gameDate": "Month 2, 1227",
+    "gameDateSort": 441750,
+    "postedAt": "2026-08-23",
+    "actor": null,
+    "region": null,
+    "note": "Celebrate Field Day's Feast",
+    "payload": {
+      "changes": {
+        "Food": -1,
+        "Loyalty": 1
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 45,
+    "type": "ResourceChanged",
+    "gameDate": "Month 2, 1227",
+    "gameDateSort": 441750,
+    "postedAt": "2026-08-23",
+    "actor": null,
+    "region": null,
+    "note": "Building Trade Post in Stirling Reach — Construction in Month 3, 1227.",
+    "payload": {
+      "changes": {
+        "Wood": -1,
+        "Wealth": -2
+      }
+    },
+    "warnings": [
+      "Wood would go negative (-31 -> -32)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 79,
+    "type": "CalendarAdvanced",
+    "gameDate": "Month 2, 3th, 1227",
+    "gameDateSort": 441752,
+    "postedAt": "2026-08-29",
+    "actor": "Migration",
+    "region": null,
+    "note": "Imported from calendar.json",
+    "payload": {
+      "year": 1227,
+      "yearLabel": "YEAR THREE",
+      "month": 2,
+      "day": 3,
+      "note": "Marked in the calendar channel as \"You are here\""
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 102,
+    "type": "CalendarAdvanced",
+    "gameDate": "Month 2, 4th, 1227",
+    "gameDateSort": 441753,
+    "postedAt": "2026-08-29",
+    "actor": null,
+    "region": null,
+    "note": "Browser automation smoke test",
+    "payload": {
+      "year": 1227,
+      "month": 2,
+      "day": 4,
+      "yearLabel": "YEAR THREE",
+      "note": "Marked in the calendar channel as \"You are here\""
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 23:05:49"
+  },
+  {
+    "id": 104,
+    "type": "CalendarAdvanced",
+    "gameDate": "Month 2, 4th, 1227",
+    "gameDateSort": 441753,
+    "postedAt": "2026-09-07",
+    "actor": null,
+    "region": null,
+    "note": "UX review test entry",
+    "payload": {
+      "year": 1227,
+      "month": 2,
+      "day": 4,
+      "yearLabel": "YEAR THREE",
+      "note": "Marked in the calendar channel as \"You are here\""
+    },
+    "warnings": [
+      "Calendar date is not moving forward (was year 1227 month 2 day 4)"
+    ],
+    "createdAt": "2026-09-07 12:57:47"
+  },
+  {
+    "id": 105,
+    "type": "LocationAmended",
+    "gameDate": "Month 2, 4th, 1227",
+    "gameDateSort": 441753,
+    "postedAt": "2026-09-07",
+    "actor": null,
+    "region": null,
+    "note": "UX review test entry - safe to ignore",
+    "payload": {
+      "data": {
+        "kingdoms": [
+          {
+            "name": "Kingdom of Casdenia",
+            "capital": "Royal City of Casdenor",
+            "counties": [
+              {
+                "name": "County of Arnestal",
+                "seat": "City of Arnestal"
+              }
+            ],
+            "other": [
+              {
+                "name": "Olen's Rest",
+                "type": "Landmark"
+              }
+            ]
+          },
+          {
+            "name": "Kingdom of Ravenstone",
+            "capital": "City of Ravenstone",
+            "counties": [],
+            "other": []
+          },
+          {
+            "name": "Kingdom of Galderoy",
+            "capital": null,
+            "counties": [],
+            "other": [],
+            "note": "No locations posted yet."
+          },
+          {
+            "name": "Kingdom of Tremund",
+            "capital": null,
+            "counties": [],
+            "other": [],
+            "note": "No locations posted yet."
+          },
+          {
+            "name": "Test Kingdom UX Review",
+            "capital": null,
+            "counties": [],
+            "other": []
+          }
+        ]
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-09-07 13:03:18"
+  },
+  {
+    "id": 106,
+    "type": "CalendarAdvanced",
+    "gameDate": "Month 2, 9th, 1227",
+    "gameDateSort": 441758,
+    "postedAt": "2026-09-07",
+    "actor": null,
+    "region": null,
+    "note": "UX verification test",
+    "payload": {
+      "year": 1227,
+      "month": 2,
+      "day": 9,
+      "yearLabel": "YEAR THREE",
+      "note": "Marked in the calendar channel as \"You are here\""
+    },
+    "warnings": [],
+    "createdAt": "2026-09-07 13:27:50"
+  },
+  {
+    "id": 46,
+    "type": "ResourceChanged",
+    "gameDate": "Month 3, 1227",
+    "gameDateSort": 441780,
+    "postedAt": "2026-08-23",
+    "actor": null,
+    "region": null,
+    "note": "Market Trade",
+    "payload": {
+      "changes": {
+        "Iron": -1,
+        "Wealth": 1
+      }
+    },
+    "warnings": [
+      "Iron would go negative (-8 -> -9)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 47,
+    "type": "ResourceChanged",
+    "gameDate": "Month 3, 1227",
+    "gameDateSort": 441780,
+    "postedAt": "2026-08-23",
+    "actor": null,
+    "region": null,
+    "note": "Forge Tool at Smithy",
+    "payload": {
+      "changes": {
+        "Iron": -1,
+        "Tools": 1
+      }
+    },
+    "warnings": [
+      "Iron would go negative (-9 -> -10)",
+      "Tools would go negative (-6 -> -5)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 48,
+    "type": "ResourceChanged",
+    "gameDate": "Month 3, 1227",
+    "gameDateSort": 441780,
+    "postedAt": "2026-08-23",
+    "actor": null,
+    "region": null,
+    "note": "Build Tower near Mettlewood — Constructs in Month 4, 1227.",
+    "payload": {
+      "changes": {
+        "Wood": -1,
+        "Stone": -1
+      }
+    },
+    "warnings": [
+      "Wood would go negative (-32 -> -33)",
+      "Stone would go negative (-25 -> -26)"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 99,
+    "type": "DMRuling",
+    "gameDate": "Month 4, 1227",
+    "gameDateSort": 441810,
+    "postedAt": "2026-08-29",
+    "actor": null,
+    "region": null,
+    "note": "Browser automation smoke test: DM clarification note, no resource changes.",
+    "payload": {},
+    "warnings": [],
+    "createdAt": "2026-08-29 23:02:42"
+  },
+  {
+    "id": 100,
+    "type": "BuildingConstructed",
+    "gameDate": "Month 4, 1227",
+    "gameDateSort": 441810,
+    "postedAt": "2026-08-29",
+    "actor": null,
+    "region": "Carthrun",
+    "note": "Constructed via the Settlements view",
+    "payload": {
+      "building": "Tower",
+      "displayName": "Anora's Roost",
+      "count": 1
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 23:03:41"
+  },
+  {
+    "id": 101,
+    "type": "BuildingRemoved",
+    "gameDate": "Month 4, 1227",
+    "gameDateSort": 441810,
+    "postedAt": "2026-08-29",
+    "actor": null,
+    "region": "Carthrun",
+    "note": "Cleanup: removing browser-automation test building",
+    "payload": {
+      "building": "Tower",
+      "count": 1
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 23:05:20"
+  },
+  {
+    "id": 103,
+    "type": "DeityAmended",
+    "gameDate": "Month 4, 1227",
+    "gameDateSort": 441810,
+    "postedAt": "2026-08-29",
+    "actor": null,
+    "region": null,
+    "note": "Amended via the Codex",
+    "payload": {
+      "name": "Calistria",
+      "changes": {
+        "note": "Holy days: Challenge Day, Feast of Vigor. [browser test note]"
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 23:06:36"
+  },
+  {
+    "id": 51,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Stirling Reach",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Town Hall",
+      "displayName": null,
+      "count": 1,
+      "detail": "Houses (1 Pop) and (1 Guard) of a total of (2 Units); pays no taxes until YEAR THREE"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 52,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Stirling Reach",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Farm",
+      "displayName": null,
+      "count": 5,
+      "detail": "Generates 5 Food per year, includes \"Mal's Apiary\""
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 53,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Stirling Reach",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Tavern",
+      "displayName": null,
+      "count": 1,
+      "detail": "\"The Brass Mug\", generates 1 Wealth per year"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 54,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Stirling Reach",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Market",
+      "displayName": null,
+      "count": 1,
+      "detail": "Allows a monthly exchange of 1 resource for 1 Wealth, or 1 Wealth for 1 resource"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 55,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Stirling Reach",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Mill",
+      "displayName": null,
+      "count": 1,
+      "detail": "Farms generate +50% Food per year (+2 Food each year)"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 56,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Stirling Reach",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Ranch",
+      "displayName": null,
+      "count": 1,
+      "detail": "Generates 1 Horse per year"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 57,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Stirling Reach",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Stables",
+      "displayName": null,
+      "count": 1,
+      "detail": "1-on-1d4 per year generates 1 Horse"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 58,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Stirling Reach",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Smithy",
+      "displayName": null,
+      "count": 1,
+      "detail": "Exchange 1 Iron to create 1 Weapon/Tool monthly"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 59,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Stirling Reach",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Apothecary",
+      "displayName": null,
+      "count": 1,
+      "detail": "Exchange 1 Wealth for 1 Medicine yearly"
+    },
+    "warnings": [
+      "\"Apothecary\" requires \"Herbalist Hut\", not yet built in Stirling Reach"
+    ],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 60,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Stirling Reach",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Training Yard",
+      "displayName": null,
+      "count": 1,
+      "detail": "Allows for upgrading any military Unit using retrospective resources"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 61,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Stirling Reach",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Stone Wall",
+      "displayName": null,
+      "count": 1,
+      "detail": "Finished construction by Month 6 of YEAR THREE"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 62,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Narlmarches",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Logging Camp",
+      "displayName": null,
+      "count": 1,
+      "detail": "Generates 1 Wood per year"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 63,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Narlmarches",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Herbalist Hut",
+      "displayName": null,
+      "count": 1,
+      "detail": "Generates 1 Medicine per year"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 64,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Narlmarches",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Scout's Nest",
+      "displayName": null,
+      "count": 1,
+      "detail": "1-on-1d6 per year generates 1 Intrigue, watches 4 tile radius"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 65,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Wilderwood",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Logging Camp",
+      "displayName": null,
+      "count": 1,
+      "detail": "Generates 1 Wood per year"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 66,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Mettlewood",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Homes",
+      "displayName": "Village",
+      "count": 1,
+      "detail": "Houses (1/1 Pop)"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 67,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Mettlewood",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Logging Camp",
+      "displayName": null,
+      "count": 1,
+      "detail": "Generates 1 Wood per year"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 68,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Mettlewood",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Farm",
+      "displayName": null,
+      "count": 1,
+      "detail": "Generates 1 Food per year"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 69,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Faerweald",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Logging Camp",
+      "displayName": null,
+      "count": 1,
+      "detail": "Generates 1 Wood per year"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 70,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Faerweald",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Mine",
+      "displayName": "Iron Mine",
+      "count": 1,
+      "detail": "Generates 1 Iron per year"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 71,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Carthrun",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Mine",
+      "displayName": "Iron Mine",
+      "count": 1,
+      "detail": "Generates 1 Iron per year"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 72,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Lake Silverstep",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Fishing Dock",
+      "displayName": null,
+      "count": 1,
+      "detail": "Generates 1 Food per year"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 73,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Argent River",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Bridge",
+      "displayName": "Stone Bridge",
+      "count": 1,
+      "detail": "Provides crossing over the river, located southwest of Stirling Reach"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 74,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Argent River",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Fishing Dock",
+      "displayName": null,
+      "count": 1,
+      "detail": "Generates 1 Food per year"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 75,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Argent River",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Shipyard",
+      "displayName": null,
+      "count": 1,
+      "detail": "Pay 1 Wood and 1 Wealth to be used to build 1 Ship"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 76,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Old Hills",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Tower",
+      "displayName": "Anora's Roost",
+      "count": 1,
+      "detail": "Provides (1 Militia) to watch over a 3 tile radius"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 77,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Old Hills",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Prison",
+      "displayName": null,
+      "count": 1,
+      "detail": "Escape DC 22"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 78,
+    "type": "BuildingConstructed",
+    "gameDate": "2025-09-14",
+    "gameDateSort": 729000,
+    "postedAt": "2025-09-14",
+    "actor": "Migration",
+    "region": "Old Hills",
+    "note": "Imported from settlements.json (as of 2025-09-14)",
+    "payload": {
+      "building": "Quarry",
+      "displayName": null,
+      "count": 1,
+      "detail": "Provides 1 Stone each year"
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
+    "id": 98,
+    "type": "ResourceChanged",
+    "gameDate": "2026-08-23",
+    "gameDateSort": 729360,
+    "postedAt": "2026-08-29",
+    "actor": null,
+    "region": null,
+    "note": null,
+    "payload": {
+      "changes": {
+        "Wood": 1
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 23:01:45"
+  }
+]

@@ -6,7 +6,7 @@
     "yearLabel": "YEAR THREE",
     "month": 2,
     "monthName": "Erastus",
-    "day": 3,
+    "day": 9,
     "note": "Marked in the calendar channel as \"You are here\""
   },
   "months": [
@@ -15,9 +15,21 @@
       "name": "Pelorune",
       "season": "Spring",
       "holidays": [
-        { "day": 1, "name": "First Light", "deity": "Pelor" },
-        { "day": 15, "name": "Vigil's Day", "deity": "Pharasma" },
-        { "day": 29, "name": "Wildernight", "deity": "Melora" }
+        {
+          "day": 1,
+          "name": "First Light",
+          "deity": "Pelor"
+        },
+        {
+          "day": 15,
+          "name": "Vigil's Day",
+          "deity": "Pharasma"
+        },
+        {
+          "day": 29,
+          "name": "Wildernight",
+          "deity": "Melora"
+        }
       ]
     },
     {
@@ -25,8 +37,16 @@
       "name": "Erastus",
       "season": "Spring",
       "holidays": [
-        { "day": 10, "name": "Field Day's Feast", "deity": "Erastil" },
-        { "day": 21, "name": "Hearth Day", "deity": "Andoletta" }
+        {
+          "day": 10,
+          "name": "Field Day's Feast",
+          "deity": "Erastil"
+        },
+        {
+          "day": 21,
+          "name": "Hearth Day",
+          "deity": "Andoletta"
+        }
       ]
     },
     {
@@ -34,15 +54,51 @@
       "name": "Shelune",
       "season": "Spring",
       "holidays": [
-        { "day": 7, "name": "Lovers Week", "deity": "Shelyn" },
-        { "day": 8, "name": "Lovers Week", "deity": "Shelyn" },
-        { "day": 9, "name": "Lovers Week", "deity": "Shelyn" },
-        { "day": 10, "name": "Lovers Week", "deity": "Shelyn" },
-        { "day": 11, "name": "Lovers Week", "deity": "Shelyn" },
-        { "day": 12, "name": "Lovers Week", "deity": "Shelyn" },
-        { "day": 13, "name": "Lovers Week", "deity": "Shelyn" },
-        { "day": 14, "name": "Lovers Week", "deity": "Shelyn" },
-        { "day": 20, "name": "Garland Day", "deity": "Melora" }
+        {
+          "day": 7,
+          "name": "Lovers Week",
+          "deity": "Shelyn"
+        },
+        {
+          "day": 8,
+          "name": "Lovers Week",
+          "deity": "Shelyn"
+        },
+        {
+          "day": 9,
+          "name": "Lovers Week",
+          "deity": "Shelyn"
+        },
+        {
+          "day": 10,
+          "name": "Lovers Week",
+          "deity": "Shelyn"
+        },
+        {
+          "day": 11,
+          "name": "Lovers Week",
+          "deity": "Shelyn"
+        },
+        {
+          "day": 12,
+          "name": "Lovers Week",
+          "deity": "Shelyn"
+        },
+        {
+          "day": 13,
+          "name": "Lovers Week",
+          "deity": "Shelyn"
+        },
+        {
+          "day": 14,
+          "name": "Lovers Week",
+          "deity": "Shelyn"
+        },
+        {
+          "day": 20,
+          "name": "Garland Day",
+          "deity": "Melora"
+        }
       ]
     },
     {
@@ -50,10 +106,26 @@
       "name": "Sarenith",
       "season": "Summer",
       "holidays": [
-        { "day": 1, "name": "Confession Day", "deity": "Sarenrae" },
-        { "day": 10, "name": "Burningwind Festival", "deity": "Sarenrae" },
-        { "day": 16, "name": "Sword Day", "deity": "Bahamut" },
-        { "day": 20, "name": "Sunwright Festival", "deity": "Pelor" }
+        {
+          "day": 1,
+          "name": "Confession Day",
+          "deity": "Sarenrae"
+        },
+        {
+          "day": 10,
+          "name": "Burningwind Festival",
+          "deity": "Sarenrae"
+        },
+        {
+          "day": 16,
+          "name": "Sword Day",
+          "deity": "Bahamut"
+        },
+        {
+          "day": 20,
+          "name": "Sunwright Festival",
+          "deity": "Pelor"
+        }
       ]
     },
     {
@@ -61,9 +133,21 @@
       "name": "Bahamund",
       "season": "Summer",
       "holidays": [
-        { "day": 2, "name": "Archer's Day", "deity": "Erastil" },
-        { "day": 11, "name": "Dragon's Concord", "deity": "Bahamut" },
-        { "day": 30, "name": "Platinum Vigil", "deity": "Bahamut" }
+        {
+          "day": 2,
+          "name": "Archer's Day",
+          "deity": "Erastil"
+        },
+        {
+          "day": 11,
+          "name": "Dragon's Concord",
+          "deity": "Bahamut"
+        },
+        {
+          "day": 30,
+          "name": "Platinum Vigil",
+          "deity": "Bahamut"
+        }
       ]
     },
     {
@@ -71,9 +155,21 @@
       "name": "Meloron",
       "season": "Summer",
       "holidays": [
-        { "day": 4, "name": "Tidestill", "deity": "Melora" },
-        { "day": 12, "name": "Stormfest", "deity": "Kord" },
-        { "day": 24, "name": "Green Pact", "deity": "Melora" }
+        {
+          "day": 4,
+          "name": "Tidestill",
+          "deity": "Melora"
+        },
+        {
+          "day": 12,
+          "name": "Stormfest",
+          "deity": "Kord"
+        },
+        {
+          "day": 24,
+          "name": "Green Pact",
+          "deity": "Melora"
+        }
       ]
     },
     {
@@ -81,9 +177,21 @@
       "name": "Abadus",
       "season": "Autumn",
       "holidays": [
-        { "day": 3, "name": "Accordance Day", "deity": "Abadar" },
-        { "day": 12, "name": "Vault Day", "deity": "Abadar" },
-        { "day": 27, "name": "Ledger's Day", "deity": "Abadar" }
+        {
+          "day": 3,
+          "name": "Accordance Day",
+          "deity": "Abadar"
+        },
+        {
+          "day": 12,
+          "name": "Vault Day",
+          "deity": "Abadar"
+        },
+        {
+          "day": 27,
+          "name": "Ledger's Day",
+          "deity": "Abadar"
+        }
       ]
     },
     {
@@ -91,8 +199,16 @@
       "name": "Iounith",
       "season": "Autumn",
       "holidays": [
-        { "day": 9, "name": "Quill Day", "deity": "Ioun" },
-        { "day": 30, "name": "Hallow's Eve", "deity": "Andoletta" }
+        {
+          "day": 9,
+          "name": "Quill Day",
+          "deity": "Ioun"
+        },
+        {
+          "day": 30,
+          "name": "Hallow's Eve",
+          "deity": "Andoletta"
+        }
       ]
     },
     {
@@ -100,10 +216,26 @@
       "name": "Sehanil",
       "season": "Autumn",
       "holidays": [
-        { "day": 1, "name": "Shadowlight", "deity": "Sehanine" },
-        { "day": 7, "name": "Challenge Day", "deity": "Calistria" },
-        { "day": 16, "name": "Day of the Arch-Heart", "deity": "Corellon" },
-        { "day": 22, "name": "Dreamrest", "deity": "Desna" }
+        {
+          "day": 1,
+          "name": "Shadowlight",
+          "deity": "Sehanine"
+        },
+        {
+          "day": 7,
+          "name": "Challenge Day",
+          "deity": "Calistria"
+        },
+        {
+          "day": 16,
+          "name": "Day of the Arch-Heart",
+          "deity": "Corellon"
+        },
+        {
+          "day": 22,
+          "name": "Dreamrest",
+          "deity": "Desna"
+        }
       ]
     },
     {
@@ -111,9 +243,21 @@
       "name": "Pharast",
       "season": "Winter",
       "holidays": [
-        { "day": 5, "name": "Longnight", "deity": "Pharasma" },
-        { "day": 12, "name": "Winterbloom", "deity": "Melora" },
-        { "day": 25, "name": "Candlemark", "deity": "Pelor" }
+        {
+          "day": 5,
+          "name": "Longnight",
+          "deity": "Pharasma"
+        },
+        {
+          "day": 12,
+          "name": "Winterbloom",
+          "deity": "Melora"
+        },
+        {
+          "day": 25,
+          "name": "Candlemark",
+          "deity": "Pelor"
+        }
       ]
     },
     {
@@ -121,9 +265,21 @@
       "name": "Moradune",
       "season": "Winter",
       "holidays": [
-        { "day": 10, "name": "Forge Festival", "deity": "Moradin" },
-        { "day": 14, "name": "Feast of Vigor", "deity": "Calistria" },
-        { "day": 23, "name": "Oath Day", "deity": "Moradin" }
+        {
+          "day": 10,
+          "name": "Forge Festival",
+          "deity": "Moradin"
+        },
+        {
+          "day": 14,
+          "name": "Feast of Vigor",
+          "deity": "Calistria"
+        },
+        {
+          "day": 23,
+          "name": "Oath Day",
+          "deity": "Moradin"
+        }
       ]
     },
     {
@@ -131,9 +287,21 @@
       "name": "Desnus",
       "season": "Winter",
       "holidays": [
-        { "day": 1, "name": "Starfall Eve", "deity": "Desna" },
-        { "day": 2, "name": "Starfall", "deity": "Desna" },
-        { "day": 30, "name": "Turning's Eve", "deity": "All deities" }
+        {
+          "day": 1,
+          "name": "Starfall Eve",
+          "deity": "Desna"
+        },
+        {
+          "day": 2,
+          "name": "Starfall",
+          "deity": "Desna"
+        },
+        {
+          "day": 30,
+          "name": "Turning's Eve",
+          "deity": "All deities"
+        }
       ]
     }
   ]

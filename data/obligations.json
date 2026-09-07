@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "description": "Resource loan, repayable in Wealth (history.json id 49)",
+    "originalResources": {
+      "Wood": 20,
+      "Stone": 20,
+      "Iron": 20,
+      "Wealth": 20
+    },
+    "repaymentResource": "Wealth",
+    "amountTotal": 50,
+    "amountRemaining": 50,
+    "dueGameDate": "Month 6, 16th, 1233",
+    "createdByEventId": 49,
+    "satisfied": false
+  }
+]

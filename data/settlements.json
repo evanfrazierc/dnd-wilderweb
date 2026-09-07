@@ -1,11 +1,131 @@
 [
   {
-    "region": "Stirling Reach",
-    "asOf": "2025-09-14",
+    "region": "Argent River",
     "buildings": [
       {
-        "name": "Town Hall",
-        "detail": "Houses (1 Pop) and (1 Guard) of a total of (2 Units); pays no taxes until YEAR THREE"
+        "name": "Bridge",
+        "displayName": "Stone Bridge",
+        "count": 1,
+        "detail": "Provides crossing over the river, located southwest of Stirling Reach"
+      },
+      {
+        "name": "Fishing Dock",
+        "count": 1,
+        "detail": "Generates 1 Food per year"
+      },
+      {
+        "name": "Shipyard",
+        "count": 1,
+        "detail": "Pay 1 Wood and 1 Wealth to be used to build 1 Ship"
+      }
+    ]
+  },
+  {
+    "region": "Carthrun",
+    "buildings": [
+      {
+        "name": "Mine",
+        "displayName": "Iron Mine",
+        "count": 1,
+        "detail": "Generates 1 Iron per year"
+      }
+    ]
+  },
+  {
+    "region": "Faerweald",
+    "buildings": [
+      {
+        "name": "Logging Camp",
+        "count": 1,
+        "detail": "Generates 1 Wood per year"
+      },
+      {
+        "name": "Mine",
+        "displayName": "Iron Mine",
+        "count": 1,
+        "detail": "Generates 1 Iron per year"
+      }
+    ]
+  },
+  {
+    "region": "Lake Silverstep",
+    "buildings": [
+      {
+        "name": "Fishing Dock",
+        "count": 1,
+        "detail": "Generates 1 Food per year"
+      }
+    ]
+  },
+  {
+    "region": "Mettlewood",
+    "buildings": [
+      {
+        "name": "Farm",
+        "count": 1,
+        "detail": "Generates 1 Food per year"
+      },
+      {
+        "name": "Homes",
+        "displayName": "Village",
+        "count": 1,
+        "detail": "Houses (1/1 Pop)"
+      },
+      {
+        "name": "Logging Camp",
+        "count": 1,
+        "detail": "Generates 1 Wood per year"
+      }
+    ]
+  },
+  {
+    "region": "Narlmarches",
+    "buildings": [
+      {
+        "name": "Herbalist Hut",
+        "count": 1,
+        "detail": "Generates 1 Medicine per year"
+      },
+      {
+        "name": "Logging Camp",
+        "count": 1,
+        "detail": "Generates 1 Wood per year"
+      },
+      {
+        "name": "Scout's Nest",
+        "count": 1,
+        "detail": "1-on-1d6 per year generates 1 Intrigue, watches 4 tile radius"
+      }
+    ]
+  },
+  {
+    "region": "Old Hills",
+    "buildings": [
+      {
+        "name": "Prison",
+        "count": 1,
+        "detail": "Escape DC 22"
+      },
+      {
+        "name": "Quarry",
+        "count": 1,
+        "detail": "Provides 1 Stone each year"
+      },
+      {
+        "name": "Tower",
+        "displayName": "Anora's Roost",
+        "count": 1,
+        "detail": "Provides (1 Militia) to watch over a 3 tile radius"
+      }
+    ]
+  },
+  {
+    "region": "Stirling Reach",
+    "buildings": [
+      {
+        "name": "Apothecary",
+        "count": 1,
+        "detail": "Exchange 1 Wealth for 1 Medicine yearly"
       },
       {
         "name": "Farm",
@@ -13,156 +133,59 @@
         "detail": "Generates 5 Food per year, includes \"Mal's Apiary\""
       },
       {
-        "name": "Tavern",
-        "detail": "\"The Brass Mug\", generates 1 Wealth per year"
-      },
-      {
         "name": "Market",
+        "count": 1,
         "detail": "Allows a monthly exchange of 1 resource for 1 Wealth, or 1 Wealth for 1 resource"
       },
       {
         "name": "Mill",
+        "count": 1,
         "detail": "Farms generate +50% Food per year (+2 Food each year)"
       },
       {
         "name": "Ranch",
+        "count": 1,
         "detail": "Generates 1 Horse per year"
       },
       {
-        "name": "Stables",
-        "detail": "1-on-1d4 per year generates 1 Horse"
-      },
-      {
         "name": "Smithy",
+        "count": 1,
         "detail": "Exchange 1 Iron to create 1 Weapon/Tool monthly"
       },
       {
-        "name": "Apothecary",
-        "detail": "Exchange 1 Wealth for 1 Medicine yearly"
+        "name": "Stables",
+        "count": 1,
+        "detail": "1-on-1d4 per year generates 1 Horse"
+      },
+      {
+        "name": "Stone Wall",
+        "count": 1,
+        "detail": "Finished construction by Month 6 of YEAR THREE"
+      },
+      {
+        "name": "Tavern",
+        "count": 1,
+        "detail": "\"The Brass Mug\", generates 1 Wealth per year"
+      },
+      {
+        "name": "Town Hall",
+        "count": 1,
+        "detail": "Houses (1 Pop) and (1 Guard) of a total of (2 Units); pays no taxes until YEAR THREE"
       },
       {
         "name": "Training Yard",
+        "count": 1,
         "detail": "Allows for upgrading any military Unit using retrospective resources"
-      },
-      {
-        "name": "Stone Walls",
-        "detail": "Finished construction by Month 6 of YEAR THREE"
-      }
-    ]
-  },
-  {
-    "region": "Narlmarches",
-    "asOf": "2025-09-14",
-    "buildings": [
-      {
-        "name": "Logging Camp",
-        "detail": "Generates 1 Wood per year"
-      },
-      {
-        "name": "Herbalist Hut",
-        "detail": "Generates 1 Medicine per year"
-      },
-      {
-        "name": "Scout's Nest",
-        "detail": "1-on-1d6 per year generates 1 Intrigue, watches 4 tile radius"
       }
     ]
   },
   {
     "region": "Wilderwood",
-    "asOf": "2025-09-14",
     "buildings": [
       {
         "name": "Logging Camp",
+        "count": 1,
         "detail": "Generates 1 Wood per year"
-      }
-    ]
-  },
-  {
-    "region": "Mettlewood",
-    "asOf": "2025-09-14",
-    "buildings": [
-      {
-        "name": "Village",
-        "detail": "Houses (1/1 Pop)"
-      },
-      {
-        "name": "Logging Camp",
-        "detail": "Generates 1 Wood per year"
-      },
-      {
-        "name": "Farm",
-        "detail": "Generates 1 Food per year"
-      }
-    ]
-  },
-  {
-    "region": "Faerweald",
-    "asOf": "2025-09-14",
-    "buildings": [
-      {
-        "name": "Logging Camp",
-        "detail": "Generates 1 Wood per year"
-      },
-      {
-        "name": "Iron Mine",
-        "detail": "Generates 1 Iron per year"
-      }
-    ]
-  },
-  {
-    "region": "Carthrun",
-    "asOf": "2025-09-14",
-    "buildings": [
-      {
-        "name": "Iron Mine",
-        "detail": "Generates 1 Iron per year"
-      }
-    ]
-  },
-  {
-    "region": "Lake Silverstep",
-    "asOf": "2025-09-14",
-    "buildings": [
-      {
-        "name": "Fishing Dock",
-        "detail": "Generates 1 Food per year"
-      }
-    ]
-  },
-  {
-    "region": "Argent River",
-    "asOf": "2025-09-14",
-    "buildings": [
-      {
-        "name": "Stone Bridge",
-        "detail": "Provides crossing over the river, located southwest of Stirling Reach"
-      },
-      {
-        "name": "Fishing Dock",
-        "detail": "Generates 1 Food per year"
-      },
-      {
-        "name": "Shipyard",
-        "detail": "Pay 1 Wood and 1 Wealth to be used to build 1 Ship"
-      }
-    ]
-  },
-  {
-    "region": "Old Hills",
-    "asOf": "2025-09-14",
-    "buildings": [
-      {
-        "name": "Anora's Roost",
-        "detail": "Provides (1 Militia) to watch over a 3 tile radius"
-      },
-      {
-        "name": "Prison",
-        "detail": "Escape DC 22"
-      },
-      {
-        "name": "Quarry",
-        "detail": "Provides 1 Stone each year"
       }
     ]
   }

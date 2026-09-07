@@ -1,0 +1,56 @@
+[
+  {
+    "id": 8,
+    "name": "Argent River",
+    "description": "River region southwest of Stirling Reach, crossed by a stone bridge.",
+    "kingdom": null
+  },
+  {
+    "id": 6,
+    "name": "Carthrun",
+    "description": "Region near the Village of Carthrun, has iron deposits.",
+    "kingdom": null
+  },
+  {
+    "id": 5,
+    "name": "Faerweald",
+    "description": "Forest region with iron deposits.",
+    "kingdom": null
+  },
+  {
+    "id": 7,
+    "name": "Lake Silverstep",
+    "description": "Lake region with fishing.",
+    "kingdom": null
+  },
+  {
+    "id": 4,
+    "name": "Mettlewood",
+    "description": "Home to a small village, farmland and logging.",
+    "kingdom": null
+  },
+  {
+    "id": 2,
+    "name": "Narlmarches",
+    "description": "Forest region north/adjacent to Stirling Reach.",
+    "kingdom": null
+  },
+  {
+    "id": 9,
+    "name": "Old Hills",
+    "description": "Hill region with a quarry and a watch post (Anora's Roost).",
+    "kingdom": null
+  },
+  {
+    "id": 1,
+    "name": "Stirling Reach",
+    "description": "The party's settlement.",
+    "kingdom": null
+  },
+  {
+    "id": 3,
+    "name": "Wilderwood",
+    "description": "Forest region.",
+    "kingdom": null
+  }
+]
