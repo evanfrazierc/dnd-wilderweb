@@ -1602,6 +1602,42 @@
     "createdAt": "2026-09-07 14:13:19"
   },
   {
+    "id": 110,
+    "type": "DeityAmended",
+    "gameDate": "Month 2, 9th, 1227",
+    "gameDateSort": 441758,
+    "postedAt": "2026-09-07",
+    "actor": null,
+    "region": null,
+    "note": "Amended via the Codex",
+    "payload": {
+      "name": "Abadar",
+      "changes": {
+        "title": "Father of Wealth and Order (test)"
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-09-07 14:21:14"
+  },
+  {
+    "id": 111,
+    "type": "DeityAmended",
+    "gameDate": "Month 2, 9th, 1227",
+    "gameDateSort": 441758,
+    "postedAt": "2026-09-07",
+    "actor": null,
+    "region": null,
+    "note": "Amended via the Codex",
+    "payload": {
+      "name": "Abadar",
+      "changes": {
+        "title": "Father of Wealth and Order"
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-09-07 14:21:42"
+  },
+  {
     "id": 46,
     "type": "ResourceChanged",
     "gameDate": "Month 3, 1227",

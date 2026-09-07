@@ -119,6 +119,13 @@ function IntroductionTab() {
 
 function DeityCard({ deity, onSaved }) {
   const [draft, setDraft] = useState(deity);
+  // This card's own "last known saved" snapshot -- compared against instead of the
+  // `deity` prop directly, so dirty state clears the instant this card's own save
+  // resolves rather than waiting on the page-level refetch's round trip (which,
+  // since onSaved is shared by every deity card, would otherwise also risk
+  // clobbering an in-progress edit on a sibling card that hasn't saved yet). Same
+  // bug and fix as KingdomCard's -- see docs/adr/0011.
+  const [baseline, setBaseline] = useState(deity);
   const [gameDate, setGameDate] = useState(null);
   const { submit, status, warnings } = useEventSubmit(onSaved);
 
@@ -126,12 +133,12 @@ function DeityCard({ deity, onSaved }) {
     setDraft({ ...draft, [key]: value });
   }
 
-  const dirty = JSON.stringify(draft) !== JSON.stringify(deity);
+  const dirty = JSON.stringify(draft) !== JSON.stringify(baseline);
 
   function save() {
     const changes = {};
     for (const key of ["title", "alignment", "confirmed", "note"]) {
-      if (draft[key] !== deity[key]) changes[key] = draft[key];
+      if (draft[key] !== baseline[key]) changes[key] = draft[key];
     }
     if (Object.keys(changes).length === 0 || !isCompleteGameDate(gameDate)) return;
     // No Discord option here: tweaking a deity's title/alignment/confirmation is lore
@@ -142,7 +149,10 @@ function DeityCard({ deity, onSaved }) {
       note: `Amended via the Codex`,
       payload: { name: deity.name, changes },
       postToDiscord: false,
-    }).then(() => setGameDate(null));
+    }).then(() => {
+      setBaseline(draft);
+      setGameDate(null);
+    });
   }
 
   return (
