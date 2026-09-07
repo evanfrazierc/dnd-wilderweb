@@ -174,36 +174,60 @@
 }
 
 @media (max-width: 900px) {
+  /* A left sidebar doesn't fit a phone -- five flat, equally-important
+     destinations read better as a persistent bottom tab bar (thumb reach,
+     no extra tap to see where you can go) than tucked behind a hamburger. */
   .sidebar {
-    position: static;
-    width: auto;
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    width: 100%;
     height: auto;
     flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem 1.25rem;
-    gap: 1rem;
+    padding: 0;
+    gap: 0;
+    border-right: none;
+    border-top: 1px solid var(--border);
+    padding-bottom: env(safe-area-inset-bottom);
+    z-index: 10;
+  }
+
+  .brand,
+  .sidebar-foot {
+    display: none;
   }
 
   .content-column {
     margin-left: 0;
   }
 
-  .sidebar-foot {
-    display: none;
-  }
-
   .nav-list {
     flex-direction: row;
-    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .nav-list li {
+    flex: 1;
+  }
+
+  .nav-item {
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.2rem;
+    width: 100%;
+    padding: 0.45rem 0.25rem;
+    border-radius: 0;
+    text-align: center;
   }
 
   .nav-item .nav-label {
-    display: none;
+    display: block;
+    font-size: 0.62rem;
   }
 
   .main-content {
-    padding: 1.5rem 1.25rem 3rem;
+    padding: 1.5rem 1.25rem calc(4.25rem + env(safe-area-inset-bottom));
   }
 
   .status-bar {
