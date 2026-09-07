@@ -1,4 +1,5 @@
 import { createObligation } from "./obligations.js";
+import { parseGameDate } from "./gameDate.js";
 
 /**
  * Applies one event's payload onto the projection tables. Always called inside the
@@ -28,6 +29,9 @@ export async function applyProjection(db, event) {
       break;
     case "LocationAmended":
       await applyLocationAmended(db, payload);
+      break;
+    case "ObligationAmended":
+      await applyObligationAmended(db, payload);
       break;
     case "DMRuling":
       break; // no state change by construction (validate.js enforces this)
@@ -150,4 +154,20 @@ async function applyLocationAmended(db, payload) {
     ON CONFLICT (name) DO UPDATE SET
       capital = excluded.capital, note = excluded.note
   `).run(payload.name, merged.capital, merged.note);
+}
+
+async function applyObligationAmended(db, payload) {
+  const existing = await db.prepare("SELECT * FROM obligations WHERE id = ?").get(payload.obligationId);
+  if (!existing) return; // already surfaced as a warning
+
+  const changes = payload.changes ?? {};
+  const description = changes.description !== undefined ? changes.description : existing.description;
+  let dueRaw = existing.due_game_date_raw;
+  let dueSort = existing.due_game_date_sort;
+  if (changes.dueGameDate !== undefined) {
+    dueRaw = changes.dueGameDate;
+    dueSort = changes.dueGameDate ? parseGameDate(changes.dueGameDate).sortKey : null;
+  }
+  await db.prepare("UPDATE obligations SET description = ?, due_game_date_raw = ?, due_game_date_sort = ? WHERE id = ?")
+    .run(description, dueRaw, dueSort, payload.obligationId);
 }

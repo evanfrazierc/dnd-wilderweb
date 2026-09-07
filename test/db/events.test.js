@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { openDb } from "../../server/db/connection.js";
 import { createEvent, listEvents } from "../../server/db/events.js";
-import { getObligation } from "../../server/db/obligations.js";
+import { getObligation, createObligation } from "../../server/db/obligations.js";
 
 async function freshDb() {
   const db = await openDb(":memory:");
@@ -159,6 +159,58 @@ test("LocationAmended requires payload.name", async () => {
     type: "LocationAmended", gameDate: "1225", payload: { name: "Kingdom of Casdenia", changes: {} },
   });
   assert.equal(valid.ok, true);
+});
+
+test("ObligationAmended requires payload.obligationId", async () => {
+  const db = await freshDb();
+  const missingId = await createEvent(db, { type: "ObligationAmended", gameDate: "1225", payload: { changes: {} } });
+  assert.equal(missingId.ok, false);
+});
+
+test("ObligationAmended warns but still applies when it references a nonexistent obligation (ADR-0005)", async () => {
+  const db = await freshDb();
+  const result = await createEvent(db, {
+    type: "ObligationAmended", gameDate: "1225", payload: { obligationId: 999, changes: { description: "x" } },
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.warnings.length, 1);
+  assert.match(result.warnings[0], /obligation #999.*does not exist/);
+});
+
+test("ObligationAmended corrects description/dueGameDate without touching amountTotal/amountRemaining/repaymentResource", async () => {
+  const db = await freshDb();
+  const obligation = await createObligation(db, {
+    description: "Resource loan (history.json id 49)",
+    originalResources: { Wood: 20 },
+    repaymentResource: "Wealth",
+    amountTotal: 50,
+    dueGameDate: "Month 6, 16th, 1233",
+  });
+
+  const result = await createEvent(db, {
+    type: "ObligationAmended",
+    gameDate: "1225",
+    payload: { obligationId: obligation.id, changes: { description: "Loan from the Countess of Ravenstone" } },
+  });
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.warnings, []);
+
+  const updated = await getObligation(db, obligation.id);
+  assert.equal(updated.description, "Loan from the Countess of Ravenstone");
+  assert.equal(updated.dueGameDate, "Month 6, 16th, 1233"); // untouched -- not in `changes`
+  assert.equal(updated.amountTotal, 50);
+  assert.equal(updated.amountRemaining, 50);
+  assert.equal(updated.repaymentResource, "Wealth");
+
+  // A later save touching only dueGameDate must not clobber the description just corrected.
+  await createEvent(db, {
+    type: "ObligationAmended",
+    gameDate: "1226",
+    payload: { obligationId: obligation.id, changes: { dueGameDate: "Month 1, 1234" } },
+  });
+  const reUpdated = await getObligation(db, obligation.id);
+  assert.equal(reUpdated.description, "Loan from the Countess of Ravenstone");
+  assert.equal(reUpdated.dueGameDate, "Month 1, 1234");
 });
 
 test("LocationAmended creates a new kingdom and merges partial changes onto an existing one", async () => {

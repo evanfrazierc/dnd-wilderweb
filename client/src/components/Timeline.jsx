@@ -14,6 +14,7 @@ const EVENT_TYPES = [
   "CalendarAdvanced",
   "DeityAmended",
   "LocationAmended",
+  "ObligationAmended",
   "DMRuling",
 ];
 
@@ -24,6 +25,7 @@ const TYPE_ICON = {
   CalendarAdvanced: "Calendar",
   DeityAmended: "Piety",
   LocationAmended: "MapPin",
+  ObligationAmended: "Wealth",
   DMRuling: "Codex",
 };
 
@@ -219,35 +221,6 @@ function NewEntryForm({ obligations, knownResourceNames, onAdd }) {
   );
 }
 
-function ObligationsPanel({ obligations }) {
-  if (!obligations.length) return null;
-  return (
-    <div className="grid grid-2" style={{ marginBottom: "1.75rem" }}>
-      {obligations.map((o) => {
-        const pct = o.amountTotal > 0 ? Math.min(100, ((o.amountTotal - o.amountRemaining) / o.amountTotal) * 100) : 0;
-        return (
-          <div className="card" key={o.id}>
-            <div className="stat-group-head">
-              <span className={`icon-badge sm ${o.satisfied ? "good" : ""}`}>
-                <Icon name={o.repaymentResource} size={16} />
-              </span>
-              <h3 style={{ fontSize: "0.95rem" }}>{o.description}</h3>
-            </div>
-            <div className="meter good" style={{ marginTop: "0.4rem" }}>
-              <span style={{ transform: `scaleX(${pct / 100})` }} />
-            </div>
-            <div className="text-faint" style={{ fontSize: "0.78rem", marginTop: "0.35rem" }}>
-              {o.amountTotal - o.amountRemaining} / {o.amountTotal} {o.repaymentResource} repaid
-              {o.dueGameDate && ` · due ${o.dueGameDate}`}
-              {o.satisfied && " · settled"}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
 export default function Timeline() {
   const [events, setEvents] = useState(null);
   const [obligations, setObligations] = useState([]);
@@ -297,8 +270,6 @@ export default function Timeline() {
           {events.length} events
         </span>
       </div>
-
-      <ObligationsPanel obligations={obligations.filter((o) => !o.satisfied)} />
 
       <NewEntryForm
         obligations={obligations.filter((o) => !o.satisfied)}

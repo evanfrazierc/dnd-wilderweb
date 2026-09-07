@@ -1638,6 +1638,24 @@
     "createdAt": "2026-09-07 14:21:42"
   },
   {
+    "id": 112,
+    "type": "ObligationAmended",
+    "gameDate": "Month 2, 9th, 1227",
+    "gameDateSort": 441758,
+    "postedAt": "2026-09-07",
+    "actor": null,
+    "region": null,
+    "note": "Amended via the Dashboard",
+    "payload": {
+      "obligationId": 1,
+      "changes": {
+        "description": "Resource loan, repayable in Wealth"
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-09-07 15:59:44"
+  },
+  {
     "id": 46,
     "type": "ResourceChanged",
     "gameDate": "Month 3, 1227",

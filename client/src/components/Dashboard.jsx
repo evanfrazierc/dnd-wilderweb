@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getProjection, getReference } from "../api.js";
+import { getProjection, getReference, getObligations } from "../api.js";
 import { useEventSubmit } from "../lib/useEventSubmit.js";
 import { useReferenceSave } from "../lib/useReferenceSave.js";
 import { useDraft } from "../lib/useDraft.js";
@@ -134,6 +134,87 @@ function StatGroup({ title, icon, values, descriptions, onChange }) {
   );
 }
 
+// What's owed, what's been paid, and the repayment resource all stay strictly governed by
+// the ResourceChanged events that created and are settling this obligation (CONTEXT.md) --
+// only description and due date are correctable here, as their own ObligationAmended event
+// (ADR-0013), same "amend a first-class thing after the fact" shape as DeityCard/KingdomCard.
+function ObligationCard({ obligation, onSaved }) {
+  const [draft, setDraft] = useState({ description: obligation.description });
+  // Compared against instead of `obligation` directly so dirty state clears the instant this
+  // card's own save resolves, not the page-level refetch's round trip (same fix as
+  // KingdomCard/DeityCard -- see docs/adr/0011).
+  const [baseline, setBaseline] = useState(draft);
+  const [newDueDate, setNewDueDate] = useState(null);
+  const [gameDate, setGameDate] = useState(null);
+  const { submit, status, warnings } = useEventSubmit(onSaved);
+
+  const dirty = draft.description !== baseline.description || newDueDate !== null;
+
+  function save() {
+    if (!isCompleteGameDate(gameDate)) return;
+    const changes = {};
+    if (draft.description !== baseline.description) changes.description = draft.description.trim();
+    if (isCompleteGameDate(newDueDate)) changes.dueGameDate = formatGameDate(newDueDate);
+    if (Object.keys(changes).length === 0) return;
+    // No Discord option: a correction, not campaign news, matching DeityAmended/LocationAmended.
+    submit({
+      type: "ObligationAmended",
+      gameDate: formatGameDate(gameDate),
+      note: "Amended via the Dashboard",
+      payload: { obligationId: obligation.id, changes },
+      postToDiscord: false,
+    }).then(() => {
+      setBaseline(draft);
+      setNewDueDate(null);
+      setGameDate(null);
+    });
+  }
+
+  const pct = obligation.amountTotal > 0
+    ? Math.min(100, ((obligation.amountTotal - obligation.amountRemaining) / obligation.amountTotal) * 100)
+    : 0;
+
+  return (
+    <div className="card" key={obligation.id}>
+      <div className="stat-group-head">
+        <span className={`icon-badge sm ${obligation.satisfied ? "good" : ""}`}>
+          <Icon name={obligation.repaymentResource} size={16} />
+        </span>
+        <input
+          value={draft.description}
+          onChange={(e) => setDraft({ description: e.target.value })}
+          style={{
+            flex: 1, minWidth: 0, background: "transparent", border: "none", padding: "0.1rem 0",
+            fontFamily: "var(--font-display)", fontWeight: 600, fontSize: "0.95rem", color: "var(--parchment)",
+          }}
+        />
+      </div>
+      <div className="meter good" style={{ marginTop: "0.4rem" }}>
+        <span style={{ transform: `scaleX(${pct / 100})` }} />
+      </div>
+      <div className="text-faint" style={{ fontSize: "0.78rem", marginTop: "0.35rem" }}>
+        {obligation.amountTotal - obligation.amountRemaining} / {obligation.amountTotal} {obligation.repaymentResource} repaid
+        {obligation.dueGameDate && ` · due ${obligation.dueGameDate}`}
+        {obligation.satisfied && " · settled"}
+      </div>
+      <div style={{ display: "flex", gap: "0.4rem", alignItems: "center", marginTop: "0.5rem", flexWrap: "wrap" }}>
+        <span className="text-faint" style={{ fontSize: "0.76rem" }}>Change due date:</span>
+        <GameDatePicker value={newDueDate} onChange={setNewDueDate} autoDefault={false} allowClear />
+      </div>
+      {dirty && (
+        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginTop: "0.6rem", flexWrap: "wrap" }}>
+          <GameDatePicker value={gameDate} onChange={setGameDate} />
+          <button className="btn btn-sm btn-primary" onClick={save} disabled={!isCompleteGameDate(gameDate)}>
+            Save
+          </button>
+          {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+        </div>
+      )}
+      <WarningsList warnings={warnings} />
+    </div>
+  );
+}
+
 function diffChanges(loaded, draft) {
   const changes = {};
   for (const group of ["resources", "assets", "society"]) {
@@ -151,6 +232,7 @@ export default function Dashboard() {
   const [gameDate, setGameDate] = useState(null);
   const [note, setNote] = useState("");
   const [definitions, setDefinitions] = useState(null);
+  const [obligations, setObligations] = useState([]);
   const [showResourceEditor, setShowResourceEditor] = useState(false);
   const [error, setError] = useState(null);
 
@@ -165,9 +247,14 @@ export default function Dashboard() {
     return getReference("resourceDefinitions").then(setDefinitions);
   }
 
+  function loadObligations() {
+    return getObligations({ satisfied: false }).then(setObligations);
+  }
+
   useEffect(() => {
     load().catch((e) => setError(e.message));
     loadDefinitions().catch((e) => setError(e.message));
+    loadObligations().catch((e) => setError(e.message));
   }, []);
 
   function onDefinitionsSaved() {
@@ -286,6 +373,20 @@ export default function Dashboard() {
           </div>
           <WarningsList warnings={warnings} />
         </div>
+      )}
+
+      {obligations.length > 0 && (
+        <>
+          <div className="section-header">
+            <h3>Loan Repayment</h3>
+            <div className="rule" />
+          </div>
+          <div className="grid grid-2 ledger-grid">
+            {obligations.map((o) => (
+              <ObligationCard key={o.id} obligation={o} onSaved={loadObligations} />
+            ))}
+          </div>
+        </>
       )}
 
       {stats.annualIncomeUpkeep && (

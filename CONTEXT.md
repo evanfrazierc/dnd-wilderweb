@@ -29,6 +29,9 @@ An event recording a change to a deity's confirmed status, title, or alignment.
 **LocationAmended**:
 An event recording a Kingdom created or amended -- `payload` is `{name, changes}`, scoped to one kingdom, mirroring `DeityAmended` (ADR-0011). Never posted to Discord: lore/worldbuilding upkeep, not campaign news, same reasoning as `DeityAmended`.
 
+**ObligationAmended**:
+An event correcting an existing Obligation's `description` or `dueGameDate` -- `payload` is `{obligationId, changes}`, mirroring `DeityAmended`/`LocationAmended`. Does not touch `amountTotal`/`amountRemaining`/`repaymentResource`: those stay governed entirely by the `ResourceChanged` events that created and are paying down the debt, so this can't be used to retroactively change what was actually owed or paid. Never posted to Discord -- a correction, not campaign news.
+
 **DMRuling**:
 An event recording a DM clarification or correction with no resource or state delta. Always carries a note; never carries `changes`. Distinguishes a deliberate no-op ruling from a `ResourceChanged` with an empty delta, which today are indistinguishable and shouldn't be.
 
@@ -46,7 +49,7 @@ A realm on the world map: a name, an optional capital, and freeform notes (rumor
 _Avoid_: County, settlement, place (all retired -- see ADR-0010, ADR-0011, ADR-0012)
 
 **Obligation**:
-A tracked debt: resources owed, a due date, and a running balance that decreases as later events settle it. First-class and queryable, not narrative text on the originating event, because players need to see repayment progress over time.
+A tracked debt: resources owed, a due date, and a running balance that decreases as later events settle it. First-class and queryable, not narrative text on the originating event, because players need to see repayment progress over time. Its description and due date can be corrected after the fact (`ObligationAmended`); what's owed and what's been paid cannot -- those stay strictly a function of the `ResourceChanged` events that created and are settling it.
 _Avoid_: loan (the loan is the `ResourceChanged` event that creates the Obligation; the Obligation is the ongoing thing it creates)
 
 **Projection**:

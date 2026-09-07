@@ -67,11 +67,70 @@ async function ensureColumn(client, table, column, definition) {
   }
 }
 
+// SQLite can't ALTER a CHECK constraint in place -- adding 'ObligationAmended' to events.type's
+// allowed values (schema.sql) only takes effect on a table CREATEd fresh with the new list. An
+// already-existing events table (this project's local dev DB, and production once deployed)
+// needs the standard SQLite rebuild-and-swap: create a copy with the new constraint, copy every
+// row across explicitly (not `SELECT *`, so column order can never silently matter), drop the
+// old table, rename the copy into place, then recreate its indexes (DROP TABLE takes them with
+// it). Foreign keys are held off for the swap since `obligations.created_by_event_id` points at
+// this table and DROP TABLE isn't the kind of change ON DELETE/UPDATE actions are meant to
+// intercept. Gated on inspecting the live table's own CREATE TABLE SQL (sqlite_master), not a
+// version counter, so this is a safe no-op forever after the one time it's actually needed.
+async function ensureObligationAmendedEventType(client) {
+  const result = await client.execute("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'events'");
+  const sql = result.rows[0]?.sql ?? "";
+  if (!sql || sql.includes("ObligationAmended")) return;
+
+  await client.execute("PRAGMA foreign_keys = OFF");
+  try {
+    const tx = await client.transaction("write");
+    try {
+      await tx.execute(`
+        CREATE TABLE events_new (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          type TEXT NOT NULL CHECK (type IN (
+            'ResourceChanged', 'BuildingConstructed', 'BuildingRemoved', 'BuildingAmended',
+            'CalendarAdvanced', 'DeityAmended', 'LocationAmended', 'ObligationAmended', 'DMRuling'
+          )),
+          game_date_raw TEXT NOT NULL,
+          game_date_sort INTEGER NOT NULL,
+          posted_at TEXT NOT NULL,
+          actor TEXT,
+          region TEXT,
+          note TEXT,
+          payload TEXT NOT NULL DEFAULT '{}',
+          warnings TEXT NOT NULL DEFAULT '[]',
+          created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        )
+      `);
+      await tx.execute(`
+        INSERT INTO events_new
+          (id, type, game_date_raw, game_date_sort, posted_at, actor, region, note, payload, warnings, created_at)
+        SELECT id, type, game_date_raw, game_date_sort, posted_at, actor, region, note, payload, warnings, created_at
+        FROM events
+      `);
+      await tx.execute("DROP TABLE events");
+      await tx.execute("ALTER TABLE events_new RENAME TO events");
+      await tx.execute("CREATE INDEX IF NOT EXISTS idx_events_game_date_sort ON events (game_date_sort)");
+      await tx.execute("CREATE INDEX IF NOT EXISTS idx_events_type ON events (type)");
+      await tx.execute("CREATE INDEX IF NOT EXISTS idx_events_region ON events (region)");
+      await tx.commit();
+    } catch (err) {
+      await tx.rollback();
+      throw err;
+    }
+  } finally {
+    await client.execute("PRAGMA foreign_keys = ON");
+  }
+}
+
 async function initSchema(client) {
   await client.execute("PRAGMA foreign_keys = ON");
   await client.executeMultiple(readFileSync(schemaPath, "utf-8"));
   await ensureColumn(client, "building_catalog", "annual_effect", "TEXT NOT NULL DEFAULT '{}'");
   await ensureColumn(client, "regions", "kingdom", "TEXT");
+  await ensureObligationAmendedEventType(client);
 }
 
 /** Opens a local database: `:memory:` or a filesystem path. Used by tests and local scripts. */

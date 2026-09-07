@@ -65,7 +65,7 @@ validation warns instead of blocking, why there's no auth yet, etc.
 
 - `schema.sql` / `connection.js`: SQLite via Node's built-in `node:sqlite` (no new dependency).
   DB file at `data/campaign.db`, gitignored — `npm run export` is the git-diffable backup path.
-- `events.js` (`createEvent`/`listEvents`): every write is an event of one of eight types (see
+- `events.js` (`createEvent`/`listEvents`): every write is an event of one of nine types (see
   `CONTEXT.md`). `createEvent` validates shape (400 on failure), checks in-game warnings
   (`validate.js`), then writes the event and updates the relevant projection in one transaction.
 - `projections.js`: applies an event's payload onto current-state tables (`resource_totals`,
@@ -111,7 +111,9 @@ explicit value on the event over its own checkbox state; see the hook's own comm
 through `getProjection`/`getReference`/`getEvents`/`getObligations`. Per view:
 
 - **Dashboard**: edits stat values locally (steppers, same UX as before), then on save diffs the
-  draft against the loaded snapshot into one `ResourceChanged` event.
+  draft against the loaded snapshot into one `ResourceChanged` event. Also shows the
+  obligation-progress panel, each card editable (description/due date) as its own
+  `ObligationAmended` event.
 - **CalendarView**: the date-set form emits `CalendarAdvanced`.
 - **Settlements**: add/remove building emits `BuildingConstructed`/`BuildingRemoved`, including
   the optional `displayName` field (an in-fiction name like `"Anora's Roost"` for a `Tower`; the
@@ -122,9 +124,9 @@ through `getProjection`/`getReference`/`getEvents`/`getObligations`. Per view:
   as `LocationAmended` (`payload: {name, changes}`, mirroring `DeityAmended` — ADR-0011), not the
   whole-document replace it used to be.
 - **Timeline** (replaces the old History Log): lists events newest-first, filterable by
-  type/region, shows an obligation-progress panel, and its "log a new entry" form covers just
-  `ResourceChanged`/`DMRuling` (auto-detected by whether resource changes were entered) — the
-  other five event types go through their own view's form.
+  type/region, and its "log a new entry" form covers just `ResourceChanged`/`DMRuling`
+  (auto-detected by whether resource changes were entered) — the other six event types go
+  through their own view's form.
 
 ## Agent skills
 

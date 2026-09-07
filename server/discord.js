@@ -17,6 +17,7 @@ const EVENT_TITLE = {
   CalendarAdvanced: "Calendar Advanced",
   DeityAmended: "Deity Amended",
   LocationAmended: "Locations Updated",
+  ObligationAmended: "Obligation Amended",
   DMRuling: "DM Ruling",
 };
 
@@ -27,6 +28,7 @@ const EVENT_COLOR = {
   CalendarAdvanced: 0x4a6fa5,
   DeityAmended: 0x7a4b8a,
   LocationAmended: 0x4a6fa5,
+  ObligationAmended: 0x7a7160,
   DMRuling: 0x7a7160,
 };
 
@@ -67,6 +69,12 @@ function eventFields(event) {
     }
     case "LocationAmended": {
       fields.push({ name: "Kingdom", value: payload.name, inline: true });
+      const changes = Object.entries(payload.changes || {}).map(([k, v]) => `${k}: ${v}`).join(", ");
+      if (changes) fields.push({ name: "Changes", value: changes });
+      break;
+    }
+    case "ObligationAmended": {
+      fields.push({ name: "Obligation", value: `#${payload.obligationId}`, inline: true });
       const changes = Object.entries(payload.changes || {}).map(([k, v]) => `${k}: ${v}`).join(", ");
       if (changes) fields.push({ name: "Changes", value: changes });
       break;

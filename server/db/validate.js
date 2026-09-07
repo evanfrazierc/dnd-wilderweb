@@ -50,6 +50,10 @@ export function validateShape(type, { note, region, payload }) {
       if (!payload?.name) errors.push("LocationAmended requires payload.name (the kingdom's name)");
       break;
     }
+    case "ObligationAmended": {
+      if (typeof payload?.obligationId !== "number") errors.push("ObligationAmended requires payload.obligationId (a number)");
+      break;
+    }
     case "DMRuling": {
       if (!note || !note.trim()) errors.push("DMRuling requires a non-empty note");
       if (payload && payload.changes && Object.keys(payload.changes).length > 0) {
@@ -141,6 +145,11 @@ export async function checkWarnings(db, type, { region, payload }) {
         warnings.push(`Calendar date is not moving forward (was year ${current.year} month ${current.month} day ${current.day})`);
       }
     }
+  }
+
+  if (type === "ObligationAmended") {
+    const obligation = await db.prepare("SELECT 1 FROM obligations WHERE id = ?").get(payload.obligationId);
+    if (!obligation) warnings.push(`References obligation #${payload.obligationId}, which does not exist`);
   }
 
   return warnings;

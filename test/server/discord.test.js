@@ -95,6 +95,19 @@ test("buildEmbed formats a LocationAmended event", () => {
   ]);
 });
 
+test("buildEmbed formats an ObligationAmended event", () => {
+  const embed = buildEmbed({
+    type: "ObligationAmended",
+    gameDate: "Erastus 4, 1227",
+    payload: { obligationId: 1, changes: { description: "Loan from the Countess of Ravenstone" } },
+  });
+  assert.equal(embed.title, "Obligation Amended");
+  assert.deepEqual(embed.fields, [
+    { name: "Obligation", value: "#1", inline: true },
+    { name: "Changes", value: "description: Loan from the Countess of Ravenstone" },
+  ]);
+});
+
 test("buildEmbed includes the actor when present", () => {
   const embed = buildEmbed({
     type: "DMRuling",

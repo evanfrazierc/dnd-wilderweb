@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "description": "Resource loan, repayable in Wealth (history.json id 49)",
+    "description": "Resource loan, repayable in Wealth",
     "originalResources": {
       "Wood": 20,
       "Stone": 20,

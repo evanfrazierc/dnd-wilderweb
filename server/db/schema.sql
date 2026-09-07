@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   type TEXT NOT NULL CHECK (type IN (
     'ResourceChanged', 'BuildingConstructed', 'BuildingRemoved', 'BuildingAmended',
-    'CalendarAdvanced', 'DeityAmended', 'LocationAmended', 'DMRuling'
+    'CalendarAdvanced', 'DeityAmended', 'LocationAmended', 'ObligationAmended', 'DMRuling'
   )),
   game_date_raw TEXT NOT NULL,
   game_date_sort INTEGER NOT NULL,
