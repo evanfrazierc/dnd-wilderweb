@@ -41,18 +41,18 @@ async function readStats(db) {
 }
 
 async function readSettlements(db) {
-  const rows = await db.prepare("SELECT * FROM settlement_buildings ORDER BY settlement, building").all();
-  const bySettlement = new Map();
+  const rows = await db.prepare("SELECT * FROM settlement_buildings ORDER BY region, building").all();
+  const byRegion = new Map();
   for (const row of rows) {
-    if (!bySettlement.has(row.settlement)) bySettlement.set(row.settlement, []);
-    bySettlement.get(row.settlement).push({
+    if (!byRegion.has(row.region)) byRegion.set(row.region, []);
+    byRegion.get(row.region).push({
       name: row.building,
       displayName: row.display_name ?? undefined,
       count: row.count,
       detail: row.detail ?? undefined,
     });
   }
-  return Array.from(bySettlement.entries()).map(([settlement, buildings]) => ({ settlement, buildings }));
+  return Array.from(byRegion.entries()).map(([region, buildings]) => ({ region, buildings }));
 }
 
 async function readCalendar(db) {

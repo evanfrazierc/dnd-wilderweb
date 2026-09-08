@@ -8,16 +8,16 @@ import { applyProjection } from "./projections.js";
  * Returns { ok: false, errors } on a shape failure (400-worthy), or
  * { ok: true, event, warnings } on success. Warnings never block the write (ADR-0005).
  */
-export async function createEvent(db, { type, gameDate, postedAt, actor, settlement, note, payload }) {
-  const errors = validateShape(type, { note, settlement, payload });
+export async function createEvent(db, { type, gameDate, postedAt, actor, region, note, payload }) {
+  const errors = validateShape(type, { note, region, payload });
   if (errors.length > 0) return { ok: false, errors };
 
   const parsed = parseGameDate(gameDate);
-  const warnings = await checkWarnings(db, type, { settlement, payload: payload ?? {} });
+  const warnings = await checkWarnings(db, type, { region, payload: payload ?? {} });
 
   const event = await db.transaction(async (tx) => {
     const info = await tx.prepare(`
-      INSERT INTO events (type, game_date_raw, game_date_sort, posted_at, actor, settlement, note, payload, warnings)
+      INSERT INTO events (type, game_date_raw, game_date_sort, posted_at, actor, region, note, payload, warnings)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       type,
@@ -25,13 +25,13 @@ export async function createEvent(db, { type, gameDate, postedAt, actor, settlem
       parsed.sortKey,
       postedAt ?? new Date().toISOString().slice(0, 10),
       actor ?? null,
-      settlement ?? null,
+      region ?? null,
       note ?? null,
       JSON.stringify(payload ?? {}),
       JSON.stringify(warnings),
     );
 
-    await applyProjection(tx, { id: info.lastInsertRowid, type, settlement, payload: payload ?? {} });
+    await applyProjection(tx, { id: info.lastInsertRowid, type, region, payload: payload ?? {} });
 
     return getEvent(tx, info.lastInsertRowid);
   });
@@ -44,7 +44,7 @@ export async function getEvent(db, id) {
   return row ? deserializeEvent(row) : null;
 }
 
-export async function listEvents(db, { type, settlement, from, to, limit = 200 } = {}) {
+export async function listEvents(db, { type, region, from, to, limit = 200 } = {}) {
   const clauses = [];
   const params = [];
 
@@ -52,9 +52,9 @@ export async function listEvents(db, { type, settlement, from, to, limit = 200 }
     clauses.push("type = ?");
     params.push(type);
   }
-  if (settlement) {
-    clauses.push("settlement = ?");
-    params.push(settlement);
+  if (region) {
+    clauses.push("region = ?");
+    params.push(region);
   }
   if (from != null) {
     clauses.push("game_date_sort >= ?");
@@ -94,7 +94,7 @@ function deserializeEvent(row) {
     gameDateSort: row.game_date_sort,
     postedAt: row.posted_at,
     actor: row.actor,
-    settlement: row.settlement,
+    region: row.region,
     note: row.note,
     payload: JSON.parse(row.payload),
     warnings: JSON.parse(row.warnings),

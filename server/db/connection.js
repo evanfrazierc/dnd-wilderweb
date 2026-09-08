@@ -77,7 +77,24 @@ async function ensureColumn(client, table, column, definition) {
 // dance ensureObligationAmendedEventType needs below -- that one exists only because CHECK
 // constraints specifically can't be altered in place; a plain column or table rename has no
 // such restriction. Gated on the OLD name still existing, so a fresh database (schema.sql
-// already creates `settlements`/`settlement`) or an already-migrated one is a safe no-op.
+// used to create `settlements`/`settlement` at the time this shipped) or an already-migrated
+// one was a safe no-op.
+//
+// NO LONGER CALLED (docs/adr/0015) -- kept only as the historical record of ADR-0014 actually
+// having happened, same spirit as ensureObligationAmendedEventType never getting rewritten once
+// ObligationAmended shipped. Once schema.sql went back to creating `regions` (ADR-0015's
+// reversal), this function's own gate -- "does a table named `regions` exist" -- stopped being
+// able to tell "genuine pre-ADR-0014 database" apart from "schema.sql's own bootstrap just
+// created today's normal, current, real `regions` table a moment ago in this same initSchema
+// call" -- they're now the same table by construction. Calling this unconditionally on every
+// boot, as it originally was, would DROP TABLE the real, live `settlements`... no wait, by the
+// time ADR-0015 shipped there's no live `settlements` table for it to find on a real database
+// either; the actual failure mode caught in testing was worse: on a database already fully
+// reverted to `regions`, this function's gate fires anyway (schema.sql just made that table
+// exist), so it drops the empty placeholder `settlements` (harmless) but then renames the REAL,
+// data-holding `regions` table into `settlements`, discarding its identity as the current table
+// right before ensureRegionRename renames it right back -- a wasteful and fragile round-trip on
+// every single boot rather than the safe no-op it was designed to be. Do not re-add the call.
 async function ensureSettlementRename(client) {
   const oldTable = await client.execute("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'regions'");
   if (oldTable.rows.length > 0) {
@@ -106,6 +123,39 @@ async function ensureSettlementRename(client) {
   const buildingsInfo = await client.execute("PRAGMA table_info(settlement_buildings)");
   if (buildingsInfo.rows.some((c) => c.name === "region")) {
     await client.execute("ALTER TABLE settlement_buildings RENAME COLUMN region TO settlement");
+  }
+}
+
+// "Settlement" reverted back to "Region" (docs/adr/0015) -- not every one of these is a
+// settled place, so the brief rename in ADR-0014 didn't fit after all. This is the mirror image
+// of ensureSettlementRename above, but it's the only one of the pair actually called from
+// initSchema now (see the comment there) -- gated on the OLD name (`settlements`) still
+// existing, so it's a safe no-op on a database that never went through ADR-0014 at all (already
+// `regions`/`region`, schema.sql's own bootstrap having just created that same shape moments
+// earlier can't be confused for a real `settlements` table under a different name) or one
+// that's already been through this migration.
+async function ensureRegionRename(client) {
+  const oldTable = await client.execute("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'settlements'");
+  if (oldTable.rows.length > 0) {
+    // Same schema.sql race as ensureSettlementRename hit in the other direction: its own
+    // `CREATE TABLE IF NOT EXISTS regions` runs earlier in initSchema and doesn't recognize
+    // `settlements` as "already existing" (different name), so it creates a second, empty
+    // `regions` table that would otherwise collide with the rename target. Safe to drop for
+    // the same reason: nothing could have written to it yet this call.
+    await client.execute("DROP TABLE IF EXISTS regions");
+    await client.execute("ALTER TABLE settlements RENAME TO regions");
+  }
+
+  const eventsInfo = await client.execute("PRAGMA table_info(events)");
+  if (eventsInfo.rows.some((c) => c.name === "settlement")) {
+    await client.execute("ALTER TABLE events RENAME COLUMN settlement TO region");
+    await client.execute("DROP INDEX IF EXISTS idx_events_settlement");
+  }
+  await client.execute("CREATE INDEX IF NOT EXISTS idx_events_region ON events (region)");
+
+  const buildingsInfo = await client.execute("PRAGMA table_info(settlement_buildings)");
+  if (buildingsInfo.rows.some((c) => c.name === "settlement")) {
+    await client.execute("ALTER TABLE settlement_buildings RENAME COLUMN settlement TO region");
   }
 }
 
@@ -425,15 +475,23 @@ async function initSchema(client) {
   await client.execute("PRAGMA foreign_keys = ON");
   await client.executeMultiple(readFileSync(schemaPath, "utf-8"));
   await ensureColumn(client, "building_catalog", "annual_effect", "TEXT NOT NULL DEFAULT '{}'");
-  // Must run before ensureSettlementRename: its events-table rebuild still hardcodes the old
-  // `region` column name (it predates the rename and only needs to run once, ever, on a
+  // Must run before ensureRegionRename: its events-table rebuild still hardcodes the old
+  // `region` column name (it predates both renames and only needs to run once, ever, on a
   // database old enough to still be missing ObligationAmended from the CHECK constraint --
-  // renaming region to settlement first would break that rebuild's column list).
+  // renaming settlement to region first would break that rebuild's column list, and this
+  // migration is old enough it never got updated to expect `settlement` either since it only
+  // ever needs to fire on a database from before either rename existed).
   await ensureObligationAmendedEventType(client);
-  await ensureSettlementRename(client);
-  // Must run after ensureSettlementRename: by now the table is named `settlements` either
-  // way (freshly created that way, or just renamed), never the old `regions`.
-  await ensureColumn(client, "settlements", "kingdom", "TEXT");
+  // ensureSettlementRename is NOT called here -- see the long comment on its own definition
+  // above for why doing so would be actively destructive now that schema.sql creates `regions`
+  // again. ensureRegionRename alone is sufficient: a genuine never-migrated database (still
+  // named `regions`/`region`, having skipped ADR-0014 entirely) is already in its target shape
+  // and this is a safe no-op on it; a real post-ADR-0014 database (`settlements`/`settlement`)
+  // is exactly what this converts.
+  await ensureRegionRename(client);
+  // Must run after the rename above: by now the table is named `regions` either way
+  // (freshly created that way, or renamed back), never `settlements`.
+  await ensureColumn(client, "regions", "kingdom", "TEXT");
   await ensureKnownDataCorrections(client);
   await ensureCurrentDateAdvancedPastRealActivity(client);
   await ensureConsistentDateFormatting(client);

@@ -160,71 +160,71 @@ export async function replaceIntroduction(db, { postedBy, postedAt, paragraphs }
 }
 
 /**
- * Settlements a building can be built in (docs/adr/0008; named "Settlement" rather than the
- * earlier "Region" per docs/adr/0014) -- first-class reference data rather than a free-text
- * label on settlement_buildings.settlement. Unlike the other reference resources,
- * replaceSettlements is NOT a generic wipe-and-reinsert: a rename needs to cascade to every
- * settlement_buildings row referencing the old name, which requires diffing by the
- * settlement's stable id (a name-keyed wipe-and-reinsert can't tell "renamed" from "deleted
- * then re-added under a new name").
+ * Regions a building can be built in (docs/adr/0008; briefly renamed "Settlement" per
+ * docs/adr/0014, reverted back to "Region" by docs/adr/0015 -- not every one of these is a
+ * settled place) -- first-class reference data rather than a free-text label on
+ * settlement_buildings.region. Unlike the other reference resources, replaceRegions is NOT a
+ * generic wipe-and-reinsert: a rename needs to cascade to every settlement_buildings row
+ * referencing the old name, which requires diffing by the region's stable id (a name-keyed
+ * wipe-and-reinsert can't tell "renamed" from "deleted then re-added under a new name").
  *
  * `kingdom` (docs/adr/0010) optionally names the Codex Locations kingdom that claims this
- * settlement -- a plain string, not a foreign key. Kingdoms are name-keyed (docs/adr/0011),
+ * region -- a plain string, not a foreign key. Kingdoms are name-keyed (docs/adr/0011),
  * same as deities, so this still isn't a real foreign key relationship, but it does mean
  * this string is expected to match a `kingdoms.name` row when set.
  */
-export async function readSettlementCatalog(db) {
-  return db.prepare("SELECT id, name, description, kingdom FROM settlements ORDER BY name").all();
+export async function readRegions(db) {
+  return db.prepare("SELECT id, name, description, kingdom FROM regions ORDER BY name").all();
 }
 
-export async function replaceSettlementCatalog(db, settlements) {
+export async function replaceRegions(db, regions) {
   const seen = new Set();
-  for (const s of settlements) {
-    requireFields(s, ["name"], "A settlement");
-    if (seen.has(s.name)) throw new ValidationError(`Duplicate settlement name: "${s.name}"`);
-    seen.add(s.name);
+  for (const r of regions) {
+    requireFields(r, ["name"], "A region");
+    if (seen.has(r.name)) throw new ValidationError(`Duplicate region name: "${r.name}"`);
+    seen.add(r.name);
   }
 
   return db.transaction(async (tx) => {
-    const existing = await tx.prepare("SELECT id, name FROM settlements").all();
+    const existing = await tx.prepare("SELECT id, name FROM regions").all();
     const existingById = new Map(existing.map((e) => [e.id, e]));
-    const incomingIds = new Set(settlements.filter((s) => s.id != null).map((s) => s.id));
+    const incomingIds = new Set(regions.filter((r) => r.id != null).map((r) => r.id));
 
     for (const e of existing) {
       if (incomingIds.has(e.id)) continue;
-      const count = await tx.prepare("SELECT COUNT(*) c FROM settlement_buildings WHERE settlement = ?").get(e.name);
+      const count = await tx.prepare("SELECT COUNT(*) c FROM settlement_buildings WHERE region = ?").get(e.name);
       if (count.c > 0) {
         throw new ValidationError(
-          `Cannot remove settlement "${e.name}": it still has ${count.c} building(s). ` +
+          `Cannot remove region "${e.name}": it still has ${count.c} building(s). ` +
           "Move or remove them first.",
         );
       }
-      await tx.prepare("DELETE FROM settlements WHERE id = ?").run(e.id);
+      await tx.prepare("DELETE FROM regions WHERE id = ?").run(e.id);
     }
 
-    for (const s of settlements) {
-      if (s.id != null && existingById.has(s.id)) {
-        const old = existingById.get(s.id);
-        await tx.prepare("UPDATE settlements SET name = ?, description = ?, kingdom = ? WHERE id = ?")
-          .run(s.name, s.description ?? null, s.kingdom ?? null, s.id);
-        if (old.name !== s.name) {
-          await tx.prepare("UPDATE settlement_buildings SET settlement = ? WHERE settlement = ?").run(s.name, old.name);
+    for (const r of regions) {
+      if (r.id != null && existingById.has(r.id)) {
+        const old = existingById.get(r.id);
+        await tx.prepare("UPDATE regions SET name = ?, description = ?, kingdom = ? WHERE id = ?")
+          .run(r.name, r.description ?? null, r.kingdom ?? null, r.id);
+        if (old.name !== r.name) {
+          await tx.prepare("UPDATE settlement_buildings SET region = ? WHERE region = ?").run(r.name, old.name);
         }
       } else {
-        await tx.prepare("INSERT INTO settlements (name, description, kingdom) VALUES (?, ?, ?)")
-          .run(s.name, s.description ?? null, s.kingdom ?? null);
+        await tx.prepare("INSERT INTO regions (name, description, kingdom) VALUES (?, ?, ?)")
+          .run(r.name, r.description ?? null, r.kingdom ?? null);
       }
     }
   });
 }
 
-/** One-time, idempotent data bootstrap -- only runs while `settlements` is empty, so it never
+/** One-time, idempotent data bootstrap -- only runs while `regions` is empty, so it never
  * clobbers a DM's edits. Seeds from the existing locations_state.wilderlandsRegions (already
- * has descriptions) unioned with any settlement_buildings.settlement values not already
- * covered. Called once from server/index.js's startup, not from connection.js -- this is a
- * data concern, not a schema-shape one, and tests build their own settlement data directly. */
-export async function ensureSettlementsSeeded(db) {
-  const { c } = await db.prepare("SELECT COUNT(*) c FROM settlements").get();
+ * has descriptions) unioned with any settlement_buildings.region values not already covered.
+ * Called once from server/index.js's startup, not from connection.js -- this is a data
+ * concern, not a schema-shape one, and tests build their own region data directly. */
+export async function ensureRegionsSeeded(db) {
+  const { c } = await db.prepare("SELECT COUNT(*) c FROM regions").get();
   if (c > 0) return;
 
   const seen = new Set();
@@ -238,16 +238,16 @@ export async function ensureSettlementsSeeded(db) {
     seeds.push({ name: r.name, description: r.description ?? null });
   }
 
-  const buildingSettlements = await db.prepare("SELECT DISTINCT settlement FROM settlement_buildings").all();
-  for (const { settlement } of buildingSettlements) {
-    if (seen.has(settlement)) continue;
-    seen.add(settlement);
-    seeds.push({ name: settlement, description: null });
+  const buildingRegions = await db.prepare("SELECT DISTINCT region FROM settlement_buildings").all();
+  for (const { region } of buildingRegions) {
+    if (seen.has(region)) continue;
+    seen.add(region);
+    seeds.push({ name: region, description: null });
   }
 
   if (seeds.length === 0) return;
 
-  const insert = db.prepare("INSERT INTO settlements (name, description) VALUES (?, ?)");
+  const insert = db.prepare("INSERT INTO regions (name, description) VALUES (?, ?)");
   for (const s of seeds) {
     await insert.run(s.name, s.description);
   }
@@ -258,18 +258,18 @@ export async function ensureSettlementsSeeded(db) {
  * (docs/adr/0011), dropping the counties/settlements layers that document also carried --
  * a county's name/seat has no home in the new shape, and per-county settlement lists were
  * already retired in docs/adr/0010. Called once from server/index.js's startup, same as
- * ensureSettlementsSeeded -- tests build their own kingdom data directly. */
-/** Shared by ensureKingdomsSeeded and migrateKingdomPlacesToSettlements (ADR-0012): creates
- * a Settlement named after each place, claimed by `kingdomName`, skipping any name that's
- * already a settlement (dedup, so re-running never creates duplicates). `type` becomes the
- * settlement's starting description -- there's nowhere else for it to go, and the DM can
- * refine it from Settlements' "Manage settlements" afterward. */
-async function seedSettlementsFromPlaces(db, kingdomName, places) {
+ * ensureRegionsSeeded -- tests build their own kingdom data directly. */
+/** Shared by ensureKingdomsSeeded and migrateKingdomPlacesToRegions (ADR-0012): creates a
+ * Region named after each place, claimed by `kingdomName`, skipping any name that's already
+ * a region (dedup, so re-running never creates duplicates). `type` becomes the region's
+ * starting description -- there's nowhere else for it to go, and the DM can refine it from
+ * Settlements' "Manage regions" afterward. */
+async function seedRegionsFromPlaces(db, kingdomName, places) {
   for (const p of places) {
     if (!p?.name) continue;
-    const existing = await db.prepare("SELECT id FROM settlements WHERE name = ?").get(p.name);
+    const existing = await db.prepare("SELECT id FROM regions WHERE name = ?").get(p.name);
     if (existing) continue;
-    await db.prepare("INSERT INTO settlements (name, description, kingdom) VALUES (?, ?, ?)")
+    await db.prepare("INSERT INTO regions (name, description, kingdom) VALUES (?, ?, ?)")
       .run(p.name, p.type ?? null, kingdomName);
   }
 }
@@ -285,7 +285,7 @@ export async function ensureKingdomsSeeded(db) {
   const insert = db.prepare("INSERT INTO kingdoms (name, capital, note) VALUES (?, ?, ?)");
   for (const k of oldKingdoms) {
     await insert.run(k.name, k.capital ?? null, k.note ?? null);
-    await seedSettlementsFromPlaces(db, k.name, k.other ?? []);
+    await seedRegionsFromPlaces(db, k.name, k.other ?? []);
   }
 }
 
@@ -294,13 +294,13 @@ export async function ensureKingdomsSeeded(db) {
  * that schema.sql no longer creates. Not gated on a row count like the ensure* seeds --
  * "does this column still exist" is itself the gate, so it's a safe no-op forever after the
  * one database that needed it (this project's, local and production) has run it once. */
-export async function migrateKingdomPlacesToSettlements(db) {
+export async function migrateKingdomPlacesToRegions(db) {
   const info = await db.prepare("PRAGMA table_info(kingdoms)").all();
   if (!info.some((col) => col.name === "places")) return;
 
   const rows = await db.prepare("SELECT name, places FROM kingdoms").all();
   for (const row of rows) {
-    await seedSettlementsFromPlaces(db, row.name, JSON.parse(row.places || "[]"));
+    await seedRegionsFromPlaces(db, row.name, JSON.parse(row.places || "[]"));
   }
 }
 
@@ -310,5 +310,5 @@ export const REFERENCE_RESOURCES = {
   introduction: { read: readIntroduction, write: replaceIntroduction },
   resourceDefinitions: { read: readResourceDefinitions, write: replaceResourceDefinitions },
   calendarStructure: { read: readCalendarStructure, write: replaceCalendarStructure },
-  settlements: { read: readSettlementCatalog, write: replaceSettlementCatalog },
+  regions: { read: readRegions, write: replaceRegions },
 };

@@ -16,7 +16,7 @@ function changesSummary(changes) {
 // date) over the generic type name -- the note is still available as this element's title
 // tooltip, and DMRuling (which never carries payload.changes) falls back to it here too.
 function summarizeEvent(event) {
-  const { type, payload, settlement, note } = event;
+  const { type, payload, region, note } = event;
   switch (type) {
     case "ResourceChanged": {
       const changes = changesSummary(payload?.changes);
@@ -27,11 +27,11 @@ function summarizeEvent(event) {
       return changes || note || "Resource change";
     }
     case "BuildingConstructed":
-      return `Built ${payload?.displayName || payload?.building}${settlement ? ` in ${settlement}` : ""}`;
+      return `Built ${payload?.displayName || payload?.building}${region ? ` in ${region}` : ""}`;
     case "BuildingRemoved":
-      return `Removed ${payload?.building}${settlement ? ` from ${settlement}` : ""}`;
+      return `Removed ${payload?.building}${region ? ` from ${region}` : ""}`;
     case "BuildingAmended":
-      return `Edited ${payload?.building}${settlement ? ` in ${settlement}` : ""}`;
+      return `Edited ${payload?.building}${region ? ` in ${region}` : ""}`;
     case "CalendarAdvanced":
       return `Advanced to ${event.gameDate}`;
     case "DeityAmended":

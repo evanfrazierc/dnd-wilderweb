@@ -31,7 +31,7 @@ const VALID_PAYLOADS = {
     daysPerMonth: 30,
     months: [{ number: 1, name: "Firstmonth", season: "Spring", holidays: [] }],
   },
-  settlements: [{ name: "Stirling Reach", description: "The party's settlement.", kingdom: "Kingdom of Casdenia" }],
+  regions: [{ name: "Stirling Reach", description: "The party's settlement.", kingdom: "Kingdom of Casdenia" }],
 };
 
 test("GET /api/reference/:resource 404s for an unknown resource", async () => {

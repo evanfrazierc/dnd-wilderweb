@@ -118,8 +118,8 @@ function BuildingCatalogEditor({ catalog, onSaved }) {
 }
 
 // Collapsed to a single "+ Add building" affordance until clicked -- with up to 9
-// settlements each rendering a full 5-field form, having them all permanently open meant
-// a DM saw dozens of live fields at once just to add one building to one settlement
+// regions each rendering a full 5-field form, having them all permanently open meant
+// a DM saw dozens of live fields at once just to add one building to one region
 // (critique: /impeccable critique, 2026-09-07). Mirrors the collapsed-by-default
 // pattern EditBuildingControl/RemoveBuildingControl already use for the same reason.
 function AddBuildingForm({ buildingCatalog, onAdd, postToDiscord, setPostToDiscord }) {
@@ -227,7 +227,7 @@ function AddBuildingForm({ buildingCatalog, onAdd, postToDiscord, setPostToDisco
 // Its own useEventSubmit (and so its own postToDiscord decision) rather than sharing the
 // page-level one used for adding buildings -- removal is a separate save action and the DM
 // should be able to decide on it independently.
-function RemoveBuildingControl({ settlementName, building, label, onRemoved }) {
+function RemoveBuildingControl({ regionName, building, label, onRemoved }) {
   const [confirming, setConfirming] = useState(false);
   const [gameDate, setGameDate] = useState(null);
   const { submit, status, warnings, postToDiscord, setPostToDiscord } = useEventSubmit(() => {
@@ -241,7 +241,7 @@ function RemoveBuildingControl({ settlementName, building, label, onRemoved }) {
     submit({
       type: "BuildingRemoved",
       gameDate: formatGameDate(gameDate),
-      settlement: settlementName,
+      region: regionName,
       note: "Removed via the Settlements view",
       payload: { building, count: 1 },
     });
@@ -271,20 +271,20 @@ function RemoveBuildingControl({ settlementName, building, label, onRemoved }) {
   );
 }
 
-function toSettlementRow(s) {
-  return { id: s.id, name: s.name || "", description: s.description || "", kingdom: s.kingdom || "" };
+function toRegionRow(r) {
+  return { id: r.id, name: r.name || "", description: r.description || "", kingdom: r.kingdom || "" };
 }
-function fromSettlementRow(s) {
-  return { id: s.id, name: s.name.trim(), description: s.description.trim() || null, kingdom: s.kingdom || null };
+function fromRegionRow(r) {
+  return { id: r.id, name: r.name.trim(), description: r.description.trim() || null, kingdom: r.kingdom || null };
 }
 
 // Reference data (CONTEXT.md, ADR-0008): edited directly, no event history. Renaming
-// cascades server-side to every building currently in that settlement; removing one is
-// refused while it still has buildings. `kingdom` (ADR-0010) is an optional link to a Codex
-// Locations kingdom by name -- unclaimed frontier stays unassigned.
-function SettlementCatalogEditor({ settlementCatalog, kingdomNames, onSaved }) {
-  const { draft, dirty, set, addItem, removeItem } = useDraft(settlementCatalog.map(toSettlementRow));
-  const { save, status } = useReferenceSave("settlements", onSaved);
+// cascades server-side to every building currently in that region; removing one is refused
+// while it still has buildings. `kingdom` (ADR-0010) is an optional link to a Codex Locations
+// kingdom by name -- unclaimed frontier stays unassigned.
+function RegionsEditor({ regions, kingdomNames, onSaved }) {
+  const { draft, dirty, set, addItem, removeItem } = useDraft(regions.map(toRegionRow));
+  const { save, status } = useReferenceSave("regions", onSaved);
 
   function field(i, key, value) {
     set([i], { ...draft[i], [key]: value });
@@ -298,8 +298,8 @@ function SettlementCatalogEditor({ settlementCatalog, kingdomNames, onSaved }) {
     removeItem([], i);
   }
 
-  function saveSettlements() {
-    save(draft.filter((r) => r.name.trim()).map(fromSettlementRow));
+  function saveRegions() {
+    save(draft.filter((r) => r.name.trim()).map(fromRegionRow));
   }
 
   return (
@@ -308,10 +308,10 @@ function SettlementCatalogEditor({ settlementCatalog, kingdomNames, onSaved }) {
         <span className="icon-badge">
           <Icon name="MapPin" size={17} />
         </span>
-        <h3>Manage settlements</h3>
+        <h3>Manage regions</h3>
       </div>
       <p className="text-faint" style={{ fontSize: "0.8rem" }}>
-        Renaming a settlement updates every building currently built there. Removing one is
+        Renaming a region updates every building currently built there. Removing one is
         refused while it still has buildings -- move or remove them first.
       </p>
       {draft.map((r, i) => (
@@ -333,11 +333,11 @@ function SettlementCatalogEditor({ settlementCatalog, kingdomNames, onSaved }) {
       <div style={{ marginTop: "0.75rem", display: "flex", gap: "0.5rem", alignItems: "center" }}>
         <button className="btn btn-sm" onClick={addRow}>
           <Icon name="Plus" size={14} />
-          Add settlement
+          Add region
         </button>
         {dirty && (
           <>
-            <button className="btn btn-primary" onClick={saveSettlements}>Save settlements</button>
+            <button className="btn btn-primary" onClick={saveRegions}>Save regions</button>
             {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
           </>
         )}
@@ -346,17 +346,17 @@ function SettlementCatalogEditor({ settlementCatalog, kingdomNames, onSaved }) {
   );
 }
 
-// Edit an already-built building's display name/detail, or move it to another settlement.
+// Edit an already-built building's display name/detail, or move it to another region.
 // Its own useEventSubmit, same as RemoveBuildingControl -- kept as a separate control since
 // editing/moving is non-destructive and Remove is deliberately kept distinct. No Discord
 // option here (unlike most save actions): renaming/moving a building is correcting or
 // tidying existing data, not something new happening in the campaign, so postToDiscord is
 // forced off rather than left to the DM's per-save choice.
-function EditBuildingControl({ settlementName, building, label, settlementCatalog, onChanged }) {
+function EditBuildingControl({ regionName, building, label, regions, onChanged }) {
   const [expanded, setExpanded] = useState(false);
   const [displayName, setDisplayName] = useState(building.displayName || "");
   const [detail, setDetail] = useState(building.detail || "");
-  const [targetSettlement, setTargetSettlement] = useState(settlementName);
+  const [targetRegion, setTargetRegion] = useState(regionName);
   const [gameDate, setGameDate] = useState(null);
   const { submit, status, warnings } = useEventSubmit(() => {
     setExpanded(false);
@@ -364,7 +364,7 @@ function EditBuildingControl({ settlementName, building, label, settlementCatalo
     onChanged();
   });
 
-  const moving = targetSettlement !== settlementName;
+  const moving = targetRegion !== regionName;
   const nameChanged = displayName.trim() !== (building.displayName || "");
   const detailChanged = detail.trim() !== (building.detail || "");
   const dirty = moving || nameChanged || detailChanged;
@@ -373,23 +373,23 @@ function EditBuildingControl({ settlementName, building, label, settlementCatalo
     if (!isCompleteGameDate(gameDate)) return;
     const formattedDate = formatGameDate(gameDate);
     if (moving) {
-      // A move is a BuildingRemoved from the old settlement immediately followed by a
+      // A move is a BuildingRemoved from the old region immediately followed by a
       // BuildingConstructed in the new one, carrying displayName/detail across -- preserves
       // full history with the existing event types rather than a third "moved" type
       // (CONTEXT.md's BuildingAmended entry / ADR-0004's precedent).
       await submit({
         type: "BuildingRemoved",
         gameDate: formattedDate,
-        settlement: settlementName,
-        note: `Moved to ${targetSettlement}`,
+        region: regionName,
+        note: `Moved to ${targetRegion}`,
         payload: { building: building.name, count: building.count },
         postToDiscord: false,
       });
       await submit({
         type: "BuildingConstructed",
         gameDate: formattedDate,
-        settlement: targetSettlement,
-        note: `Moved from ${settlementName}`,
+        region: targetRegion,
+        note: `Moved from ${regionName}`,
         payload: {
           building: building.name,
           displayName: displayName.trim() || undefined,
@@ -405,7 +405,7 @@ function EditBuildingControl({ settlementName, building, label, settlementCatalo
       await submit({
         type: "BuildingAmended",
         gameDate: formattedDate,
-        settlement: settlementName,
+        region: regionName,
         note: "Edited via the Settlements view",
         payload: { building: building.name, changes },
         postToDiscord: false,
@@ -435,9 +435,9 @@ function EditBuildingControl({ settlementName, building, label, settlementCatalo
         placeholder="Detail"
         style={{ flex: "1 1 8rem", fontSize: "0.8rem" }}
       />
-      <select value={targetSettlement} onChange={(e) => setTargetSettlement(e.target.value)} style={{ fontSize: "0.8rem" }}>
-        {settlementCatalog.map((s) => (
-          <option key={s.name} value={s.name}>{s.name}</option>
+      <select value={targetRegion} onChange={(e) => setTargetRegion(e.target.value)} style={{ fontSize: "0.8rem" }}>
+        {regions.map((r) => (
+          <option key={r.name} value={r.name}>{r.name}</option>
         ))}
       </select>
       {dirty && <GameDatePicker value={gameDate} onChange={setGameDate} />}
@@ -454,24 +454,24 @@ function EditBuildingControl({ settlementName, building, label, settlementCatalo
 }
 
 export default function Settlements() {
-  const [buildingsBySettlement, setBuildingsBySettlement] = useState(null);
+  const [settlements, setSettlements] = useState(null);
   const [buildingCatalog, setBuildingCatalog] = useState([]);
-  const [settlementCatalog, setSettlementCatalog] = useState([]);
+  const [regions, setRegions] = useState([]);
   const [kingdomNames, setKingdomNames] = useState([]);
   const [showCatalogEditor, setShowCatalogEditor] = useState(false);
-  const [showSettlementCatalogEditor, setShowSettlementCatalogEditor] = useState(false);
+  const [showRegionsEditor, setShowRegionsEditor] = useState(false);
   const [error, setError] = useState(null);
 
   function load() {
     return Promise.all([
       getProjection("settlements"),
       getReference("buildings"),
-      getReference("settlements"),
+      getReference("regions"),
       getProjection("locations"),
-    ]).then(([s, b, settlements, locations]) => {
-      setBuildingsBySettlement(s);
+    ]).then(([s, b, r, locations]) => {
+      setSettlements(s);
       setBuildingCatalog(b);
-      setSettlementCatalog(settlements);
+      setRegions(r);
       setKingdomNames(locations.kingdoms.map((k) => k.name));
     });
   }
@@ -482,11 +482,11 @@ export default function Settlements() {
 
   const { submit, status, warnings, postToDiscord, setPostToDiscord } = useEventSubmit(load);
 
-  function addBuilding(settlementName, { building, displayName, detail, gameDate }) {
+  function addBuilding(regionName, { building, displayName, detail, gameDate }) {
     submit({
       type: "BuildingConstructed",
       gameDate,
-      settlement: settlementName,
+      region: regionName,
       note: `Constructed via the Settlements view`,
       payload: { building, displayName, detail, count: 1 },
     });
@@ -497,42 +497,40 @@ export default function Settlements() {
   }
 
   if (error) return <div className="error-box">Failed to load settlements: {error}</div>;
-  if (!buildingsBySettlement) return <div className="loading">Loading settlements…</div>;
+  if (!settlements) return <div className="loading">Loading settlements…</div>;
 
-  // One card per known settlement (ADR-0008), not just settlements that already have a
-  // building -- that's what makes adding a brand-new, currently-empty settlement possible at all.
-  const buildingsByName = new Map(buildingsBySettlement.map((s) => [s.settlement, s.buildings]));
-  const mergedSettlements = settlementCatalog.map((s) => ({
-    name: s.name,
-    kingdom: s.kingdom,
-    buildings: buildingsByName.get(s.name) ?? [],
+  // One card per known region (ADR-0008), not just regions that already have a building --
+  // that's what makes adding a brand-new, currently-empty settlement possible at all.
+  const settlementsByRegion = new Map(settlements.map((s) => [s.region, s.buildings]));
+  const mergedRegions = regions.map((r) => ({
+    region: r.name,
+    kingdom: r.kingdom,
+    buildings: settlementsByRegion.get(r.name) ?? [],
   }));
-  const totalBuildings = mergedSettlements.reduce((sum, s) => sum + s.buildings.length, 0);
+  const totalBuildings = mergedRegions.reduce((sum, r) => sum + r.buildings.length, 0);
 
   return (
     <div className="fade-in">
       <div className="page-header hero-header">
         <div>
           <span className="eyebrow">The Wilderlands</span>
-          <h2>Settlements</h2>
+          <h2>Settlements &amp; Regions</h2>
         </div>
         <div className="hero-meta">
           <span className="pill accent">
             <Icon name="Settlements" size={13} />
-            {mergedSettlements.length} settlements
+            {mergedRegions.length} regions
           </span>
           <span className="pill">{totalBuildings} buildings</span>
-          <button className="btn btn-sm" onClick={() => setShowSettlementCatalogEditor(!showSettlementCatalogEditor)}>
-            {showSettlementCatalogEditor ? "Hide" : "Manage"} settlements
+          <button className="btn btn-sm" onClick={() => setShowRegionsEditor(!showRegionsEditor)}>
+            {showRegionsEditor ? "Hide" : "Manage"} regions
           </button>
           <button className="btn btn-sm" onClick={() => setShowCatalogEditor(!showCatalogEditor)}>
             {showCatalogEditor ? "Hide" : "Manage"} building catalog
           </button>
         </div>
       </div>
-      {showSettlementCatalogEditor && (
-        <SettlementCatalogEditor settlementCatalog={settlementCatalog} kingdomNames={kingdomNames} onSaved={load} />
-      )}
+      {showRegionsEditor && <RegionsEditor regions={regions} kingdomNames={kingdomNames} onSaved={load} />}
       {showCatalogEditor && <BuildingCatalogEditor catalog={buildingCatalog} onSaved={load} />}
 
       <p className="text-dim hero-note">
@@ -547,29 +545,29 @@ export default function Settlements() {
       <WarningsList warnings={warnings} />
 
       <div className="grid grid-2" style={{ marginTop: "1.25rem" }}>
-        {mergedSettlements.map((settlement) => (
-          <div className="card settlement-card" key={settlement.name}>
-            <div className="settlement-card-head">
+        {mergedRegions.map((region) => (
+          <div className="card region-card" key={region.region}>
+            <div className="region-card-head">
               <span className="icon-badge">
                 <Icon name="MapPin" size={18} />
               </span>
               <div style={{ flex: 1 }}>
-                <h3 style={{ margin: 0 }}>{settlement.name}</h3>
+                <h3 style={{ margin: 0 }}>{region.region}</h3>
                 <span className="text-faint" style={{ fontSize: "0.76rem" }}>
-                  {settlement.kingdom || "Unclaimed"}
+                  {region.kingdom || "Unclaimed"}
                 </span>
               </div>
-              <span className="pill">{settlement.buildings.length} buildings</span>
+              <span className="pill">{region.buildings.length} buildings</span>
             </div>
 
-            {settlement.buildings.length === 0 && (
+            {region.buildings.length === 0 && (
               <div className="empty-state" style={{ padding: "1.25rem" }}>
                 No buildings recorded yet.
               </div>
             )}
 
             <div className="building-list">
-              {settlement.buildings.map((building) => {
+              {region.buildings.map((building) => {
                 const catalog = catalogEntry(building.name);
                 const category = catalog?.category || "Main Settlement";
                 const label = building.displayName || building.name;
@@ -587,14 +585,14 @@ export default function Settlements() {
                       {building.detail && <div className="text-faint building-detail">{building.detail}</div>}
                     </div>
                     <EditBuildingControl
-                      settlementName={settlement.name}
+                      regionName={region.region}
                       building={building}
                       label={label}
-                      settlementCatalog={settlementCatalog}
+                      regions={regions}
                       onChanged={load}
                     />
                     <RemoveBuildingControl
-                      settlementName={settlement.name}
+                      regionName={region.region}
                       building={building.name}
                       label={label}
                       onRemoved={load}
@@ -605,7 +603,7 @@ export default function Settlements() {
             </div>
             <AddBuildingForm
               buildingCatalog={buildingCatalog}
-              onAdd={(b) => addBuilding(settlement.name, b)}
+              onAdd={(b) => addBuilding(region.region, b)}
               postToDiscord={postToDiscord}
               setPostToDiscord={setPostToDiscord}
             />

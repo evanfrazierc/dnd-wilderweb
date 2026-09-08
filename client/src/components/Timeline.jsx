@@ -22,7 +22,7 @@ const EVENT_TYPES = [
 
 function NewEntryForm({ obligations, knownResourceNames, onAdd }) {
   const [gameDate, setGameDate] = useState(null);
-  const [settlement, setSettlement] = useState("");
+  const [region, setRegion] = useState("");
   const [note, setNote] = useState("");
   const [changesText, setChangesText] = useState("");
   const [obligationId, setObligationId] = useState("");
@@ -60,7 +60,7 @@ function NewEntryForm({ obligations, knownResourceNames, onAdd }) {
     submit({
       type: hasChanges ? "ResourceChanged" : "DMRuling",
       gameDate: formatGameDate(gameDate),
-      settlement: settlement.trim() || undefined,
+      region: region.trim() || undefined,
       note: note.trim(),
       payload: hasChanges
         ? {
@@ -81,7 +81,7 @@ function NewEntryForm({ obligations, knownResourceNames, onAdd }) {
       ...(hasChanges ? {} : { postToDiscord: false }),
     }).then(() => {
       setGameDate(null);
-      setSettlement("");
+      setRegion("");
       setNote("");
       setChangesText("");
       setObligationId("");
@@ -109,8 +109,8 @@ function NewEntryForm({ obligations, knownResourceNames, onAdd }) {
           <GameDatePicker value={gameDate} onChange={setGameDate} />
         </label>
         <label>
-          Settlement (optional)
-          <input value={settlement} onChange={(e) => setSettlement(e.target.value)} style={{ width: "100%" }} />
+          Region (optional)
+          <input value={region} onChange={(e) => setRegion(e.target.value)} style={{ width: "100%" }} />
         </label>
       </div>
       <label style={{ display: "block", marginTop: "0.6rem" }}>
@@ -204,13 +204,13 @@ export default function Timeline() {
   const [obligations, setObligations] = useState([]);
   const [knownResourceNames, setKnownResourceNames] = useState(null);
   const [typeFilter, setTypeFilter] = useState("");
-  const [settlementFilter, setSettlementFilter] = useState("");
+  const [regionFilter, setRegionFilter] = useState("");
   const [sortMode, setSortMode] = useState("gameDate"); // "gameDate" | "recent"
   const [error, setError] = useState(null);
 
   function load() {
     return Promise.all([
-      getEvents({ type: typeFilter || undefined, settlement: settlementFilter || undefined, limit: 500 }),
+      getEvents({ type: typeFilter || undefined, region: regionFilter || undefined, limit: 500 }),
       getObligations(),
     ]).then(([e, o]) => {
       setEvents(e);
@@ -221,7 +221,7 @@ export default function Timeline() {
   useEffect(() => {
     load().catch((e) => setError(e.message));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [typeFilter, settlementFilter]);
+  }, [typeFilter, regionFilter]);
 
   useEffect(() => {
     getProjection("stats")
@@ -274,9 +274,9 @@ export default function Timeline() {
             ))}
           </select>
           <input
-            value={settlementFilter}
-            onChange={(e) => setSettlementFilter(e.target.value)}
-            placeholder="Filter by settlement"
+            value={regionFilter}
+            onChange={(e) => setRegionFilter(e.target.value)}
+            placeholder="Filter by region"
             style={{ width: "12rem" }}
           />
           <select
@@ -305,7 +305,7 @@ export default function Timeline() {
                     </span>
                     <span className="pill accent">{entry.gameDate}</span>{" "}
                     <span className="pill">{entry.type}</span>{" "}
-                    {entry.settlement && <span className="pill">{entry.settlement}</span>}
+                    {entry.region && <span className="pill">{entry.region}</span>}
                     {entry.actor && <span className="pill">{entry.actor}</span>}
                   </div>
                   <span className="text-faint" style={{ fontSize: "0.78rem" }}>

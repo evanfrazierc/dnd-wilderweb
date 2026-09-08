@@ -7,7 +7,7 @@ import { createEvent, listEvents } from "./db/events.js";
 import { getProjection } from "./db/read.js";
 import { listObligations, getObligation, listSettlingEvents } from "./db/obligations.js";
 import {
-  ValidationError, REFERENCE_RESOURCES, ensureSettlementsSeeded, ensureKingdomsSeeded, migrateKingdomPlacesToSettlements,
+  ValidationError, REFERENCE_RESOURCES, ensureRegionsSeeded, ensureKingdomsSeeded, migrateKingdomPlacesToRegions,
 } from "./db/reference.js";
 import { notifyDiscord } from "./discord.js";
 
@@ -51,11 +51,11 @@ export function createApp(db) {
   app.use(express.json({ limit: "2mb" }));
 
   app.get("/api/events", async (req, res) => {
-    const { type, settlement, from, to, limit } = req.query;
+    const { type, region, from, to, limit } = req.query;
     try {
       const events = await listEvents(db, {
         type,
-        settlement,
+        region,
         from: from != null ? Number(from) : undefined,
         to: to != null ? Number(to) : undefined,
         limit: limit != null ? Number(limit) : undefined,
@@ -156,9 +156,9 @@ if (isMain) {
   const port = process.env.PORT || 4000;
   getDb()
     .then(async (db) => {
-      await ensureSettlementsSeeded(db);
+      await ensureRegionsSeeded(db);
       await ensureKingdomsSeeded(db);
-      await migrateKingdomPlacesToSettlements(db);
+      await migrateKingdomPlacesToRegions(db);
       createApp(db).listen(port, () => {
         console.log(`Wilderweb server listening on http://localhost:${port}`);
       });

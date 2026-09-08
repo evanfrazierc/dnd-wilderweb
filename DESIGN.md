@@ -117,7 +117,7 @@ everywhere else.
 - **Raised Panel** (`#171310`): the sidebar gradient top and the sticky status bar -- one step
   up from the page.
 - **Card Surface** (`#1c1712`) / **Card Surface, hover** (`#221b15`): the default surface for
-  every `.card` (stat groups, settlement cards, deity cards, timeline entries).
+  every `.card` (stat groups, region cards, deity cards, timeline entries).
 - **Inset Well** (`#131009`): recessed surfaces -- text inputs, the meter track, empty states.
 - **Parchment** (`#ecdfc0`) / **Parchment, dim** (`#d8c9a3`): not a background neutral in the
   usual sense -- reserved for (a) heading/stat-value text color on the dark surfaces, and (b) the
@@ -182,7 +182,7 @@ padding. A sticky status bar sits between the sidebar's top and the content, sho
 in-game date/season and the latest logged entry.
 
 Card grids use CSS Grid auto-fit rather than fixed column counts: `.grid-3` (`minmax(230px, 1fr)`)
-for dense stat/lore cards, `.grid-2` (`minmax(340px, 1fr)`) for heavier settlement/kingdom cards.
+for dense stat/lore cards, `.grid-2` (`minmax(340px, 1fr)`) for heavier region/kingdom cards.
 Spacing is rem-based throughout rather than a named token scale, generally stepping through
 ~0.3rem / 0.5rem / 0.75rem / 1rem / 1.25rem / 1.75rem / 2.5rem as a surface's importance grows.
 
@@ -240,7 +240,7 @@ sidebar -- a radial-gradient bronze disc, the app's one true "icon," not reused 
 
 ### Pills / Tags
 - **Style:** `--bg-elevated` background, hairline border, fully rounded, small (0.74rem) text --
-  the default "neutral fact" pill (event type, settlement name, building count).
+  the default "neutral fact" pill (event type, region name, building count).
 - **State variants:** `.accent` / `.good` / `.bad` / `.warn` recolor background+border+text as a
   matched soft/solid pair (e.g. `--good-soft` background with `--good` text) rather than a single
   solid fill -- keeps them legible against the dark base without turning into alert banners.

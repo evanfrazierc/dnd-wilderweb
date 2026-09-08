@@ -29,8 +29,8 @@ test("re-opening an already-migrated file DB does not error on the ALTER TABLE c
     const row = await second.prepare("SELECT annual_effect FROM building_catalog WHERE name = 'Farm'").get();
     assert.equal(row.annual_effect, '{"Food":1}');
 
-    const settlementsInfo = await second.prepare("PRAGMA table_info(settlements)").all();
-    assert.ok(settlementsInfo.some((c) => c.name === "kingdom"));
+    const regionsInfo = await second.prepare("PRAGMA table_info(regions)").all();
+    assert.ok(regionsInfo.some((c) => c.name === "kingdom"));
     second.close();
   } finally {
     // Windows can hold the file handle open past close() returning; best-effort cleanup so
@@ -49,10 +49,11 @@ test("re-opening an already-migrated file DB does not error on the ALTER TABLE c
 // predates the migration) to confirm ensureObligationAmendedEventType rebuilds it in place
 // without losing the existing row, and that the widened table actually accepts the new type.
 // Deliberately still uses the old `region` column name below -- this fixture represents a
-// database old enough to predate ObligationAmended, which is older than the Settlement rename
-// (docs/adr/0014) too, and ensureObligationAmendedEventType's own rebuild logic still hardcodes
-// `region` for exactly that reason (see connection.js). ensureSettlementRename runs right after
-// it and is what brings the result to `settlement`, asserted on below.
+// database old enough to predate ObligationAmended, which is older than either rename
+// (docs/adr/0014, docs/adr/0015) too, and ensureObligationAmendedEventType's own rebuild logic
+// still hardcodes `region` for exactly that reason (see connection.js). ensureRegionRename runs
+// right after it but is a no-op here (this fixture never had a `settlements` table), so the
+// column asserted on below is simply still `region`, untouched.
 test("re-opening a database with the pre-ObligationAmended events schema migrates it without losing data", async () => {
   const dir = mkdtempSync(path.join(tmpdir(), "wilderweb-test-"));
   const dbPath = path.join(dir, "test.db");
@@ -100,11 +101,11 @@ test("re-opening a database with the pre-ObligationAmended events schema migrate
       VALUES ('ObligationAmended', 'Month 1, 1225', 1, '2025-01-01', '{"obligationId":1,"changes":{}}')
     `).run();
 
-    // Indexes survived the drop-and-rename (ensureObligationAmendedEventType's rebuild), and
-    // idx_events_region was then itself renamed to idx_events_settlement by
-    // ensureSettlementRename running right after it.
+    // Indexes survived the drop-and-rename (ensureObligationAmendedEventType's rebuild);
+    // ensureRegionRename running right after it is a no-op on this fixture (never had a
+    // `settlements` table), so idx_events_region is untouched.
     const indexes = await db.prepare("SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'events'").all();
-    assert.deepEqual(indexes.map((i) => i.name).sort(), ["idx_events_game_date_sort", "idx_events_settlement", "idx_events_type"]);
+    assert.deepEqual(indexes.map((i) => i.name).sort(), ["idx_events_game_date_sort", "idx_events_region", "idx_events_type"]);
 
     db.close();
 
@@ -122,16 +123,16 @@ test("re-opening a database with the pre-ObligationAmended events schema migrate
   }
 });
 
-// ensureSettlementRename (docs/adr/0014): none of the tests above ever exercise the actual
-// migration path -- every one of them opens a brand-new database, whose events table already
-// starts with a `settlement` column (fresh from schema.sql), so the rename's `if` branch never
-// fires. This builds a genuine pre-rename database (a real `regions` table, an events row with
-// a `region` value, a settlement_buildings row keyed by the old name) to confirm the rename
-// actually completes -- this is the scenario that caught a real bug during development:
-// schema.sql's own `CREATE TABLE IF NOT EXISTS settlements` runs before this migration and
-// doesn't recognize `regions` as "already existing" (different name), so it silently created a
-// second, empty `settlements` table that collided with the rename target.
-test("ensureSettlementRename migrates a real pre-rename database (regions table, region columns) without losing data", async () => {
+// A genuine pre-ADR-0014 database (a real `regions` table that never went through the
+// Settlement rename at all) is already in ensureRegionRename's target shape -- confirms its gate
+// correctly treats this as a no-op rather than mistaking schema.sql's own bootstrap-created
+// `regions` table (created moments earlier in the same initSchema call, before this migration's
+// gate check runs) for a signal that a `settlements` table needs converting. Getting this gate
+// wrong here is exactly the bug that made ensureSettlementRename unsafe to keep calling once
+// schema.sql went back to creating `regions` (see the long comment on ensureSettlementRename in
+// connection.js) -- it would have dropped and reconstructed this real, data-holding table for no
+// reason on every single boot.
+test("ensureRegionRename is a no-op on a genuine pre-ADR-0014 database (regions table, region columns)", async () => {
   const dir = mkdtempSync(path.join(tmpdir(), "wilderweb-test-"));
   const dbPath = path.join(dir, "test.db");
   try {
@@ -180,29 +181,122 @@ test("ensureSettlementRename migrates a real pre-rename database (regions table,
 
     const db = await openDb(dbPath);
 
-    // The table itself was renamed, and the real row survived.
-    const settlements = await db.prepare("SELECT * FROM settlements").all();
-    assert.equal(settlements.length, 1);
-    assert.equal(settlements[0].name, "Old Hills");
+    // The table is untouched, still named `regions`, with the real row intact.
+    const regions = await db.prepare("SELECT * FROM regions").all();
+    assert.equal(regions.length, 1);
+    assert.equal(regions[0].name, "Old Hills");
 
-    // The old table name is gone.
-    const oldTable = await db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'regions'").get();
-    assert.equal(oldTable, undefined);
+    // No `settlements` table was ever created as an intermediate step.
+    const settlementsTable = await db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'settlements'").get();
+    assert.equal(settlementsTable, undefined);
 
-    // events.region survived as events.settlement, with its data intact.
-    const event = await db.prepare("SELECT settlement, payload FROM events WHERE type = 'BuildingConstructed'").get();
-    assert.equal(event.settlement, "Old Hills");
+    // events.region is untouched, data intact.
+    const event = await db.prepare("SELECT region, payload FROM events WHERE type = 'BuildingConstructed'").get();
+    assert.equal(event.region, "Old Hills");
     assert.deepEqual(JSON.parse(event.payload), { building: "Quarry" });
 
-    // settlement_buildings.region survived as .settlement, with its data intact.
-    const building = await db.prepare("SELECT settlement, building, count FROM settlement_buildings").get();
-    assert.deepEqual(building, { settlement: "Old Hills", building: "Quarry", count: 1 });
+    // settlement_buildings.region is untouched, data intact.
+    const building = await db.prepare("SELECT region, building, count FROM settlement_buildings").get();
+    assert.deepEqual(building, { region: "Old Hills", building: "Quarry", count: 1 });
 
     db.close();
 
     // Reopening again must not error or duplicate anything.
     const reopened = await openDb(dbPath);
-    const count = await reopened.prepare("SELECT COUNT(*) c FROM settlements").get();
+    const count = await reopened.prepare("SELECT COUNT(*) c FROM regions").get();
+    assert.equal(count.c, 1);
+    reopened.close();
+  } finally {
+    try {
+      rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 });
+    } catch {
+      // leaked temp dir under the OS temp root; not worth failing the test over.
+    }
+  }
+});
+
+// ensureRegionRename (docs/adr/0015) is what actually matters against this project's real
+// databases today: after ADR-0014 shipped, both local dev and production genuinely have a
+// `settlements` table with a `settlement` column, never having seen a `regions` table at all.
+// This builds exactly that shape (not the genuine-pre-ADR-0014 fixture above, which round-trips
+// through an intermediate rename it never really needs) to confirm ensureRegionRename converts
+// it correctly on its own -- and to guard against the same class of bug ensureSettlementRename
+// hit in the other direction: schema.sql's own `CREATE TABLE IF NOT EXISTS regions` runs before
+// this migration and doesn't recognize `settlements` as "already existing" (different name), so
+// without the DROP TABLE IF EXISTS fix it would silently create a second, empty `regions` table
+// that collides with the rename target.
+test("ensureRegionRename migrates a real post-ADR-0014 database (settlements table, settlement columns) without losing data", async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "wilderweb-test-"));
+  const dbPath = path.join(dir, "test.db");
+  try {
+    const legacy = new DatabaseSync(dbPath);
+    legacy.exec(`
+      CREATE TABLE settlements (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE,
+        description TEXT,
+        kingdom TEXT
+      );
+      CREATE TABLE events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        type TEXT NOT NULL CHECK (type IN (
+          'ResourceChanged', 'BuildingConstructed', 'BuildingRemoved', 'BuildingAmended',
+          'CalendarAdvanced', 'DeityAmended', 'LocationAmended', 'ObligationAmended', 'DMRuling'
+        )),
+        game_date_raw TEXT NOT NULL,
+        game_date_sort INTEGER NOT NULL,
+        posted_at TEXT NOT NULL,
+        actor TEXT,
+        settlement TEXT,
+        note TEXT,
+        payload TEXT NOT NULL DEFAULT '{}',
+        warnings TEXT NOT NULL DEFAULT '[]',
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+      CREATE INDEX idx_events_settlement ON events (settlement);
+      CREATE TABLE settlement_buildings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        settlement TEXT NOT NULL,
+        building TEXT NOT NULL,
+        display_name TEXT,
+        count INTEGER NOT NULL DEFAULT 1,
+        detail TEXT,
+        UNIQUE (settlement, building)
+      );
+    `);
+    legacy.prepare("INSERT INTO settlements (name, description, kingdom) VALUES ('Old Hills', 'A hill settlement.', NULL)").run();
+    legacy.prepare(`
+      INSERT INTO events (type, game_date_raw, game_date_sort, posted_at, settlement, payload)
+      VALUES ('BuildingConstructed', 'Month 1, 1225', 1, '2025-01-01', 'Old Hills', '{"building":"Quarry"}')
+    `).run();
+    legacy.prepare("INSERT INTO settlement_buildings (settlement, building, count) VALUES ('Old Hills', 'Quarry', 1)").run();
+    legacy.close();
+
+    const db = await openDb(dbPath);
+
+    // The table was renamed, and the real row survived.
+    const regions = await db.prepare("SELECT * FROM regions").all();
+    assert.equal(regions.length, 1);
+    assert.equal(regions[0].name, "Old Hills");
+
+    // The old table name is gone.
+    const oldTable = await db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'settlements'").get();
+    assert.equal(oldTable, undefined);
+
+    // events.settlement survived as events.region, with its data intact.
+    const event = await db.prepare("SELECT region, payload FROM events WHERE type = 'BuildingConstructed'").get();
+    assert.equal(event.region, "Old Hills");
+    assert.deepEqual(JSON.parse(event.payload), { building: "Quarry" });
+
+    // settlement_buildings.settlement survived as .region, with its data intact.
+    const building = await db.prepare("SELECT region, building, count FROM settlement_buildings").get();
+    assert.deepEqual(building, { region: "Old Hills", building: "Quarry", count: 1 });
+
+    db.close();
+
+    // Reopening again must not error or duplicate anything.
+    const reopened = await openDb(dbPath);
+    const count = await reopened.prepare("SELECT COUNT(*) c FROM regions").get();
     assert.equal(count.c, 1);
     reopened.close();
   } finally {

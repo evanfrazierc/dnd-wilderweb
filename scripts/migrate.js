@@ -137,7 +137,7 @@ async function importHistory(db, history, warningsSeen) {
       gameDate: entry.gameDate,
       postedAt: entry.postedAt,
       actor: entry.postedBy ?? null,
-      settlement: null,
+      region: null,
       note,
       payload: hasChanges ? { changes: entry.changes } : {},
     });
@@ -188,7 +188,7 @@ async function reconcileOpeningBalance(db, stats, warningsSeen) {
     gameDate,
     postedAt: new Date().toISOString().slice(0, 10),
     actor: "Migration",
-    settlement: null,
+    region: null,
     note: "Reconciliation adjustment: history.json's tracked deltas don't reconcile with stats.json's snapshot (an unlogged starting grant and/or transcription gaps). This one-time entry closes that gap so the database's totals match the last known-good snapshot; see .scratch/campaign-database/spec.md.",
     payload: { changes: Object.fromEntries(diffs.map((d) => [d.name, d.snapshot - d.replayed])) },
   });
@@ -197,16 +197,16 @@ async function reconcileOpeningBalance(db, stats, warningsSeen) {
 }
 
 async function importSettlements(db, settlements, warningsSeen) {
-  for (const settlement of settlements) {
-    for (const b of settlement.buildings) {
+  for (const region of settlements) {
+    for (const b of region.buildings) {
       const alias = BUILDING_ALIASES[b.name];
       const result = await createEvent(db, {
         type: "BuildingConstructed",
-        gameDate: settlement.asOf,
-        postedAt: settlement.asOf,
+        gameDate: region.asOf,
+        postedAt: region.asOf,
         actor: "Migration",
-        settlement: settlement.settlement,
-        note: `Imported from settlements.json (as of ${settlement.asOf})`,
+        region: region.region,
+        note: `Imported from settlements.json (as of ${region.asOf})`,
         payload: {
           building: alias ? alias.building : b.name,
           displayName: alias ? alias.displayName : null,
@@ -214,8 +214,8 @@ async function importSettlements(db, settlements, warningsSeen) {
           detail: b.detail,
         },
       });
-      if (!result.ok) throw new Error(`settlements.json ${settlement.settlement}/${b.name}: ${result.errors.join("; ")}`);
-      if (result.warnings.length) warningsSeen.push({ source: `settlements#${settlement.settlement}/${b.name}`, warnings: result.warnings });
+      if (!result.ok) throw new Error(`settlements.json ${region.region}/${b.name}: ${result.errors.join("; ")}`);
+      if (result.warnings.length) warningsSeen.push({ source: `settlements#${region.region}/${b.name}`, warnings: result.warnings });
     }
   }
 }
@@ -227,7 +227,7 @@ async function importCalendar(db, calendar, warningsSeen) {
     gameDate: `Month ${d.month}, ${d.day}th, ${d.year}`,
     postedAt: new Date().toISOString().slice(0, 10),
     actor: "Migration",
-    settlement: null,
+    region: null,
     note: "Imported from calendar.json",
     payload: { year: d.year, yearLabel: d.yearLabel, month: d.month, day: d.day, note: d.note },
   });
@@ -246,7 +246,7 @@ async function importDeities(db, deities, warningsSeen) {
       gameDate: CAMPAIGN_START_GAME_DATE,
       postedAt: new Date().toISOString().slice(0, 10),
       actor: "Migration",
-      settlement: null,
+      region: null,
       note: "Imported from deities.json",
       payload: { name: deity.name, changes: { title: deity.title, alignment: deity.alignment, confirmed: deity.confirmed, note: deity.note } },
     });
@@ -261,7 +261,7 @@ async function importLocations(db, locations, warningsSeen) {
     gameDate: CAMPAIGN_START_GAME_DATE,
     postedAt: new Date().toISOString().slice(0, 10),
     actor: "Migration",
-    settlement: null,
+    region: null,
     note: "Imported from locations.json",
     payload: { data: locations },
   });

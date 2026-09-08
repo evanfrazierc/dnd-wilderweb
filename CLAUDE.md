@@ -87,7 +87,7 @@ validation warns instead of blocking, why there's no auth yet, etc.
 No JSON files are read or written at request time. Routes: `GET`/`POST /api/events`,
 `GET /api/projections/:resource` (`stats`, `settlements`, `calendar`, `deities`, `locations` —
 current state, shaped to match the old `data/*.json` files), `GET`/`PUT /api/reference/:resource`
-(`buildings`, `introduction`, `resourceDefinitions`, `calendarStructure`, `settlements` — directly
+(`buildings`, `introduction`, `resourceDefinitions`, `calendarStructure`, `regions` — directly
 writable, no event history, dispatched through `server/db/reference.js`'s `REFERENCE_RESOURCES`
 table), `GET /api/obligations[/:id]`. In production, Express also serves the built client
 (`client/dist`) and falls back to `index.html` for any non-`/api` route (SPA routing).
@@ -124,7 +124,7 @@ through `getProjection`/`getReference`/`getEvents`/`getObligations`. Per view:
   as `LocationAmended` (`payload: {name, changes}`, mirroring `DeityAmended` — ADR-0011), not the
   whole-document replace it used to be.
 - **Timeline** (replaces the old History Log): lists events newest-first, filterable by
-  type/settlement, and its "log a new entry" form covers just `ResourceChanged`/`DMRuling`
+  type/region, and its "log a new entry" form covers just `ResourceChanged`/`DMRuling`
   (auto-detected by whether resource changes were entered) — the other six event types go
   through their own view's form.
 
