@@ -460,7 +460,7 @@
   {
     "id": 50,
     "type": "ResourceChanged",
-    "gameDate": "Month 1, 15th, 1225",
+    "gameDate": "Pelorune (1), 15th, 1225",
     "gameDateSort": 441014,
     "postedAt": "2026-08-29",
     "actor": "Migration",
@@ -487,7 +487,7 @@
   {
     "id": 1,
     "type": "ResourceChanged",
-    "gameDate": "Pelorune (1) 16, 1225",
+    "gameDate": "Pelorune (1), 16th, 1225",
     "gameDateSort": 441015,
     "postedAt": "2025-09-14",
     "actor": null,
@@ -508,7 +508,7 @@
   {
     "id": 2,
     "type": "ResourceChanged",
-    "gameDate": "Pelorune (1) 16, 1225",
+    "gameDate": "Pelorune (1), 16th, 1225",
     "gameDateSort": 441015,
     "postedAt": "2025-09-14",
     "actor": null,
@@ -529,7 +529,7 @@
   {
     "id": 4,
     "type": "ResourceChanged",
-    "gameDate": "Erastus (2) 15, 1225",
+    "gameDate": "Erastus (2), 15th, 1225",
     "gameDateSort": 441044,
     "postedAt": "2025-11-09",
     "actor": null,
@@ -554,7 +554,7 @@
   {
     "id": 3,
     "type": "ResourceChanged",
-    "gameDate": "Erastus (2) 16, 1225",
+    "gameDate": "Erastus (2), 16th, 1225",
     "gameDateSort": 441045,
     "postedAt": "2025-09-14",
     "actor": null,
@@ -571,7 +571,7 @@
   {
     "id": 5,
     "type": "ResourceChanged",
-    "gameDate": "Month 3, 15th, 1225",
+    "gameDate": "Shelune (3), 15th, 1225",
     "gameDateSort": 441074,
     "postedAt": "2025-11-09",
     "actor": null,
@@ -590,7 +590,7 @@
   {
     "id": 6,
     "type": "ResourceChanged",
-    "gameDate": "Month 4, 15th, 1225",
+    "gameDate": "Sarenith (4), 15th, 1225",
     "gameDateSort": 441104,
     "postedAt": "2025-11-09",
     "actor": null,
@@ -609,7 +609,7 @@
   {
     "id": 7,
     "type": "ResourceChanged",
-    "gameDate": "Month 5, 16th, 1225",
+    "gameDate": "Bahamund (5), 16th, 1225",
     "gameDateSort": 441135,
     "postedAt": "2025-12-27",
     "actor": null,
@@ -628,7 +628,7 @@
   {
     "id": 8,
     "type": "ResourceChanged",
-    "gameDate": "Month 6, 1st, 1225",
+    "gameDate": "Meloron (6), 1st, 1225",
     "gameDateSort": 441150,
     "postedAt": "2025-12-27",
     "actor": "weduhman",
@@ -653,7 +653,7 @@
   {
     "id": 11,
     "type": "ResourceChanged",
-    "gameDate": "Month 6, 1225",
+    "gameDate": "Meloron (6), 1225",
     "gameDateSort": 441150,
     "postedAt": "2026-01-29",
     "actor": null,
@@ -670,7 +670,7 @@
   {
     "id": 49,
     "type": "ResourceChanged",
-    "gameDate": "Meloron (6) 16, 1225",
+    "gameDate": "Meloron (6), 16th, 1225",
     "gameDateSort": 441165,
     "postedAt": "2025-12-27",
     "actor": null,
@@ -693,7 +693,7 @@
   {
     "id": 9,
     "type": "DMRuling",
-    "gameDate": "Meloron (6) 30, 1225",
+    "gameDate": "Meloron (6), 30th, 1225",
     "gameDateSort": 441179,
     "postedAt": "2026-01-29",
     "actor": null,
@@ -706,7 +706,7 @@
   {
     "id": 10,
     "type": "ResourceChanged",
-    "gameDate": "Meloron (6) 30, 1225",
+    "gameDate": "Meloron (6), 30th, 1225",
     "gameDateSort": 441179,
     "postedAt": "2026-01-29",
     "actor": null,
@@ -757,7 +757,7 @@
   {
     "id": 13,
     "type": "ResourceChanged",
-    "gameDate": "Month 1, 1226",
+    "gameDate": "Pelorune (1), 1226",
     "gameDateSort": 441360,
     "postedAt": "2026-01-31",
     "actor": null,
@@ -774,7 +774,7 @@
   {
     "id": 14,
     "type": "ResourceChanged",
-    "gameDate": "Month 1, 1226",
+    "gameDate": "Pelorune (1), 1226",
     "gameDateSort": 441360,
     "postedAt": "2026-01-31",
     "actor": null,
@@ -795,7 +795,7 @@
   {
     "id": 16,
     "type": "ResourceChanged",
-    "gameDate": "Month 1, 1226",
+    "gameDate": "Pelorune (1), 1226",
     "gameDateSort": 441360,
     "postedAt": "2026-01-31",
     "actor": null,
@@ -816,7 +816,7 @@
   {
     "id": 19,
     "type": "ResourceChanged",
-    "gameDate": "Month 1, 1226",
+    "gameDate": "Pelorune (1), 1226",
     "gameDateSort": 441360,
     "postedAt": "2026-02-28",
     "actor": null,
@@ -899,7 +899,7 @@
   {
     "id": 15,
     "type": "ResourceChanged",
-    "gameDate": "Month 2, 1226",
+    "gameDate": "Erastus (2), 1226",
     "gameDateSort": 441390,
     "postedAt": "2026-01-31",
     "actor": null,
@@ -918,7 +918,7 @@
   {
     "id": 17,
     "type": "ResourceChanged",
-    "gameDate": "Month 2, 1226",
+    "gameDate": "Erastus (2), 1226",
     "gameDateSort": 441390,
     "postedAt": "2026-02-28",
     "actor": null,
@@ -938,7 +938,7 @@
   {
     "id": 18,
     "type": "ResourceChanged",
-    "gameDate": "Month 2, 1226",
+    "gameDate": "Erastus (2), 1226",
     "gameDateSort": 441390,
     "postedAt": "2026-02-28",
     "actor": null,
@@ -957,7 +957,7 @@
   {
     "id": 20,
     "type": "ResourceChanged",
-    "gameDate": "Month 2, 1226",
+    "gameDate": "Erastus (2), 1226",
     "gameDateSort": 441390,
     "postedAt": "2026-02-28",
     "actor": null,
@@ -976,7 +976,7 @@
   {
     "id": 21,
     "type": "ResourceChanged",
-    "gameDate": "Month 3, 1226",
+    "gameDate": "Shelune (3), 1226",
     "gameDateSort": 441420,
     "postedAt": "2026-04-18",
     "actor": null,
@@ -996,7 +996,7 @@
   {
     "id": 22,
     "type": "ResourceChanged",
-    "gameDate": "Month 3, 1226",
+    "gameDate": "Shelune (3), 1226",
     "gameDateSort": 441420,
     "postedAt": "2026-04-18",
     "actor": null,
@@ -1014,7 +1014,7 @@
   {
     "id": 23,
     "type": "ResourceChanged",
-    "gameDate": "Month 3, 1226",
+    "gameDate": "Shelune (3), 1226",
     "gameDateSort": 441420,
     "postedAt": "2026-04-18",
     "actor": null,
@@ -1031,7 +1031,7 @@
   {
     "id": 24,
     "type": "ResourceChanged",
-    "gameDate": "Month 3, 1226",
+    "gameDate": "Shelune (3), 1226",
     "gameDateSort": 441420,
     "postedAt": "2026-04-18",
     "actor": null,
@@ -1054,7 +1054,7 @@
   {
     "id": 25,
     "type": "ResourceChanged",
-    "gameDate": "Month 4, 1226",
+    "gameDate": "Sarenith (4), 1226",
     "gameDateSort": 441450,
     "postedAt": "2026-04-18",
     "actor": null,
@@ -1072,7 +1072,7 @@
   {
     "id": 26,
     "type": "ResourceChanged",
-    "gameDate": "Month 4, 1226",
+    "gameDate": "Sarenith (4), 1226",
     "gameDateSort": 441450,
     "postedAt": "2026-04-18",
     "actor": null,
@@ -1091,7 +1091,7 @@
   {
     "id": 27,
     "type": "ResourceChanged",
-    "gameDate": "Month 5, 1226",
+    "gameDate": "Bahamund (5), 1226",
     "gameDateSort": 441480,
     "postedAt": "2026-04-18",
     "actor": null,
@@ -1110,7 +1110,7 @@
   {
     "id": 28,
     "type": "ResourceChanged",
-    "gameDate": "Month 5, 1226",
+    "gameDate": "Bahamund (5), 1226",
     "gameDateSort": 441480,
     "postedAt": "2026-05-31",
     "actor": null,
@@ -1129,7 +1129,7 @@
   {
     "id": 29,
     "type": "ResourceChanged",
-    "gameDate": "Month 5, 1226",
+    "gameDate": "Bahamund (5), 1226",
     "gameDateSort": 441480,
     "postedAt": "2026-05-31",
     "actor": null,
@@ -1146,7 +1146,7 @@
   {
     "id": 31,
     "type": "ResourceChanged",
-    "gameDate": "Month 5, 1226",
+    "gameDate": "Bahamund (5), 1226",
     "gameDateSort": 441480,
     "postedAt": "2026-06-28",
     "actor": null,
@@ -1165,7 +1165,7 @@
   {
     "id": 30,
     "type": "ResourceChanged",
-    "gameDate": "Month 6, 1226",
+    "gameDate": "Meloron (6), 1226",
     "gameDateSort": 441510,
     "postedAt": "2026-05-31",
     "actor": null,
@@ -1184,7 +1184,7 @@
   {
     "id": 32,
     "type": "ResourceChanged",
-    "gameDate": "Month 6, 1226",
+    "gameDate": "Meloron (6), 1226",
     "gameDateSort": 441510,
     "postedAt": "2026-06-28",
     "actor": null,
@@ -1228,7 +1228,7 @@
   {
     "id": 38,
     "type": "ResourceChanged",
-    "gameDate": "Month 12, 1226",
+    "gameDate": "Desnus (12), 1226",
     "gameDateSort": 441690,
     "postedAt": "2026-07-24",
     "actor": null,
@@ -1248,7 +1248,7 @@
   {
     "id": 39,
     "type": "ResourceChanged",
-    "gameDate": "Month 12, 1226",
+    "gameDate": "Desnus (12), 1226",
     "gameDateSort": 441690,
     "postedAt": "2026-07-24",
     "actor": null,
@@ -1269,7 +1269,7 @@
   {
     "id": 42,
     "type": "ResourceChanged",
-    "gameDate": "Month 12, 1226",
+    "gameDate": "Desnus (12), 1226",
     "gameDateSort": 441690,
     "postedAt": "2026-07-24",
     "actor": null,
@@ -1316,7 +1316,7 @@
   {
     "id": 40,
     "type": "ResourceChanged",
-    "gameDate": "Month 1, 1227",
+    "gameDate": "Pelorune (1), 1227",
     "gameDateSort": 441720,
     "postedAt": "2026-07-24",
     "actor": null,
@@ -1333,7 +1333,7 @@
   {
     "id": 41,
     "type": "ResourceChanged",
-    "gameDate": "Month 1, 1227",
+    "gameDate": "Pelorune (1), 1227",
     "gameDateSort": 441720,
     "postedAt": "2026-07-24",
     "actor": null,
@@ -1354,7 +1354,7 @@
   {
     "id": 43,
     "type": "ResourceChanged",
-    "gameDate": "Month 2, 1227",
+    "gameDate": "Erastus (2), 1227",
     "gameDateSort": 441750,
     "postedAt": "2026-07-24",
     "actor": null,
@@ -1374,7 +1374,7 @@
   {
     "id": 44,
     "type": "ResourceChanged",
-    "gameDate": "Month 2, 1227",
+    "gameDate": "Erastus (2), 1227",
     "gameDateSort": 441750,
     "postedAt": "2026-08-23",
     "actor": null,
@@ -1392,7 +1392,7 @@
   {
     "id": 45,
     "type": "ResourceChanged",
-    "gameDate": "Month 2, 1227",
+    "gameDate": "Erastus (2), 1227",
     "gameDateSort": 441750,
     "postedAt": "2026-08-23",
     "actor": null,
@@ -1410,256 +1410,10 @@
     "createdAt": "2026-08-29 22:55:02"
   },
   {
-    "id": 79,
-    "type": "CalendarAdvanced",
-    "gameDate": "Month 2, 3th, 1227",
-    "gameDateSort": 441752,
-    "postedAt": "2026-08-29",
-    "actor": "Migration",
-    "region": null,
-    "note": "Imported from calendar.json",
-    "payload": {
-      "year": 1227,
-      "yearLabel": "YEAR THREE",
-      "month": 2,
-      "day": 3,
-      "note": "Marked in the calendar channel as \"You are here\""
-    },
-    "warnings": [],
-    "createdAt": "2026-08-29 22:55:02"
-  },
-  {
-    "id": 102,
-    "type": "CalendarAdvanced",
-    "gameDate": "Month 2, 4th, 1227",
-    "gameDateSort": 441753,
-    "postedAt": "2026-08-29",
-    "actor": null,
-    "region": null,
-    "note": "Browser automation smoke test",
-    "payload": {
-      "year": 1227,
-      "month": 2,
-      "day": 4,
-      "yearLabel": "YEAR THREE",
-      "note": "Marked in the calendar channel as \"You are here\""
-    },
-    "warnings": [],
-    "createdAt": "2026-08-29 23:05:49"
-  },
-  {
-    "id": 104,
-    "type": "CalendarAdvanced",
-    "gameDate": "Month 2, 4th, 1227",
-    "gameDateSort": 441753,
-    "postedAt": "2026-09-07",
-    "actor": null,
-    "region": null,
-    "note": "UX review test entry",
-    "payload": {
-      "year": 1227,
-      "month": 2,
-      "day": 4,
-      "yearLabel": "YEAR THREE",
-      "note": "Marked in the calendar channel as \"You are here\""
-    },
-    "warnings": [
-      "Calendar date is not moving forward (was year 1227 month 2 day 4)"
-    ],
-    "createdAt": "2026-09-07 12:57:47"
-  },
-  {
-    "id": 105,
-    "type": "LocationAmended",
-    "gameDate": "Month 2, 4th, 1227",
-    "gameDateSort": 441753,
-    "postedAt": "2026-09-07",
-    "actor": null,
-    "region": null,
-    "note": "UX review test entry - safe to ignore",
-    "payload": {
-      "data": {
-        "kingdoms": [
-          {
-            "name": "Kingdom of Casdenia",
-            "capital": "Royal City of Casdenor",
-            "counties": [
-              {
-                "name": "County of Arnestal",
-                "seat": "City of Arnestal"
-              }
-            ],
-            "other": [
-              {
-                "name": "Olen's Rest",
-                "type": "Landmark"
-              }
-            ]
-          },
-          {
-            "name": "Kingdom of Ravenstone",
-            "capital": "City of Ravenstone",
-            "counties": [],
-            "other": []
-          },
-          {
-            "name": "Kingdom of Galderoy",
-            "capital": null,
-            "counties": [],
-            "other": [],
-            "note": "No locations posted yet."
-          },
-          {
-            "name": "Kingdom of Tremund",
-            "capital": null,
-            "counties": [],
-            "other": [],
-            "note": "No locations posted yet."
-          },
-          {
-            "name": "Test Kingdom UX Review",
-            "capital": null,
-            "counties": [],
-            "other": []
-          }
-        ]
-      }
-    },
-    "warnings": [],
-    "createdAt": "2026-09-07 13:03:18"
-  },
-  {
-    "id": 106,
-    "type": "CalendarAdvanced",
-    "gameDate": "Month 2, 9th, 1227",
-    "gameDateSort": 441758,
-    "postedAt": "2026-09-07",
-    "actor": null,
-    "region": null,
-    "note": "UX verification test",
-    "payload": {
-      "year": 1227,
-      "month": 2,
-      "day": 9,
-      "yearLabel": "YEAR THREE",
-      "note": "Marked in the calendar channel as \"You are here\""
-    },
-    "warnings": [],
-    "createdAt": "2026-09-07 13:27:50"
-  },
-  {
-    "id": 107,
-    "type": "LocationAmended",
-    "gameDate": "Month 2, 9th, 1227",
-    "gameDateSort": 441758,
-    "postedAt": "2026-09-07",
-    "actor": null,
-    "region": null,
-    "note": "Amended via the Codex",
-    "payload": {
-      "name": "Kingdom of Casdenia",
-      "changes": {
-        "note": "Long-time ally of Stirling Reach; sends grain during lean winters."
-      }
-    },
-    "warnings": [],
-    "createdAt": "2026-09-07 14:08:41"
-  },
-  {
-    "id": 108,
-    "type": "LocationAmended",
-    "gameDate": "Month 2, 9th, 1227",
-    "gameDateSort": 441758,
-    "postedAt": "2026-09-07",
-    "actor": null,
-    "region": null,
-    "note": "Amended via the Codex",
-    "payload": {
-      "name": "Kingdom of Casdenia",
-      "changes": {
-        "capital": "City of Ravenstone Keep"
-      }
-    },
-    "warnings": [],
-    "createdAt": "2026-09-07 14:12:02"
-  },
-  {
-    "id": 109,
-    "type": "LocationAmended",
-    "gameDate": "Month 2, 9th, 1227",
-    "gameDateSort": 441758,
-    "postedAt": "2026-09-07",
-    "actor": null,
-    "region": null,
-    "note": "Amended via the Codex",
-    "payload": {
-      "name": "Kingdom of Casdenia",
-      "changes": {
-        "capital": "Royal City of Casdenor"
-      }
-    },
-    "warnings": [],
-    "createdAt": "2026-09-07 14:13:19"
-  },
-  {
-    "id": 110,
-    "type": "DeityAmended",
-    "gameDate": "Month 2, 9th, 1227",
-    "gameDateSort": 441758,
-    "postedAt": "2026-09-07",
-    "actor": null,
-    "region": null,
-    "note": "Amended via the Codex",
-    "payload": {
-      "name": "Abadar",
-      "changes": {
-        "title": "Father of Wealth and Order (test)"
-      }
-    },
-    "warnings": [],
-    "createdAt": "2026-09-07 14:21:14"
-  },
-  {
-    "id": 111,
-    "type": "DeityAmended",
-    "gameDate": "Month 2, 9th, 1227",
-    "gameDateSort": 441758,
-    "postedAt": "2026-09-07",
-    "actor": null,
-    "region": null,
-    "note": "Amended via the Codex",
-    "payload": {
-      "name": "Abadar",
-      "changes": {
-        "title": "Father of Wealth and Order"
-      }
-    },
-    "warnings": [],
-    "createdAt": "2026-09-07 14:21:42"
-  },
-  {
-    "id": 112,
-    "type": "ObligationAmended",
-    "gameDate": "Month 2, 9th, 1227",
-    "gameDateSort": 441758,
-    "postedAt": "2026-09-07",
-    "actor": null,
-    "region": null,
-    "note": "Amended via the Dashboard",
-    "payload": {
-      "obligationId": 1,
-      "changes": {
-        "description": "Resource loan, repayable in Wealth"
-      }
-    },
-    "warnings": [],
-    "createdAt": "2026-09-07 15:59:44"
-  },
-  {
     "id": 46,
     "type": "ResourceChanged",
-    "gameDate": "Month 3, 1227",
-    "gameDateSort": 441780,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2026-08-23",
     "actor": null,
     "region": null,
@@ -1678,8 +1432,8 @@
   {
     "id": 47,
     "type": "ResourceChanged",
-    "gameDate": "Month 3, 1227",
-    "gameDateSort": 441780,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2026-08-23",
     "actor": null,
     "region": null,
@@ -1699,8 +1453,8 @@
   {
     "id": 48,
     "type": "ResourceChanged",
-    "gameDate": "Month 3, 1227",
-    "gameDateSort": 441780,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2026-08-23",
     "actor": null,
     "region": null,
@@ -1718,74 +1472,10 @@
     "createdAt": "2026-08-29 22:55:02"
   },
   {
-    "id": 99,
-    "type": "DMRuling",
-    "gameDate": "Month 4, 1227",
-    "gameDateSort": 441810,
-    "postedAt": "2026-08-29",
-    "actor": null,
-    "region": null,
-    "note": "Browser automation smoke test: DM clarification note, no resource changes.",
-    "payload": {},
-    "warnings": [],
-    "createdAt": "2026-08-29 23:02:42"
-  },
-  {
-    "id": 100,
-    "type": "BuildingConstructed",
-    "gameDate": "Month 4, 1227",
-    "gameDateSort": 441810,
-    "postedAt": "2026-08-29",
-    "actor": null,
-    "region": "Carthrun",
-    "note": "Constructed via the Settlements view",
-    "payload": {
-      "building": "Tower",
-      "displayName": "Anora's Roost",
-      "count": 1
-    },
-    "warnings": [],
-    "createdAt": "2026-08-29 23:03:41"
-  },
-  {
-    "id": 101,
-    "type": "BuildingRemoved",
-    "gameDate": "Month 4, 1227",
-    "gameDateSort": 441810,
-    "postedAt": "2026-08-29",
-    "actor": null,
-    "region": "Carthrun",
-    "note": "Cleanup: removing browser-automation test building",
-    "payload": {
-      "building": "Tower",
-      "count": 1
-    },
-    "warnings": [],
-    "createdAt": "2026-08-29 23:05:20"
-  },
-  {
-    "id": 103,
-    "type": "DeityAmended",
-    "gameDate": "Month 4, 1227",
-    "gameDateSort": 441810,
-    "postedAt": "2026-08-29",
-    "actor": null,
-    "region": null,
-    "note": "Amended via the Codex",
-    "payload": {
-      "name": "Calistria",
-      "changes": {
-        "note": "Holy days: Challenge Day, Feast of Vigor. [browser test note]"
-      }
-    },
-    "warnings": [],
-    "createdAt": "2026-08-29 23:06:36"
-  },
-  {
     "id": 51,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Stirling Reach",
@@ -1802,8 +1492,8 @@
   {
     "id": 52,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Stirling Reach",
@@ -1820,8 +1510,8 @@
   {
     "id": 53,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Stirling Reach",
@@ -1838,8 +1528,8 @@
   {
     "id": 54,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Stirling Reach",
@@ -1856,8 +1546,8 @@
   {
     "id": 55,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Stirling Reach",
@@ -1874,8 +1564,8 @@
   {
     "id": 56,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Stirling Reach",
@@ -1892,8 +1582,8 @@
   {
     "id": 57,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Stirling Reach",
@@ -1910,8 +1600,8 @@
   {
     "id": 58,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Stirling Reach",
@@ -1928,8 +1618,8 @@
   {
     "id": 59,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Stirling Reach",
@@ -1948,8 +1638,8 @@
   {
     "id": 60,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Stirling Reach",
@@ -1966,8 +1656,8 @@
   {
     "id": 61,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Stirling Reach",
@@ -1984,8 +1674,8 @@
   {
     "id": 62,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Narlmarches",
@@ -2002,8 +1692,8 @@
   {
     "id": 63,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Narlmarches",
@@ -2020,8 +1710,8 @@
   {
     "id": 64,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Narlmarches",
@@ -2038,8 +1728,8 @@
   {
     "id": 65,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Wilderwood",
@@ -2056,8 +1746,8 @@
   {
     "id": 66,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Mettlewood",
@@ -2074,8 +1764,8 @@
   {
     "id": 67,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Mettlewood",
@@ -2092,8 +1782,8 @@
   {
     "id": 68,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Mettlewood",
@@ -2110,8 +1800,8 @@
   {
     "id": 69,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Faerweald",
@@ -2128,8 +1818,8 @@
   {
     "id": 70,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Faerweald",
@@ -2146,8 +1836,8 @@
   {
     "id": 71,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Carthrun",
@@ -2164,8 +1854,8 @@
   {
     "id": 72,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Lake Silverstep",
@@ -2182,8 +1872,8 @@
   {
     "id": 73,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Argent River",
@@ -2200,8 +1890,8 @@
   {
     "id": 74,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Argent River",
@@ -2218,8 +1908,8 @@
   {
     "id": 75,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Argent River",
@@ -2236,8 +1926,8 @@
   {
     "id": 76,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Old Hills",
@@ -2254,8 +1944,8 @@
   {
     "id": 77,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Old Hills",
@@ -2272,8 +1962,8 @@
   {
     "id": 78,
     "type": "BuildingConstructed",
-    "gameDate": "2025-09-14",
-    "gameDateSort": 729000,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2025-09-14",
     "actor": "Migration",
     "region": "Old Hills",
@@ -2288,10 +1978,29 @@
     "createdAt": "2026-08-29 22:55:02"
   },
   {
+    "id": 79,
+    "type": "CalendarAdvanced",
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
+    "postedAt": "2026-08-29",
+    "actor": "Migration",
+    "region": null,
+    "note": "Imported from calendar.json",
+    "payload": {
+      "year": 1227,
+      "yearLabel": "YEAR THREE",
+      "month": 2,
+      "day": 3,
+      "note": "Marked in the calendar channel as \"You are here\""
+    },
+    "warnings": [],
+    "createdAt": "2026-08-29 22:55:02"
+  },
+  {
     "id": 98,
     "type": "ResourceChanged",
-    "gameDate": "2026-08-23",
-    "gameDateSort": 729360,
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
     "postedAt": "2026-08-29",
     "actor": null,
     "region": null,
@@ -2303,5 +2012,235 @@
     },
     "warnings": [],
     "createdAt": "2026-08-29 23:01:45"
+  },
+  {
+    "id": 104,
+    "type": "ResourceChanged",
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
+    "postedAt": "2026-09-06",
+    "actor": null,
+    "region": null,
+    "note": null,
+    "payload": {
+      "changes": {
+        "Wood": 2,
+        "Loyalty": -1
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-09-06 02:03:36"
+  },
+  {
+    "id": 105,
+    "type": "ResourceChanged",
+    "gameDate": "Erastus (2), 3rd, 1227",
+    "gameDateSort": 441752,
+    "postedAt": "2026-09-06",
+    "actor": null,
+    "region": null,
+    "note": null,
+    "payload": {
+      "changes": {
+        "Wood": -1
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-09-06 21:26:32"
+  },
+  {
+    "id": 110,
+    "type": "BuildingRemoved",
+    "gameDate": "Erastus (2), 4th, 1227",
+    "gameDateSort": 441753,
+    "postedAt": "2026-09-07",
+    "actor": null,
+    "region": "Argent River",
+    "note": "Removed via the Settlements view",
+    "payload": {
+      "building": "Shipyard",
+      "count": 1
+    },
+    "warnings": [],
+    "createdAt": "2026-09-07 16:14:08"
+  },
+  {
+    "id": 111,
+    "type": "ObligationAmended",
+    "gameDate": "Erastus (2), 4th, 1227",
+    "gameDateSort": 441753,
+    "postedAt": "2026-09-07",
+    "actor": null,
+    "region": null,
+    "note": "Amended via the Dashboard",
+    "payload": {
+      "obligationId": 1,
+      "changes": {
+        "description": "Wealth loan owed to the county of Arnestal"
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-09-07 16:37:26"
+  },
+  {
+    "id": 112,
+    "type": "ObligationAmended",
+    "gameDate": "Erastus (2), 4th, 1227",
+    "gameDateSort": 441753,
+    "postedAt": "2026-09-07",
+    "actor": null,
+    "region": null,
+    "note": "Amended via the Dashboard",
+    "payload": {
+      "obligationId": 1,
+      "changes": {
+        "dueGameDate": "Month 6, 16th, 1225"
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-09-07 16:39:45"
+  },
+  {
+    "id": 113,
+    "type": "ResourceChanged",
+    "gameDate": "Erastus (2), 4th, 1227",
+    "gameDateSort": 441753,
+    "postedAt": "2026-09-07",
+    "actor": null,
+    "region": null,
+    "note": "Testing loan repayment",
+    "payload": {
+      "changes": {
+        "Wealth": -2
+      },
+      "obligationId": 1
+    },
+    "warnings": [],
+    "createdAt": "2026-09-07 18:04:43"
+  },
+  {
+    "id": 114,
+    "type": "ResourceChanged",
+    "gameDate": "Erastus (2), 4th, 1227",
+    "gameDateSort": 441753,
+    "postedAt": "2026-09-07",
+    "actor": null,
+    "region": null,
+    "note": "More loan repayment testing",
+    "payload": {
+      "changes": {
+        "Wealth": -12
+      },
+      "obligationId": 1
+    },
+    "warnings": [],
+    "createdAt": "2026-09-07 18:05:28"
+  },
+  {
+    "id": 115,
+    "type": "CalendarAdvanced",
+    "gameDate": "Erastus (2), 4th, 1227",
+    "gameDateSort": 441753,
+    "postedAt": "2026-09-07",
+    "actor": "Migration",
+    "region": null,
+    "note": "Restored: a test CalendarAdvanced entry had briefly set this same date before being removed as test data, but real activity (events 110-114) had already happened dated Erastus 4th by then",
+    "payload": {
+      "year": 1227,
+      "yearLabel": "YEAR THREE",
+      "month": 2,
+      "day": 4,
+      "note": "Marked in the calendar channel as \"You are here\""
+    },
+    "warnings": [],
+    "createdAt": "2026-09-07 20:24:47"
+  },
+  {
+    "id": 116,
+    "type": "BuildingConstructed",
+    "gameDate": "Erastus (2), 4th, 1227",
+    "gameDateSort": 441753,
+    "postedAt": "2026-09-07",
+    "actor": null,
+    "region": "Stirling Reach",
+    "note": "Constructed via the Settlements view",
+    "payload": {
+      "building": "Library",
+      "displayName": "Test Library",
+      "detail": "This is a test description",
+      "count": 1
+    },
+    "warnings": [],
+    "createdAt": "2026-09-07 21:43:55"
+  },
+  {
+    "id": 117,
+    "type": "BuildingAmended",
+    "gameDate": "Erastus (2), 4th, 1227",
+    "gameDateSort": 441753,
+    "postedAt": "2026-09-07",
+    "actor": null,
+    "region": "Stirling Reach",
+    "note": "Edited via the Settlements view",
+    "payload": {
+      "building": "Library",
+      "changes": {
+        "detail": null
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-09-07 21:44:54"
+  },
+  {
+    "id": 118,
+    "type": "BuildingRemoved",
+    "gameDate": "Erastus (2), 4th, 1227",
+    "gameDateSort": 441753,
+    "postedAt": "2026-09-07",
+    "actor": null,
+    "region": "Stirling Reach",
+    "note": "Removed via the Settlements view",
+    "payload": {
+      "building": "Library",
+      "count": 1
+    },
+    "warnings": [],
+    "createdAt": "2026-09-07 21:45:02"
+  },
+  {
+    "id": 119,
+    "type": "BuildingAmended",
+    "gameDate": "Erastus (2), 4th, 1227",
+    "gameDateSort": 441753,
+    "postedAt": "2026-09-07",
+    "actor": null,
+    "region": "Stirling Reach",
+    "note": "Edited via the Settlements view",
+    "payload": {
+      "building": "Tavern",
+      "changes": {
+        "displayName": "The Brass Mug"
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-09-07 21:48:01"
+  },
+  {
+    "id": 120,
+    "type": "LocationAmended",
+    "gameDate": "Erastus (2), 4th, 1227",
+    "gameDateSort": 441753,
+    "postedAt": "2026-09-07",
+    "actor": null,
+    "region": null,
+    "note": "Amended via the Codex",
+    "payload": {
+      "name": "Kingdom of Galderoy",
+      "changes": {
+        "note": null
+      }
+    },
+    "warnings": [],
+    "createdAt": "2026-09-07 21:50:37"
   }
 ]

@@ -12,11 +12,6 @@
         "name": "Fishing Dock",
         "count": 1,
         "detail": "Generates 1 Food per year"
-      },
-      {
-        "name": "Shipyard",
-        "count": 1,
-        "detail": "Pay 1 Wood and 1 Wealth to be used to build 1 Ship"
       }
     ]
   },
@@ -164,6 +159,7 @@
       },
       {
         "name": "Tavern",
+        "displayName": "The Brass Mug",
         "count": 1,
         "detail": "\"The Brass Mug\", generates 1 Wealth per year"
       },

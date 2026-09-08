@@ -21,7 +21,9 @@
     "requires": [
       "Herbalist Hut"
     ],
-    "annualEffect": {}
+    "annualEffect": {
+      "Medicine": 1
+    }
   },
   {
     "name": "Artisan Shops",
@@ -43,7 +45,9 @@
     },
     "upkeep": "1 Wealth per year",
     "requires": [],
-    "annualEffect": {}
+    "annualEffect": {
+      "Wealth": -1
+    }
   },
   {
     "name": "Bridge",
@@ -87,7 +91,9 @@
       "Wood": 1
     },
     "requires": [],
-    "annualEffect": {}
+    "annualEffect": {
+      "Food": 1
+    }
   },
   {
     "name": "Ferry",
@@ -107,7 +113,9 @@
       "Wood": 1
     },
     "requires": [],
-    "annualEffect": {}
+    "annualEffect": {
+      "Food": 1
+    }
   },
   {
     "name": "Fort",
@@ -154,7 +162,9 @@
       "Wood": 1
     },
     "requires": [],
-    "annualEffect": {}
+    "annualEffect": {
+      "Medicine": 1
+    }
   },
   {
     "name": "Homes",
@@ -174,7 +184,9 @@
       "Wood": 1
     },
     "requires": [],
-    "annualEffect": {}
+    "annualEffect": {
+      "Food": 1
+    }
   },
   {
     "name": "Library",
@@ -186,7 +198,9 @@
     },
     "upkeep": "1 Wealth per year",
     "requires": [],
-    "annualEffect": {}
+    "annualEffect": {
+      "Wealth": -1
+    }
   },
   {
     "name": "Logging Camp",
@@ -196,7 +210,9 @@
       "Wood": 1
     },
     "requires": [],
-    "annualEffect": {}
+    "annualEffect": {
+      "Wood": 1
+    }
   },
   {
     "name": "Manor",
@@ -233,7 +249,9 @@
       "Artisan Shops",
       "Market"
     ],
-    "annualEffect": {}
+    "annualEffect": {
+      "Wealth": 1
+    }
   },
   {
     "name": "Messenger Post",
@@ -267,7 +285,9 @@
       "Tools": 1
     },
     "requires": [],
-    "annualEffect": {}
+    "annualEffect": {
+      "Iron": 1
+    }
   },
   {
     "name": "Prison",
@@ -289,7 +309,9 @@
       "Tools": 1
     },
     "requires": [],
-    "annualEffect": {}
+    "annualEffect": {
+      "Stone": 1
+    }
   },
   {
     "name": "Ranch",
@@ -301,7 +323,10 @@
     },
     "upkeep": "2 Food per year",
     "requires": [],
-    "annualEffect": {}
+    "annualEffect": {
+      "Horse": 1,
+      "Food": -2
+    }
   },
   {
     "name": "Roads",
@@ -400,7 +425,9 @@
     },
     "upkeep": "1 Food per year",
     "requires": [],
-    "annualEffect": {}
+    "annualEffect": {
+      "Food": -1
+    }
   },
   {
     "name": "Stone Wall",
@@ -423,7 +450,10 @@
     },
     "upkeep": "1 Food per year",
     "requires": [],
-    "annualEffect": {}
+    "annualEffect": {
+      "Wealth": 1,
+      "Food": -1
+    }
   },
   {
     "name": "Temple",
@@ -496,7 +526,9 @@
       "School",
       "Library"
     ],
-    "annualEffect": {}
+    "annualEffect": {
+      "Wealth": -1
+    }
   },
   {
     "name": "Wooden Wall",

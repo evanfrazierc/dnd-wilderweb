@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "description": "Resource loan, repayable in Wealth",
+    "description": "Wealth loan owed to the county of Arnestal",
     "originalResources": {
       "Wood": 20,
       "Stone": 20,
@@ -10,8 +10,8 @@
     },
     "repaymentResource": "Wealth",
     "amountTotal": 50,
-    "amountRemaining": 50,
-    "dueGameDate": "Month 6, 16th, 1233",
+    "amountRemaining": 36,
+    "dueGameDate": "Meloron (6), 16th, 1225",
     "createdByEventId": 49,
     "satisfied": false
   }

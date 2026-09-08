@@ -2,14 +2,69 @@
   "settlement": "Stirling Reach",
   "asOf": "2026-08-23",
   "annualIncomeUpkeep": {
-    "lines": []
+    "lines": [
+      {
+        "resource": "Food",
+        "net": 4,
+        "breakdown": [
+          "+6 (6 × Farm)",
+          "+2 (2 × Fishing Dock)",
+          "-2 (1 × Ranch)",
+          "-1 (1 × Stables)",
+          "-1 (1 × Tavern)"
+        ]
+      },
+      {
+        "resource": "Horse",
+        "net": 1,
+        "breakdown": [
+          "+1 (1 × Ranch)"
+        ]
+      },
+      {
+        "resource": "Iron",
+        "net": 2,
+        "breakdown": [
+          "+2 (2 × Mine)"
+        ]
+      },
+      {
+        "resource": "Medicine",
+        "net": 2,
+        "breakdown": [
+          "+1 (1 × Apothecary)",
+          "+1 (1 × Herbalist Hut)"
+        ]
+      },
+      {
+        "resource": "Stone",
+        "net": 1,
+        "breakdown": [
+          "+1 (1 × Quarry)"
+        ]
+      },
+      {
+        "resource": "Wealth",
+        "net": 1,
+        "breakdown": [
+          "+1 (1 × Tavern)"
+        ]
+      },
+      {
+        "resource": "Wood",
+        "net": 4,
+        "breakdown": [
+          "+4 (4 × Logging Camp)"
+        ]
+      }
+    ]
   },
   "resources": {
-    "Wood": 13,
+    "Wood": 14,
     "Food": 12,
     "Stone": 12,
     "Iron": 16,
-    "Wealth": 25
+    "Wealth": 11
   },
   "resourceDescriptions": {
     "Wood": "Gathered from forests and used for building",
@@ -37,7 +92,7 @@
   "society": {
     "Unrest": 0,
     "Diplomacy": 2,
-    "Loyalty": 3,
+    "Loyalty": 2,
     "Piety": 1,
     "Dread": 0,
     "Intrigue": 2
