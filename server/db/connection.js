@@ -2,7 +2,7 @@ import { createClient } from "@libsql/client";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
 import { readFileSync } from "node:fs";
-import { parseGameDate, ordinalSuffix } from "./gameDate.js";
+import { parseGameDate, canonicalizeGameDate } from "./gameDate.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const schemaPath = path.join(__dirname, "schema.sql");
@@ -395,34 +395,28 @@ async function ensureCurrentDateAdvancedPastRealActivity(client) {
 }
 
 // Returns the normalized string for a raw date, or null if this raw string isn't covered by
-// this pass (a bare year, a "Month X to Month Y" range, or genuinely unparseable text -- all
-// left as they already were). Shared between events.game_date_raw and
-// obligations.due_game_date_raw, which carry the exact same kind of string.
+// this pass (a bare year -- no month recorded, so canonicalizeGameDate won't guess one -- or
+// genuinely unparseable text; both left as they already were). Shared between
+// events.game_date_raw and obligations.due_game_date_raw, which carry the exact same kind of
+// string. Delegates the actual reserialization to gameDate.js's canonicalizeGameDate, which
+// also backstops new writes (docs/adr/0016) -- one canonical shape, one place that produces it.
 function normalizeDate(raw, monthNames, isoCorrection) {
   if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return isoCorrection; // a real-world "as of" date, not an in-fiction one
-  if (/^Month\s+\d+\s+to\s+Month\s+\d+,/i.test(raw) || /^\d+$/.test(raw)) return null; // range or bare year
-  const parsed = parseGameDate(raw);
-  if (!parsed.matched) return null; // genuinely unparseable -- leave the original alone
-  const name = monthNames.get(parsed.month);
-  if (!name) return null; // unknown month number -- leave the original alone
-  return parsed.hasDay
-    ? `${name} (${parsed.month}), ${parsed.day}${ordinalSuffix(parsed.day)}, ${parsed.year}`
-    : `${name} (${parsed.month}), ${parsed.year}`;
+  return canonicalizeGameDate(raw, monthNames);
 }
 
-// One-time normalization of every event's game_date_raw (and every obligation's
-// due_game_date_raw -- the same kind of string, a separate table) to one consistent shape --
-// "MonthName (N), <day><suffix>, year" when a day was recorded, "MonthName (N), year" when
-// only month+year was -- matching what GameDatePicker/formatGameDate now always produce
-// (client/src/lib/gameDate.js). Doesn't change what date anything actually represents: every
-// row here already parses to a real {year, month, day}, this only re-serializes the display
-// string and fixes wrong ordinal suffixes ("3th" -> "3rd") along the way. Two things are
-// deliberately left alone: bare years (nothing to convert them from) and the one "Month X to
-// Month Y" range event (a different shape this pass doesn't cover). The "2025-09-14"-style
-// migration entries never had an in-fiction date recorded at all -- the DM supplied "Erastus
-// 3rd, 1227" for that whole batch directly (see chat log) rather than this guessing one.
-// Gated on each row's current string already matching its target shape, so this is a safe
-// no-op forever after the one time it actually needs to run.
+// One-time (and self-healing) normalization of every event's game_date_raw (and every
+// obligation's due_game_date_raw -- the same kind of string, a separate table) to the one
+// canonical shape validateShape now requires of every new write, "MonthName (N), <day><suffix>,
+// year" (docs/adr/0016) -- matching what GameDatePicker/formatGameDate always produce
+// (client/src/lib/gameDate.js). A day the source never recorded becomes day 1 (the same
+// placeholder convention canonicalizeGameDate applies everywhere); a month range collapses to
+// its first month, day 1. Doesn't invent what year/month/day anything actually represents where
+// that's genuinely unknown: bare years (no month at all to build a real date from) are left
+// alone. The "2025-09-14"-style migration entries never had an in-fiction date recorded at all
+// -- the DM supplied "Erastus 3rd, 1227" for that whole batch directly (see chat log) rather
+// than this guessing one. Gated on each row's current string already matching its target shape,
+// so this is a safe no-op forever after the one time it actually needs to run.
 async function ensureConsistentDateFormatting(client) {
   const monthsResult = await client.execute("SELECT number, name FROM calendar_months");
   if (monthsResult.rows.length === 0) return; // calendar structure not seeded yet

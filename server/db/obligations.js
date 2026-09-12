@@ -1,8 +1,14 @@
-import { parseGameDate } from "./gameDate.js";
+import { parseGameDate, isCanonicalGameDate } from "./gameDate.js";
 
 export async function createObligation(db, {
   description, originalResources, repaymentResource, amountTotal, dueGameDate, createdByEventId,
 }) {
+  // The ResourceChanged -> payload.newObligation path is already blocked by validateShape
+  // before this runs; this is the backstop for createObligation's other caller (migrate.js's
+  // loan import), which writes straight to the DB with no validateShape in between (docs/adr/0016).
+  if (dueGameDate !== undefined && dueGameDate !== null && !isCanonicalGameDate(dueGameDate)) {
+    throw new Error(`createObligation: dueGameDate must be formatted as "MonthName (N), Dth, YYYY" -- got ${JSON.stringify(dueGameDate)}`);
+  }
   const due = dueGameDate ? parseGameDate(dueGameDate) : null;
   const info = await db.prepare(`
     INSERT INTO obligations

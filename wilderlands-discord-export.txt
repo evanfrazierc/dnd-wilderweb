@@ -1,0 +1,1366 @@
+Channel: current-stats
+
+The DM — 7/4/2026 2:02 PM
+STIRLING REACH
+
+CURRENT GOV STATS
+RESOURCES
+Wood 12
+       (gathered from forests and used for building)
+Food 12
+       (consumed each year to keep units and populace healthy and alive)
+Stone 12
+       (used for building sturdier structures or upgrades)
+Iron 16
+       (includes the entirety of its process from smelting ore to solid iron bars)
+Wealth 25
+       (measure of large amounts in funding, either in coin, credit, or goods)
+
+ASSETS
+Horses 5
+       (herd of horses or equivalent, of which purchasable or levied mounts can be drawn from)
+Weapons 4
+       (martial weapons, used to equip players and units)
+Tools 2
+       (necessities needed for special projects or repairs)
+Population 2
+       (large group of individuals/families, each can produce a Militia if levied)
+Medicine 1
+       (used for creating healer’s kits and potions, as well as staving off mass disease)
+Ships 0
+       (a few ships, of which purchasable or requisitioned boats and ships can be drawn from)
+
+SOCIETY
+Unrest 0 
+      (measures kingdom strife, when it exceeds Pop count, rebellion breaks out)
+Diplomacy 2 
+      (relations and public image, used to initiate and pull in favors from other factions)
+Loyalty 3
+      (used to offset otherwise unpopular moves, generates Unrest when below Pop count)
+Piety 1
+      (used to initiate and pull in favors from religious factions, may provide divine bonuses)
+Dread 0
+      (used to match or stave off threats, lowers Loyalty by 1 for every 1 above Pop count)
+Intrigue 2
+      (used to infiltrate, sabotage, spy, or scout out regions and realms) 
+---------------------------------------------
+CURRENT ANNUAL INCOME/UPKEEP
+
+Wood: 4
++4 (from 4 LoggingCamps)
+
+Stone: 1
++1 (from Quarry)
+
+Food:  3
++10 (from 6 Farm, 2 FishingDock, 2 Mill)
+-7 (from Tavern, 2 Pop, and 1 Guard; 1 Stables, 2 Ranch)
+
+Iron: 2
++2 (from 2 Iron Mine)
+
+Wealth: 1
++1 (from Tavern)
+
+Medicine: 1
++1 (from 1 HerbalistHut)
+
+Horse: 1
++1 (from Ranch) 
+
+
+Channel: stats-bookkeeping
+
+The DM — 8/29/2025 2:25 PM
+STIRLING REACH
+
+CURRENT GOV STATS
+RESOURCES
+Wood 18
+       (gathered from forests and used for building)
+Food 13
+       (consumed each year to keep units and populace healthy and alive)
+Stone 14
+       (used for building sturdier structures or upgrades)
+Iron 20
+       (includes the entirety of its process from smelting ore to solid iron bars)
+Wealth 27
+       (measure of large amounts in funding, either in coin, credit, or goods)
+
+ASSETS
+Horses 5
+       (herd of horses or equivalent, of which purchasable or levied mounts can be drawn from)
+Weapons 4
+       (martial weapons, used to equip players and units)
+Tools 0
+       (necessities needed for special projects or repairs)
+Population 2
+       (large group of individuals/families, each can produce a Militia if levied)
+Medicine 1
+       (used for creating healer’s kits and potions, as well as staving off mass disease)
+Ships 0
+       (a few ships, of which purchasable or requisitioned boats and ships can be drawn from)
+
+SOCIETY
+Unrest 0 
+      (measures kingdom strife, when it exceeds Pop count, rebellion breaks out)
+Diplomacy 2 
+      (relations and public image, used to initiate and pull in favors from other factions)
+Loyalty 2
+      (used to offset otherwise unpopular moves, generates Unrest when below Pop count)
+Piety 1
+      (used to initiate and pull in favors from religious factions, may provide divine bonuses)
+Dread 0
+      (used to match or stave off threats, lowers Loyalty by 1 for every 1 above Pop count)
+Intrigue 2
+      (used to infiltrate, sabotage, spy, or scout out regions and realms) 
+The DM — 9/8/2025 10:48 AM
+CURRENT ANNUAL INCOME/UPKEEP
+
+Wood: 4
++4 (from 4 LoggingCamps)
+
+Stone: 1
++1 (from Quarry)
+
+Food:  3
++10 (from 6 Farm, 2 FishingDock, 2 Mill)
+-7 (from Tavern, 2 Pop, and 1 Guard; 1 Stables, 2 Ranch)
+
+Iron: 2
++2 (from 2 Iron Mine)
+
+Wealth: 1
++1 (from Tavern)
+
+Medicine: 1
++1 (from 1 HerbalistHut)
+
+Horse: 1
++1 (from Ranch) 
+The DM — 9/14/2025 4:58 PM
+Month 1 Expenses as of Pelorune(1) 16, 1225 PAID
+-3 Wood (buildings)
+-2 Stone (bridge over Argent River)
+-1 Stone (tower)
+
+Month 1 Income due Erastus(2) 16, 1225 PAID
++1 Diplomacy (town hall)
++1 Militia
++1 Intrigue (from Tavern) 
+The DM — 12/27/2025 6:46 PM
+Month 6 Loaned Resources as of Meloron(6) 16, 1225 PAID
+
+—- 20 Wood, 20 Stone, 20 Iron, 20 Wealth
+—-the initial payback amount will be 50 Wealth in 8 years (10 for each resource+10 Wealth)
+The DM — 1/29/2026 9:56 AM
+Month 5 and 6 Expenses as of Meloron(6) 30 1225 PAID
+-8 Wood (buildings)
+-1 Stone (prison)
+-6 Stone (walls)
+-1 Iron (prison)
+-1 Wealth (ranch)
+
+Month 6 Income, 1225 PAID
++1 Horse  (from Stables) 
+The DM
+ pinned a message to this channel. See all pinned messages. — 1/29/2026 10:26 AM
+The DM
+ pinned a message to this channel. See all pinned messages. — 1/29/2026 10:26 AM
+The DM — 1/29/2026 10:31 AM
+Year 1 Income, as of Pelorune(1) 1226 PAID
+
++3 Wood
++1 Stone
++2 Food
++1 Wealth
++1 Medicine
++1 Horse
+
+Stable rolls 3 to generate horse, needs 1 
+The DM — 1/31/2026 7:47 PM
+Payment for knights, as of 1 1226 PAID
+
+-1 Food
+The DM — 1/31/2026 7:56 PM
+Making Tools, as of 1 1226 PAID
+
+-1 Iron
++1 Tools 
+Building Road, as of 2 1226 PAID
+
+-1 Tools 
+The DM — 1/31/2026 9:44 PM
+Market Exchange, as of 1 1226 PAID
+
+-1 Stone
++1 Wealth
+The DM — 2/28/2026 7:23 PM
+Market Exchange, as of 2 1226 PAID
+
+-1 Stone
++1 Wealth
+
+Building Apothecary, as of 2 1226 PAID, BUILT 3 1226
+
+-1 Wood 
+The DM — 4/18/2026 8:18 PM
+Market Exchange, as of 3 1226 PAID
+
+-1 Stone
++1 Wealth
+
+Gained from Temple of Elk preservation, by 3 1226 PAID
+
++1 Loyalty
++1 Piety
+
+From Building Apothecary, on 3 1226 PAID
+
++1 Medicine 
+Building Iron Mine, as of 3 1226 BUILT on 4 1226 PAID
+
+-1 Stone
+-1 Wood
+-1 Tool 
+The DM — 4/18/2026 8:48 PM
+Market Exchange, as of 4 1226 PAID
+
+-1 Medicine
++1 Wealth
+The DM — 4/18/2026 9:10 PM
+Rebuilding Nettlewood / Mettlewood, as of 4 1226 BUILDING ON 5 1226 PAID
+
+-1 Wood
+
+Build Logging Camp at Mettlewood, as of 5 1226 BUILDING ON 6 1226 PAID
+
+-1 Wood 
+The DM — 5/31/2026 12:20 PM
+Build Scout’s Nest at Narlmarches - Argent River, as of 5 1226 BUILDING ON  6 1226 PAID
+
+-2 Wood 
+The DM — 5/31/2026 1:21 PM
+Visiting the Countess, Month 5 1226 PAID
+
++1 Diplomacy
+Shipment of Resources from Countess, Delivered on Month 6 1226 PAID
+
++5 Wood 
+The DM — 6/28/2026 12:08 PM
+Build Farm at Mettlewood as of 5 1226 BUILDING ON 6 1226 PAID
+
+-1 Wood 
+The DM — 6/28/2026 1:47 PM
+Build Farm Apiary at Stirling Reeach as of 6 1226 BUILDING ON 7 1226 PAID
+
+-1 Wood 
+Forge Weapons at Smithy through 1226 PAID
+
+-3 Iron
++3 Weapons 
+The DM — 6/30/2026 9:55 PM
+Market Exchanges from Month 6 to Month 12 1226 PAID
+
++7 Wealth
+
+-3 Wood
+-2 Stone
+-1 Iron
+-1 Medicine
+
+Annual trade with Carthrun in 1226 PAID
+
++1 Wood
+-1 Iron
+
+Building Iron Mine near Carthrun in 1226 PAID
+
+-1 Wood
+-1 Stone
+-1 Tools 
+The DM — 6/30/2026 10:22 PM
+End of Year 2 Income, as of Pelorune(1) 1227 PAID
+
++1 Pop
++4 Wood
++1 Stone
++3 Food
++2 Iron
++1 Wealth
++1 Medicine
++1 Horse
+Stables, 1 on 1d4 generates 1 Horse....rolled a 1, new horses were born!
++1 Horse
+Scout's Nest, 1 on 1d6 generates 1 Intrigue...rolled a 4, no new intriguing intel 
+The DM — 7/24/2026 6:31 PM
+Build Training Yard on 12 1226, Constructed on 1 1227 PAID
+
+-1 Wood
+-1 Wealth 
+Market Exchange 12 1226 PAID
+
+-1 Iron
++1 Tool
+The DM — 7/24/2026 6:40 PM
+Guard Upgrade to Troop on 1 1227 PAID
+
+-1 Wealth
+Rebuild Temple of the Elk, as of 1 1227 PAID
+
+-1 Wood
+-1 Stone
+The DM — 7/24/2026 7:05 PM
+Build Shipyard on 12 1226, Constructed on 1 1227 PAID
+
+-2 Wood
+The DM — 7/24/2026 8:41 PM
+Market Trade on 2 1227 PAID
+
+-1 Iron
++1 Wealth
+The DM — 8/23/2026 11:46 AM
+Celebrate Field Day's Feast, 2 1227 PAID
+
+-1 Food
++1 Loyalty 
+The DM — 8/23/2026 12:02 PM
+Building Trade Post in Stirling Reach on 2 1227, Construction in 3 1227 PAID
+
+-1 Wood
+-2 Wealth 
+Market Trade on 3 1227 PAID
+
+-1 Iron
++1 Wealth
+
+Forge Tool at Smithy 3 1227 PAID
+
+-1 Iron
++1 Tools
+The DM — 8/23/2026 12:19 PM
+Build Tower near Mettlewood on 3 1227, Constructs in 4 1227 PAID
+
+-1 Wood
+-1 Stone
+
+
+Channel: garrison
+
+The DM — 8/29/2025 2:26 PM
+UNITS
+Militia: cost 1 Food (+0 to combat)
+Guard: cost 1 Food and 1 Weapon, upkeep 1 Food (+1 to combat) 
+Troop: cost 1 Food, 1 Weapon, and 1 Wealth; upkeep 1 Food (+2 to combat)
+Veteran: cost 1 Food, 2 Loyalty, and 2 Wealth; upkeep 1 Food (+3 to combat)
+Knight: cost 1 Food, Horse, Wealth, and 2 Weapon; upkeep 1 Wealth and Food (+4 to combat)
+Adventurers: cost at least 1 Wealth; will explore or clear hexes and leave at the end of the year (+1 to combat per Wealth paid)
+
+CURRENT UNITS
+Militia 3 (Levy from Pop provides 2, Anora's Roost provides 1)
+Troop 1 (House Elmander guards)
+
+CURRENT UPKEEP
+Food: -1 (from 1 Guard)
+
+--Militias may be levied from each Population at the cost of 1 Loyalty lost from overall Governance Stats when doing so outside of defensive purposes.
+--Guards, Troops, Veterans, and Knights can be produced from Barracks; Castles can locally produce one Knight a year (for instant local defense at distant locations).
+--With the Training Yard: Militia can be upgrade to Guards, Guards to Troops, and Troops to Veterans -- the original cost of the current unit pays into the upgrade costs for the upper tier unit.
+--With the Stables: pay a Horse to give mounts to any Troop or Veteran, making them Mounted Troops or Mounted Veterans; upkeep increases by 1 Food and they gain mounted travel distance.
+--Wooden fortifications give a unit +1 to their combat rolls when defending inside, while stone fortifications give a unit +2 when defending inside (for settlement walls, forts, castles, temporary camps)
+
+
+Channel: diplomatic-ties
+
+The DM — 8/29/2025 2:25 PM
+DIPLOMACY
+Kingdom of Casdenia
+Sovereign
+--Arnestal--
+Liege (Trading)
+---Carthrun---
+Friendly (Trading)
+---Hornstead---
+Tolerable
+
+Kingdom of Ravenstone
+Rival
+
+Boar King
+Rival 
+
+
+Channel: construction
+
+The DM — 8/29/2025 2:26 PM
+BUILDINGS
+
+MAIN SETTLEMENT
+Town Hall: houses 2 Population/Units, central building, gives 1 Diplomacy
+    Costs 1 Wood to build, Costs 1 designated Resource as tax per year
+Homes: houses 2 Population/Units so that Unrest doesn’t go up due to homeless
+    Costs 1 Wood to build
+Manor: houses 1 Population and important PCs/NPCs, can be a town's central building, gives 1 Loyalty
+    Costs 1 Wood and 1 Wealth to build
+Stables: gives 1 Horse, 1 on 1d4 adds 1 Horse each year
+    Costs 1 Wood to build, upkeep of 1 Food per year
+Tavern: will generate 1 Wealth per year, gives 1 Intrigue
+    Costs 1 Wood to build, upkeep of 1 Food per year
+Market: can exchange 1 of a resource for 1 Wealth each per month, or v.versa if needed
+    Costs 1 Wood and 1 Wealth to build
+Trade Post: can exchange 1 of a resource for 1 Wealth and v.versa yearly per trade partner
+    Costs 1 Wood and 2 Wealth to build, Cost 1 Horse or 1 Ship when forming trade partner
+Merchant Guild: generates 1 Wealth and Diplomacy yearly, allows one yearly bulk exchange of one resource
+    Costs 2 Wood and 3 Wealth to build, requires Trade Post, Artisan Shop, and Market
+Shrine: gives 1 Piety
+    Costs 1 Wood or 1 Stone to build
+Temple: gives 1 Piety, can exchange 1 Wealth for 1 Piety per year, quells 1 Unrest per year
+    Costs 1 Wood, 1 Stone, 1 Wealth to build 
+Schools 1 on 1d4 generates 1 Loyalty, attempts once a year
+    Costs 1 Wood and 1 Wealth to build
+Library request tomes, 1 on 1d4 generates 1 Diplomacy, attempts once a year
+    Costs 2 Wood and 1 Wealth to build, upkeep 1 Wealth per year
+University 1 on 1d4 generates 1 Diplomacy, 1 Loyalty, and 1 Piety, attempts once a year
+    Costs 2 Wood, 1 Stone, and 2 Wealth to build, upkeep 1 Wealth per year; requires School and Library
+Smithy can exchange 1 Iron to create 1 Weapon or 1 Tool monthly
+    Costs 1 Wood to build
+Gallows includes pillories and cages, gives 1 Dread
+    Costs 1 Wood to build
+Spy Quarters gives 1 Intrigue and 1 Dread, 1 on 1d6 gives 2 Intrigue and 1 Dread yearly
+    Costs 1 Wood, 1 Stone, and 2 Loyalty to build
+Embassies gives 1 Diplomacy, can exchange 1 Wealth for 1 Diplomacy each year per ally
+    Costs 2 Wood and 2 Wealth to build
+Messenger Post allows fast communication to and from regions via road, even to unexplored settlements
+    Costs 1 Wood, 1 Wealth, and 1 Horse to build
+Roads creates stretch of road for travel, allows trade to adjoining region
+    Costs 1 Tool for 3 hexes with 1 Wood if building through difficult terrain, builds in 1 month
+Bridge allows road to span over a river, either made of wood or stone
+    Costs 2 Wood OR 2 Stone to build, decrease by 1 at suitable crossing
+Ferry allows boats to help large groups cross river
+    Costs 2 Wood
+Shipyard set up on water, allows for 1 Wood and 1 Wealth to be used to build 1 Ship
+    Costs 2 Wood to build
+Harbor set up on water, can exchange 1 Ship for 2 of a resource yearly, 1 on 1d4 gives 1 Ship
+    Costs 1 Wood, 1 Stone, 1 Tools, 1 Wealth to build, requires Shipyard and Fishing Dock
+.
+.
+RESOURCES
+Farm: generates 1 Food each year
+    Costs 1 Wood to build
+Mill: each farm generates +50% Food each year, non-stacking per settlement
+    Costs 1 Wood to build
+Artisan Shops: 1 on 1d4 to generate 1 Wealth per year
+    Costs 1 Wood and 1 Wealth to build
+Hunting Grounds: set up near forest or mountain, generates 1 Food each year
+    Costs 1 Wood to build
+Logging Camp: set up near forest, generates 1 Wood each year
+    Costs 1 Wood to build
+Fishing Dock: set up on water, generates 1 Food each year
+    Costs 1 Wood to build
+Mine: set up on mountain, generates 1 Iron per year
+    Costs 1 Wood, 1 Stone, and 1 Tools to build
+Silver/Gold Mine: set up on mountain, generates either 1 Wealth (silver) or 2 Wealth (gold) per year
+    Costs 1 Wood, 1 Stone, and 1 Tools to build
+Quarry: set up near or on mountain, generates 1 Stone per year
+    Costs 1 Wood and 1 Tools to build
+Herbalist Hut: set up near forest, generates 1 Medicine every year
+    Costs 1 Wood to build
+Apothecary: gives 1 Medicine, can exchange 1 Wealth for 1 Medicine yearly
+    Costs 1 Wood to build, requires 1 Herbalist Hut
+Ranch: will create 1 Horse per year
+    Costs 1 Wood and 1 Wealth to build, upkeep of 2 Food per year
+.
+.
+DEFENSE and MILITARY
+Tower: generates 1 Militia that will defend distance of 3 Tiles
+    Costs 1 Stone and 1 Wood to build
+Barracks: houses and can create up to 3 Guard/Troops that will defend settlement and realm
+    Costs 1 Wood to build, upkeep of 1 Wealth per year
+Training Yard: allows for upgrading any military Unit using retrospective resources
+    Costs 1 Wood and 1 Wealth to build
+Prison: holds captured humanoids, heightened escape DCs added by assigned unit and walls
+    Costs 1 Stone and 1 Iron to build
+Scout’s Nest: 1 on 1d6 to add 1 Intrigue yearly, reveals potential threats or sites in 4 Tiles
+    Costs 2 Wood to build, must be on difficult terrain
+Wooden Wall: builds in 3 months, defends hexes from minor raids and danger
+    Costs 6 Wood per hex
+Stone Wall: builds in 2 years, better defense for hexes from larger dangers
+    Costs 6 Stone per hex
+Fort: can station Units to defend distance of 4 Tiles, functions like Manor, gives 1 Loyalty
+    Costs 4 Wood and 1 Wealth to build
+Castle: can station Units to defend distance of 4 Tiles, functions like Manor, gives 1 Loyalty
+    Costs 4 Stone and 2 Wealth to build, builds in 2 year or 1 if building on Fort
+Adventurer’s Guild: can hire Adventurer Units using 1 Wealth for effectiveness, up to 5.
+    Costs 2 Wood, 3 Diplomacy, and 3 Wealth to build
+The DM — 9/14/2025 4:58 PM
+--CURRENT BUILDINGS--
+
+STIRLING REACH
+Town Hall houses (1 Pop) and (1 Guard) of a total of (2 Units); pays no taxes until YEAR THREE 
+Farm(5) generates 5 Food per year, includes "Mal's Apiary" 
+Tavern "The Brass Mug" generates 1 Wealth per year
+Market allows for a monthly exchange of 1 resource for 1 Wealth, or 1 Wealth for 1 resource
+Mill farms generate +50% Food per year (+2 Food each year)
+Ranch generates 1 Horse per year
+Stables 1 on 1d4 per year generates 1 Horse
+Smithy exchange 1 Iron to create 1 Weapon/Tool monthly
+Apothecary exchange 1 Wealth for 1 Medicine yearly
+Training Yard allows for upgrading any military Unit using retrospective resources
+Stone Walls will finish construction by Month 6 of YEAR THREE
+
+NARLMARCHES
+Logging Camp generates 1 Wood per year
+Herbalist Hut generates 1 Medicine per year
+Scout's Nest 1 on 1d6 per year generates 1 Intrigue, watches 4 tile radius
+
+WILDERWOOD
+Logging Camp generates 1 Wood per year
+
+METTLEWOOD
+Village houses (1/1 Pop)
+Logging Camp generates 1 Wood per year
+Farm generates 1 Food per year
+
+FAERWEALD
+Logging Camp generates 1 Wood per year
+Iron Mine generates 1 Iron per year
+
+CARTHRUN
+Iron Mine generates 1 Iron per year
+
+LAKE SILVERSTEP
+Fishing Dock generates 1 Food per year
+
+ARGENT RIVER
+Stone Bridge provides crossing over the river, located southwest of Stirling Reach 
+Fishing Dock generates 1 Food per year
+Shipyard pay 1 Wood and 1 Wealth to be used to build 1 Ship
+
+OLD HILLS
+Anora's Roost provides (1 Militia) to watch over a 3 tile radius
+Prison escape DC 22
+Quarry provides 1 Stone each year 
+
+
+Channel: build-orders
+
+The DM — 8/29/2025 10:47 PM
+place build orders here, along with associated resource costs
+The DM — 9/14/2025 4:58 PM
+Confirmed Build Order for Pelorune 16th, 1225
+
+Town Hall -1 Wood
+Farm -1 Wood
+Logging Camp -1 Wood
+Stone Bridge -2 Stone
+Tower -1 Stone 
+The DM — 11/9/2025 2:45 PM
+Confirmed Build Order for Erastus 15th, 1225
+
+Tavern -1 Wood, -1 Food
+Market  -1 Wood, -1 Wealth
+Fishing Dock -1 Wood
+Quarry -1 Wood and -1 Tool 
+The DM — 11/9/2025 2:57 PM
+Confirmed Build Order for Month 3, 15th, 1225
+
+Roads -3 Tools 
+The DM — 11/9/2025 3:11 PM
+Confirmed Build Order for Month 4 15th, 1225
+
+Logging Camps -2 Wood
+Herbalist -1 Wood 
+The DM — 12/27/2025 6:42 PM
+Confirmed Build Order for Month 5 16th, 1225
+
+Farm -1 Wood 
+weduhman — 12/27/2025 7:26 PM
+Confirmed Build Order for Month 6 1st, 1225
+
+Stone walls - 1 stone x 6 walls (around settlement hex)
+Smithy - 1 Wood 
+Prison -1 Stone, -1 Iron (Near Tower)
+Ranch - 1 Wood, -1 Wealth
+Stables -1 Wood
+Fishing Dock -1 Wood
+Mills -1 Wood x 2 mills
+Farms -1 Wood x 2 farms 
+The DM — 1/29/2026 9:56 AM
+Just a note: only building 1 Mill will have any effect around Stirling Reach. I don't remember if we discussed anything about that last time, but the building itself provides a non-stacking +50% output for farms tied to the settlement. So on the town map and the current stats, I've only built 1 and deducted the resources for 1
+weduhman — 1/29/2026 11:09 AM
+Thank you for clarifying! Didn't know they didn't stack. One mill it is! 👩‍🌾
+The DM — 2/28/2026 7:25 PM
+Build Order for Month 1, 1226
+Road - 1 Tool
+
+Build Order for Month 2, 1226
+Apothecary - 1 Wood
+
+
+Channel: discussion-and-planning
+
+The DM — 8/30/2025 9:55 AM
+For all planning, discussion, and questions about the governance and building mechanics. I can clarify things here.
+Lyric — 9/7/2025 4:53 PM
+Okay so we have decent wood and stone, but only two wealth- I think we should start with a town hall, because it doesnt cost weath the build. I also  think a Tavern would be good because it generates wealth, also I think all our characters have visited the tavern at least once so far so we can agree that a proper tavern would be good. Otherwise, I think my character would vote for a Library or School to be built. In conclusion: Townhall, Tavern, and possibly Library or School. Let me know what you guys think!
+weduhman — 9/7/2025 6:26 PM
+If i'm understanding everything correctly, here's my pitch:
+I agree on the Townhall.  (Costs 1 Wood, 1 Resource tax). 🏦
+We were just attacked and I fear any operations north in the Hills or west in the Marches are subject to ambush. To mitigate this, I think a Tower is needed. (Costs 1 Stone, 1 Wood, 1 Food; Generates 1 Militia for lookout over 3 tiles) 🏹
+Now that it is protected, I'd like to see resource generation in the Marches via a Logging Camp to replenish spent Wood. (Costs 1 Wood; Generate 1 Wood) 🌲
+Similarly, under protection of the militia, a Mine to the north would be useful for future smithing. (Costs 1 wood, 1 Stone, 1 Tool; Generates 1 Iron). ⛏️  Note: I'm flexible on this because we have not scouted the mountains properly. Could be a round two build option.
+Since both the population is growing via the townhall and the militia is eating, a Farm seems like a good idea, too (Costs 1 Wood; Generates 1 Food) 🌽
+Aldis would advocate for a Market to trade raw materials for Wealth. (Costs 1 Wood; Can trade for Wealth per Month) Note:The per month trading may be more immediately useful over the Tavern's per year return. Note: I'm flexible on this, too 🪙
+The DM — 9/7/2025 7:33 PM
+The Townhall has to be built as the center of governance, just a note...but yeah you guys are planning to build it, which is 👍 
+
+The Manor can function as a town's place of governance also, but it is a house for one person and their servants, along with a bunch of smaller houses for the commoners around it. However, we can also build it as an 'upper class district' of really nice homes for each of you. Otherwise, building the Homes as part of your town will allow each of you to build simple houses as part of it and be neighbors and such.
+
+Also, Landar specifically suggests building a Manor for himself. 
+Laser — 9/7/2025 8:38 PM
+Image
+Laser — 9/8/2025 1:10 PM
+I agree with the resource generation stuff (Farm, Logging, Mine) and you know your boy Frenjamin wants an Herbalist Hut and/or a Shrine. We don't currently have any Medicine and most of us are pretty religious, so leaning into Piety may make sense.
+Lyric — 9/13/2025 12:29 PM
+Ooh okay yeah I like the idea of logging camp, I guess we will probably get wealth as we progress so we don’t necessarily need to generate it just yet. I also agree with tower too!
+The DM — 9/27/2025 3:52 PM
+@everyone let me know if any other buildings are confirmed, so far i only have the town hall and farm being built -- and there is a map of the town at the one-month mark that i'm working on with these buildings added
+weduhman — 9/27/2025 4:17 PM
+Logging camp, anyone?
+Also still on for our house tomorrow at 10:30am!
+The DM — 9/27/2025 4:21 PM
+Seems like everyone said yes to the logging camp, i'll add it to the build order
+Lyric — 9/27/2025 6:43 PM
+Yes and yep!
+The DM — 12/27/2025 6:19 PM
+Letter from the city of Arnestal, from Mayor Selmias...
+—-offer of 20 Wood, 20 Stone, 20 Iron, 20 Wealth
+—-the initial payback amount will be 50 Wealth in 8 years (10 for each resource+10 Wealth)
+weduhman — 12/27/2025 6:28 PM
+Merchant Guild: generates 1 Wealth and Diplomacy yearly, allows one yearly bulk exchange of one resource
+    Costs 2 Wood and 3 Wealth to build, requires Trade Post, Artisan Shop, and Market
+Artisan Shops: 1 on 1d4 to generate 1 Wealth per year
+    Costs 1 Wood and 1 Wealth to build
+Trade Post: can exchange 1 of a resource for 1 Wealth and v.versa yearly per trade partner
+    Costs 1 Wood and 2 Wealth to build, Cost 1 Horse or 1 Ship when forming trade partner
+weduhman — 12/27/2025 6:58 PM
+Brainstorming: Stone walls - 6 from OG charter - 6 Walls 
+Brainstorming: Prison: holds captured humanoids, heightened escape DCs added by assigned unit and walls (Costs 1 Stone and 1 Iron to build) 
+*Combined with Walls uses all but one stone
+Brainstorming: Smithy - exchange 1 Iron to create 1 Weapon or 1 Tool monthly. Can be used with loan Iron for utility. (Costs 1 Wood to build) 
+Brainstorming: Ranch: creates 1 Horse per year - Costs 1 Wood and 1 Wealth to build, upkeep of 2 Food per year
+MUST be built with two food replenishing resources
+_ Co-order with Stables: gives 1 Horse, 1 on 1d4 adds 1 Horse each year ( Costs 1 Wood to build, upkeep of 1 Food per year) 
+Like the Fishing Dock (1 Wood cost) and Farm (1 Wood cost)
+Highly recommend building 1 mill per two farms (Mill: each farm generates +50% Food each year, non-stacking per settlement    Costs 1 Wood to build)
+weduhman — 12/27/2025 7:10 PM
+---- Running total from Charter = 6 Stone, 1 Wealth, 1 Iron
+---- Running Brainstorm Total from Loan = 7 Wood 
+weduhman — 1/3/2026 11:51 AM
+Brain dumping on our loan: Our money maker might be Herbs (@Frenjamin)
+Herbalist Hut: set up near forest, generates 1 Medicine every year - right now this is a surplus good - if we can build two more (adjacent to logging camps) we can use them to generate +3 Wealth per year via the monthly Market trade.
+
+Our yearly wealth generation could be:
++1 Wealth (Tavern Passive)
++3 Wealth (-3 Herb via Market)
++1 Wealth (- 1 Stone  via Market)
++3 Wealth (-3 Wood via Market)
+Total of 8 Wealth per  - Could pay off the loan in 6 Years.
+@The DM How much are Taxes/Tithes after year 2?
+The DM — 1/3/2026 2:45 PM
+Taxes: 1 Wealth OR 2 of any one resource that you choose
+Tithes: 1 Wealth (optional)
+
+Taxes, different from Tithes, are either 1 Wealth OR 2 of any resource you choose per settlement and paid annually. This is because the tax in the form of coin is valued more, but lumps of resources are still accepted.
+
+And don't worry about the "per settlement" part yet. You guys currently have smaller offshoot areas like the quarry or lumber camps, but those aren't settlements even if a few people live there. It's for if you guys get big, go across the lake or something, and decide to build a second castle/townhall/manor with it's own name and local leaders and such. A new settlement like that would factor into the tax further increasing by 1 Wealth/2 Resource.
+
+The taxes are also subject to being increased or decreased, either during times of crisis or some other form of arguably justifiable agreement.
+
+IMPORTANTLY, Tithes are optional. You can pay 1 Wealth per year to have religious clerics of established churches (Pelor, Bahamut, Abadar, Erastil, etc) in the kingdoms to get a presence in your town, teaching and healing and providing services to the people. Doing so increases Piety by 1 each year, and roleplay-wise if you have good relations with them, that religious group can possibly go to bat for you politically if needed.
+weduhman — 1/12/2026 4:43 PM
+Warded Protectors - Ideas for Council Seats:
+Captain of the Guard
+High Steward
+Keeper of Rites
+Layman’s Advocate
+Master of Coin
+Riverwarden
+Scholar Magus
+Surveyor General
+Lyric — 1/12/2026 5:26 PM
+Oooh I love this
+The DM — 1/31/2026 7:37 PM
+Captain of the Guard -- Kaelen
+High Steward -- Landar
+Keeper of Rites -- Hamm Berglin
+Layman’s Advocate -- Frenjemin
+Master of Coin -- Aldis
+Riverwarden --  Malrakas
+Scholar Magus -- 
+Surveyor General -- Erik 
+The DM — 1/31/2026 7:54 PM
+Possible Agendas, 1226
+
+Searching any mountain range for good mining sites
+
+Going to scout the Kingdom of Ravenstone
+
+Hunting wolves and wargs
+Finding the Boar King
+Fighting goblins
+
+Rains causing huge mud build ups for boats
+
+Arrival of halfling cleric of Erastil, Hamm Berglin
+
+A messenger arrives requesting the building of a road to Olen's Rest
+ 
+weduhman — 6/28/2026 11:40 AM
+7 month time travel plan: 
+
+Make 7 Market exchanges.
+3X Wood
+2X Stone
+1X Iron
+1X Medicine
+
+Establish trade routes between Stirling's Reach and Arnestal, as well as the Reach and Olen's Rest  (if possible) on return trip. 
+
+Begin using the Smithy to transform iron to weapons.
+weduhman — 6/28/2026 1:44 PM
+Required trade with Carthrun - 1 iron for 1 wood
+
+
+Channel: loan
+
+weduhman — 12/27/2025 6:45 PM
+Mayor Selmias' Merchant Guild Loan:
+—- 20 Wood, 20 Stone, 20 Iron, 20 Wealth
+—-the initial payback amount will be 50 Wealth in 8 years (10 for each resource+10 Wealth)
+
+
+Channel: introduction
+
+The DM — 7/1/2025 8:31 PM
+Here is a basic summary of the region of the world we'll be in (it is all homebrew and new, none of it related to our last campaign).
+
+It is set in a region known as the Free Kingdoms, a temperate part of a larger continent. This region also borders a sea to the north, called the Norean Sea. There are large empires to the south, a ways off the map. There is a frigid and small northern continent off the map, above the Norean Sea. Anything off map generally won't factor too much into the plot. AND, if you invent a place, I'll do what I can to put it somewhere on the map and integrate it into the world.
+
+On the map, we will be starting in the city of Arnestal, in the county of the same name, of the Kingdom of Casdenia. You can choose to be from Arnestal, or have traveled there from one of its neighboring kingdoms (two of which are on the map, two off the map). The main focus of this campaign is on the titular expanse of territory known as the Wilderlands. There will be map exploration, so you can't see the overall map from the get-go.
+
+NOTE: This game is loosely based off the Pathfinder: Kingmaker adventure module and CRPG. The goal is to settle a wilderness, explore its secrets, and see a realm be built -- whether you want to rule or support a ruler or simply live there as others rule, it's up to you. I've majorly simplified the governance mechanics of that module...because they are crazy complex. That being said, I fell in love with the Pathfinder world because of Kingmaker. This isn't that setting, but it was just that enjoyable, so I hope this'll be a fun way to share the experience.
+
+
+Channel: locations
+
+The DM — 7/23/2025 2:58 PM
+KNOWN LOCATIONS
+---Kingdom of Casdenia---
+     Royal City of Casdenor
+--County of Arnestal--
+     City of Arnestal
+     Village of Hornstead
+     Village of Belmore
+     Village of Emerstook
+     Village of Carthrun
+--Other--
+     Olen's Rest
+
+---Kingdom of Ravenstone---
+     City of Ravenstone
+
+---Kingdom of Galderoy---
+
+---Kingdom of Tremund--- 
+
+
+Channel: religions
+
+The DM — 7/23/2025 3:03 PM
+CURRENTLY KNOWN DEITIES
+–Good Deities–
+-Pelor, Dawnfather
+-Erastil, Old Deadeye
+-Desna, Wandering Dreamer
+-Bahamut, Platinum Dragon
+-Abadar, Father of Wealth and Order
+-Kord, Stormlord
+-Pharasma, Lady of Graves
+-Shelyn, Eternal Rose
+
+-Evil Deities-
+-Lamashtu, Mother of Monsters 
+
+
+Channel: calendar
+
+The DM — 7/15/2025 9:05 PM
+CONTINENTAL CALENDAR -- Valusian Era (VE) 1225
+
+.     .     .     .
+
+SPRING
+
+1 Pelorune
+1st -- First Light (Pelor holy day)
+2nd
+3rd
+4th
+5th
+6th
+7th
+8th
+9th
+10th
+11th
+12th
+13th
+14th
+15th -- Vigil's Day (Pharasma holy day)
+16th
+17th
+18th
+19th
+20th
+21st
+22nd
+23rd
+24th
+25th
+26th
+27th
+28th
+29th -- Wildernight (Melora holy day)
+30th
+
+2 Erastus
+1st
+2nd
+3rd  -- You are here; 1227 (YEAR THREE)
+4th
+5th 
+6th
+7th
+8th
+9th
+10th -- Field Day's Feast (Erastil holy day)
+11th
+12th
+13th
+14th
+15th
+16th
+17th
+18th
+19th
+20th
+21st -- Hearth Day (Andoletta holy day)
+22nd
+23rd
+24th
+25th
+26th
+27th
+28th
+29th
+30th
+
+3 Shelune
+1st
+2nd
+3rd
+4th
+5th
+6th
+7th --  Lovers Week (Shelyn holy day)
+8th -- Lovers Week (Shelyn holy day)
+9th --  Lovers Week (Shelyn holy day)
+10th --  Lovers Week (Shelyn holy day)
+11th --  Lovers Week (Shelyn holy day)
+12th --  Lovers Week (Shelyn holy day)
+13th --  Lovers Week (Shelyn holy day)
+14th --  Lovers Week (Shelyn holy day)
+15th
+16th
+17th
+18th
+19th
+20th -- Garland Day (Melora holy day)
+21st
+22nd
+23rd
+24th
+25th
+26th
+27th
+28th
+29th
+30th 
+.     .     .     .
+
+SUMMER
+
+4 Sarenith
+1st -- Confession Day (Sarenrae holy day)
+2nd
+3rd
+4th
+5th
+6th
+7th
+8th
+9th
+10th -- Burningwind Festival (Sarenrae holy day)
+11th
+12th
+13th
+14th
+15th
+16th -- Sword Day (Bahamut holy day)
+17th
+18th
+19th
+20th -- Sunwright Festival (Pelor holy day)
+21st
+22nd
+23rd
+24th
+25th
+26th
+27th
+28th
+29th
+30th
+
+5 Bahamund
+1st
+2nd -- Archer's Day (Erastil holy day)
+3rd
+4th
+5th
+6th
+7th
+8th
+9th
+10th
+11th -- Dragon's Concord (Bahamut holy day)
+12th
+13th
+14th
+15th
+16th
+17th
+18th
+19th
+20th
+21st
+22nd
+23rd
+24th
+25th
+26th
+27th
+28th
+29th
+30th -- Platinum Vigil (Bahamut holy day)
+
+6 Meloron
+1st
+2nd
+3rd
+4th -- Tidestill (Melora holy day)
+5th
+6th
+7th
+8th
+9th
+10th
+11th
+12th -- Stormfest (Kord holy day)
+13th
+14th
+15th
+16th
+17th
+18th
+19th
+20th
+21st
+22nd
+23rd
+24th -- Green Pact (Melora holy day)
+25th
+26th
+27th
+28th
+29th
+30th 
+.     .     .     .
+
+AUTUMN
+
+7 Abadus
+1st
+2nd
+3rd -- Accordance Day (Abadar holy day)
+4th
+5th
+6th
+7th
+8th
+9th
+10th
+11th
+12th -- Vault Day (Abadar holy day)
+13th
+14th
+15th
+16th
+17th
+18th
+19th
+20th
+21st
+22nd
+23rd
+24th
+25th
+26th
+27th -- Ledger's Day (Abadar holy day)
+28th
+29th
+30th
+
+8 Iounith
+1st
+2nd
+3rd
+4th
+5th
+6th
+7th
+8th
+9th -- Quill Day (Ioun holy day)
+10th
+11th
+12th
+13th
+14th
+15th
+16th
+17th
+18th
+19th
+20th
+21st
+22nd
+23rd
+24th
+25th
+26th
+27th
+28th
+29th
+30th -- Hallow's Eve (Andoletta holy day)
+
+9 Sehanil
+1st -- Shadowlight (Sehanine holy day)
+2nd
+3rd
+4th
+5th
+6th
+7th -- Challenge Day (Calistria holy day)
+8th
+9th
+10th
+11th
+12th
+13th
+14th
+15th
+16th --  Day of the Arch-Heart (Corellon holy day)
+17th
+18th
+19th
+20th
+21st
+22nd -- Dreamrest (Desna holy day)
+23rd
+24th
+25th
+26th
+27th
+28th
+29th
+30th 
+.     .     .     .
+
+WINTER
+
+10 Pharast
+1st
+2nd
+3rd
+4th
+5th -- Longnight (Pharasma holy day)
+6th
+7th
+8th
+9th
+10th
+11th
+12th -- Winterbloom (Melora holy day)
+13th
+14th
+15th
+16th
+17th
+18th
+19th
+20th
+21st
+22nd
+23rd
+24th
+25th -- Candlemark (Pelor holy day)
+26th
+27th
+28th
+29th
+30th
+
+11 Moradune
+1st
+2nd
+3rd
+4th
+5th
+6th
+7th
+8th
+9th
+10th -- Forge Festival (Moradin holy day)
+11th
+12th
+13th
+14th -- Feast of Vigor (Calistria holy day)
+15th
+16th
+17th
+18th
+19th
+20th
+21st
+22nd
+23rd -- Oath Day (Moradin holy day)
+24th
+25th
+26th
+27th
+28th
+29th
+30th
+
+12 Desnus
+1st -- Starfall Eve (Desna holy day)
+2nd -- Starfall (Desna holy day)
+3rd
+4th
+5th
+6th
+7th
+8th
+9th
+10th
+11th
+12th
+13th
+14th
+15th
+16th
+17th
+18th
+19th
+20th
+21st
+22nd
+23rd
+24th
+25th
+26th
+27th
+28th
+29th
+30th -- Turning's Eve (All deities)
+
+
+Channel: note-sharing
+
+weduhman — 7/23/2025 3:37 PM
+Travel Notes from 7/22 Session  - 4 Days Total
+Our party joins the County sponsored wagon train with 400 other travelers to journey into the Wilderlands. This is a mix of locals from Arnestal, its surrounding villages, travelers from the North, adventures, and in our case, a vagabond 🌿
+The caravan travels South then West, through the mountains near Hornstead where we are wrongfully tolled to pass. A confrontation occurs where Hornstead sleezebag Orbin is intimidated into returning the wrongfully collected dues. 🪙  This earns us the approval of wagon members Erik & co. and reveals a lack of leadership from The Warded Protectors, chiefly Caravan Master Gedry (read the fine print, dude!). Guard Sergeant Frey is young and, at first glance, inexperienced.
+History warns of aggressive Orc activity in the region. We're told of the Green Skin Wars at a traveler's rest. Other settlers and tradesman have attempted to journey our path, never to return. We are unsure if the two events are related. ⚔️
+ 
+weduhman — 8/13/2025 8:00 PM
+Travel Notes from 8/12 Session -  Day 14 
+The party officially enters the Wilderlands! The Warded Protectors are divided on whether or not to spend resources on delayed members of the caravan. Gedry and Frey are willing to send guards and slow pace to ensure no one is left behind, while Landar and Tatartius are eager to settle as quickly as possible, even if it means stragglers are on their own. 🐂 
+The caravan crosses a creek that results in Erik's wagon sustaining immobilizing damage. Rather than leave our friend, his wife, and their two young children, the party stays back to assist, enlisting the watch of two willing guards. In the middle of repairs, the group is stalked and attacked by four wolves. It is somewhat unusual in the daytime and with so many humanoids around. We sustain no casualties 🐺 
+When confronted with the consequences of leaving families and stragglers behind, Landar and Tatartius are unmoved. 
+A paid scouting expedition is launched and the party enlists. Our group invites the help of rugged Ranger Echon and two elven kin. Of the four possible scouting sights, the party investigates the Shores of Silverstep and the Gnarl Marches. 
+The Shores of Silverstep offers good fishing by land or vessel, though may be a storm coast in inclement weather. It seems like a spot that may attract Water Fey, but whether they are friend or foe is yet to be seen. Legend has it the shore is the footprint of a Silver Dragon 🐉 And where there's a dragon, there's a hoard...
+The Gnarl Marches are prime for logging with densely packed trees and access to the river. It is obvious that the Gnarl periodically floods, resulting in rich soil but precarious footing. The lush environment is ideal for hunting (and being hunted) 🏹 
+Two locations are left scouted to other groups: The Hills to the North and the Argent River Bank. 
+Unease runs through the camp as the party returns from the scouting mission. To our shock and surprise, Caravan Master Gedry lie dead in his tent! ☠️
+weduhman — 8/30/2025 11:43 AM
+Travel Notes from 8/29 Session -  to end of Day 14 
+Kaelen and Anora begin investigating Caravan Master Gedry’s murder, performing rites at the scene and noting the cause of death was a slit throat with no signs of struggle. 🔪
+Sergeant Frey doubts council involvement, but Tartartius casts blame on new arrivals from the south: Gale the Elven smith, a gnome couple, and a Tiefling. To keep them from leaving, the not-so-Warded Protectors lock down the camp. ⛺
+The lockdown angers members like Erik and Torrik, who want to resume trade and settlement efforts. The party faces a dilemma: hold everyone in camp or risk unrest. 🔍
+Interrogations follow: Gale is ruled out, but Tartartius publicly accuses the Tiefling thief. Mischievous but not violent, the Tiefling is defended by Aldis who secures a deal - close the case by sundown in exchange for lifting the lockdown. ⏰
+Before leaving with his kin, Echon investigates and confirms the murder was the work of a professional, with no tracks in or out of Gedry’s tent. The focus shifts squarely back to the Council.
+Frenjamin and Aldis search Tartartius’ tent while Anora and Kaelen question him; no motive or proof surfaces, though suspicion lingers. Landar is also interrogated but offers little beyond self-interest.
+With no solid evidence, both the party and the council agree to settle the matter the evening and increase guard patrol for the time being. As luck would have it, the increased patrol saves the Caravan when they ambushed just hours later by bandits and none other than Echon's Elvin kin who accompanied us on the scouting expedition. 🧝‍♂️
+We manage to save both Landar and Tartartius from the bandits, and arrive just in time to spare Frey who is on the brink of a major injury. Echon is nowhere to be seen, but a ring is recovered with the symbol of a raven and lyre.
+In recognition of their efforts, the party is invited to join the Council. ⚖️
+ 
+weduhman — 9/28/2025 9:20 PM
+Settlers Notes from 9/28 Session - to start of day 19 (?)
+The Council convenes it's first meeting, sharing news from both expeditions. 🤝
+Kaelen and Anora recount defeating the riverside bandits, rescuing Echon, and seizing boats. 🛶
+Frenjamin and Aldis report on the decrepit tower: glowing orbs, the un-well, quarry potential, and possible wolves.
+The council moves to new business, including Tartartius' request to begin building a bridge to the west. The vote is passed unanimously. Landar requests a manor be  queued and the council tables the idea until a wealth generating resource can be settled upon.
+The council motions to vote on clensing the tower to the north, with five-ayes to one-nay. One vote absent. The motion passes and the group sets off with caravan sponsored ponies.
+In small group discussion, Aldis shares the map she found in Tartartius tent indicating both potential danger and treasure west of the river. Perhaps this is his true motive for building the bridge. 🗺️
+The inner circle sets out for the northern tower and thoroughly investigates the un-well during the daytime. Underground, Kaelen, Anora, and Frenjamin find a broken scepter but cannot identify it's make or power.
+The group rests until nighttime, waiting for the un-well to respond as it had before. Come 3:00 am, Kaelen and Anora descend to find a ghost warning them of trespassing in this place.
+Franjamin, under the influence of herb, provokes a will-o-wisp which shocks him. Aldis comes to his aid, only for both to flee; one down the well and the other beyond the tower.
+Kaelen is downed and Anora becomes possessed; all the ghastly workings of the spirit. 👻
+Disturbingly, the puppeteered Anora attacks the descending Frenjamin who is able to revive Kaelen. With power too great, Kaelen is forced to kill Anora in order to defeat the ghost.
+The three remaining party members begin filing back to Stirling's Reach each with a different version of events to report.
+weduhman — 7/24/2026 7:50 PM
+Invited Acheros of Insmort, from Southern Galderoy, and Bandit Company to join Sterling's Reach if they behave
+weduhman — 7/24/2026 8:18 PM
+There's some giant ass snake in the Wilderwoods
+The DM — 7/24/2026 8:53 PM
+Image
+weduhman — 8/23/2026 11:45 AM
+Maybe need to build a tower closer to Mettlewood
+
+
+Channel: general
+
+The DM — 8/9/2025 9:11 PM
+@everyone  Tuesday the 12th? You guys all excited?
+Lyric — 8/9/2025 9:12 PM
+To play yes, for the first week of school, no lol.
+The DM — 8/9/2025 9:15 PM
+RIP school
+Eggy — 8/12/2025 10:08 PM
+Next D&D: Friday August 29th
+The DM — 8/29/2025 10:48 PM
+Sept 14th 9:30am; Baker household 
+The DM — 10/17/2025 3:21 PM
+@everyone  good for tomorrow? I have 12pm at the Bakers' on my calendar
+Eggy — 10/17/2025 3:53 PM
+@everyone we’re actually gonna need to cancel for tomorrow. Kira’s getting sick and I’ve had a serious issue with my car that I’ve been working on and still need to get fixed.
+The DM — 10/17/2025 3:58 PM
+Okay, no worries hope you guys are able to take care of that, and feel better Kira!
+We'll work out another date whenever everyone is able to
+weduhman — 10/17/2025 4:02 PM
+Take good care of yourselves!
+Lyric — 10/17/2025 5:30 PM
+Thanks!
+Lyric — 10/26/2025 5:26 PM
+Hey guys! hope everyone is well, just a reminder we need to reschedule dnd, our calendar is pretty clear for upcoming weekends, just let us know!
+The DM — 10/27/2025 11:47 AM
+Sorry for the late reply, but yes weekends are clear for me too. Ready to play whenever.
+
+Also just a reminder that you guys have hit that point where you can optionally fast-track through the months and level up. So that would involve a lot of turns safely doing month by month building too, just thought you should know in case you want to prepare any building plans or decisions of your own for the council meetings in advance.
+
+That being said, don't count on it being an entirely sit down and talk session either unless you want it to be.
+weduhman — 10/27/2025 5:54 PM
+Hi! Let's get something on the calendar 🎲 I'd like to hard launch Kira's new character before we fast-track time. Maybe one more half session of role play and then half session of build planning and progression?
+The DM — 10/28/2025 1:32 PM
+Any Fri/Sat/Sun in early November? I have nothing big going on until mid November
+Eggy — 10/28/2025 1:34 PM
+I’m thinking a Saturday or Sunday afternoon in early November! Let me know what works for yall!
+The DM — 10/28/2025 3:58 PM
+What about November 8th, around 1 or 2ish pm?
+Laser — 10/28/2025 5:52 PM
+I can't do the 8th
+The DM — 10/29/2025 11:06 AM
+Ok no problem man. Any better date?
+Eggy — 10/29/2025 11:20 AM
+how do we feel about Sunday the 9th?
+The DM — 10/29/2025 11:36 AM
+Good for me
+Laser — 10/29/2025 4:22 PM
+Works for us
+Lyric — 10/29/2025 4:35 PM
+I’m down
+Laser — 11/4/2025 6:54 PM
+What time are we thinking for Sunday?
+The DM — 11/4/2025 10:49 PM
+Maybe, 1pm...? Enough time to sleep in, enough daylight to enjoy, and not too far from lunch time. Any time works for me though, so you guys can feel free to suggest another time if you want
+Eggy — 11/5/2025 6:49 AM
+Yes we were gonna say 1PM
+The DM — 11/9/2025 3:39 PM
+Forwarded
+Image
+weduhman — 11/20/2025 5:15 PM
+Are we all still good for tomorrow night at our place? 7pm-ish?
+Eggy — 11/20/2025 5:15 PM
+Yep!
+The DM — 11/20/2025 6:01 PM
+Yes! Good to go!
+Eggy — 11/21/2025 7:51 PM
+The Shivered Timbers
+The DM — 12/5/2025 2:47 PM
+Hey all, everybody still good for tomorrow at 1pm?
+Eggy — 12/5/2025 2:47 PM
+Yep!!
+Laser — 12/26/2025 1:43 PM
+What time do we want to log on tomorrow?
+The DM — 12/26/2025 3:41 PM
+I have it marked at 1pm (can't remember if we agreed to that or it was that by default) but no problems at all starting at a later time
+Eggy — 12/26/2025 4:33 PM
+1pm works out great!
+The DM — 12/27/2025 11:24 AM
+Hey would you guys be cool if we push it back to 4pm?
+weduhman — 12/27/2025 11:24 AM
+Works for us!
+Eggy — 12/27/2025 12:00 PM
+Yeah that’s fine!
+
+
+
+Channel: adventure-discussion
+
+The DM — 9/14/2025 11:03 AM
+Charter of the Wilderlands
+    –Issued under authority of Countess Alania Elmander, County of Arnestal
+    –Approved by King Faris of Casdenia and the royal council of Casdenia.
+    –Lawful, rightful duty to settle in the Wilderlands west of the Highland Mountains
+    –Leading council styled as the Warden Protectors of the Wilderlands
+    –All who settle shall have tenure and possess claim to their homestead
+    –Every right to defend oneself, bearing weapons and building fortifications
+    –Provisional laws for local region allowed so long as they do not contradict crown laws
+    –Provisional vassalage given to Countess Alania Elmander and the County of Arnestal
+    –Exempt from taxes and tithes for a period of two years
+    –Status of vassalage to be negotiated and formally established after period of five years
+    –Charter negotiation contingent upon successful establishment of settlement 
+    –Must maintain provisional military force and meet military obligations
+    –Must report sightings of enemy, heresies, or foreign spy activities
+    –Revocation of charter if Warden-Protector(s) are guilty of treason or tyranny
+    –Revocation of charter if settlement abandoned or surrendered
+The DM — 6/28/2026 12:24 PM
+-Received from the Countess
+
+Cloaks bearing the red and blue of Arnestal. These are Traveler's Clothes, but also Fine enough to be considered nice, respectable clothes. 
+EFFECT: if you travel in or during severe weather, wearing the cloaks will allow you to pass one Constitution SAVE to not take a point of Exhaustion, recharges on short rest
+
+
+Channel: 

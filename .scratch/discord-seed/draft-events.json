@@ -1,0 +1,32 @@
+[
+  {
+    "type": "LocationAmended",
+    "gameDate": "Month 2, 4th, 1227",
+    "postedAt": "2026-09-12",
+    "actor": "The DM",
+    "region": null,
+    "note": "Diplomatic status from the discord export's #diplomatic-ties channel (posted 8/29/2025): Casdenia is our sovereign/liege kingdom; Arnestal, Carthrun, and Hornstead are named sub-relations within it.",
+    "postToDiscord": false,
+    "payload": {
+      "name": "Kingdom of Casdenia",
+      "changes": {
+        "note": "Sovereign (we are their vassal). Arnestal: Liege, trading partner. Carthrun: Friendly, trading partner. Hornstead: Tolerable."
+      }
+    }
+  },
+  {
+    "type": "LocationAmended",
+    "gameDate": "Month 2, 4th, 1227",
+    "postedAt": "2026-09-12",
+    "actor": "The DM",
+    "region": null,
+    "note": "Diplomatic status from the discord export's #diplomatic-ties channel (posted 8/29/2025).",
+    "postToDiscord": false,
+    "payload": {
+      "name": "Kingdom of Ravenstone",
+      "changes": {
+        "note": "Rival."
+      }
+    }
+  }
+]

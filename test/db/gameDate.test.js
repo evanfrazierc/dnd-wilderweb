@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseGameDate, ordinalSuffix } from "../../server/db/gameDate.js";
+import { parseGameDate, ordinalSuffix, isCanonicalGameDate, canonicalizeGameDate } from "../../server/db/gameDate.js";
 
 test("ordinalSuffix handles the 11th/12th/13th exceptions", () => {
   assert.equal(ordinalSuffix(1), "st");
@@ -78,4 +78,35 @@ test("sortKey orders dates chronologically regardless of source format", () => {
   const late = parseGameDate("Pelorune (1), 1226");
   assert.ok(early.sortKey < mid.sortKey);
   assert.ok(mid.sortKey < late.sortKey);
+});
+
+// docs/adr/0016: the stricter gate for new writes, layered on top of parseGameDate's
+// permissive parsing.
+test("isCanonicalGameDate accepts only 'MonthName (N), Dth, YYYY'", () => {
+  assert.equal(isCanonicalGameDate("Erastus (2), 9th, 1227"), true);
+  assert.equal(isCanonicalGameDate("Pelorune (1), 1st, 1225"), true);
+  assert.equal(isCanonicalGameDate("Month 2, 9th, 1227"), false); // no real month name
+  assert.equal(isCanonicalGameDate("Erastus (2), 1227"), false); // no day
+  assert.equal(isCanonicalGameDate("Erastus (2) 9th, 1227"), false); // missing comma before day
+  assert.equal(isCanonicalGameDate("1226"), false); // bare year
+  assert.equal(isCanonicalGameDate("Month 6 to Month 12, 1226"), false); // range
+  assert.equal(isCanonicalGameDate("Erastus (2), 3th, 1227"), false); // wrong ordinal suffix
+  assert.equal(isCanonicalGameDate("Erastus (13), 1st, 1227"), false); // month out of range
+  assert.equal(isCanonicalGameDate(""), false);
+  assert.equal(isCanonicalGameDate(null), false);
+});
+
+test("canonicalizeGameDate re-serializes a recognized date, defaulting a missing day to 1", () => {
+  const monthNames = new Map([[1, "Pelorune"], [2, "Erastus"], [6, "Meloron"]]);
+  assert.equal(canonicalizeGameDate("Month 2, 3th, 1227", monthNames), "Erastus (2), 3rd, 1227");
+  assert.equal(canonicalizeGameDate("Pelorune (1), 1226", monthNames), "Pelorune (1), 1st, 1226");
+  assert.equal(canonicalizeGameDate("Erastus (2), 9th, 1227", monthNames), "Erastus (2), 9th, 1227"); // already canonical
+  assert.equal(canonicalizeGameDate("Month 6 to Month 12, 1226", monthNames), "Meloron (6), 1st, 1226"); // range -> first month
+});
+
+test("canonicalizeGameDate refuses to guess a month: bare years and unknown months return null", () => {
+  const monthNames = new Map([[1, "Pelorune"]]);
+  assert.equal(canonicalizeGameDate("1226", monthNames), null); // no month recorded at all
+  assert.equal(canonicalizeGameDate("Month 6, 1226", monthNames), null); // month 6 not in this campaign's calendar
+  assert.equal(canonicalizeGameDate("sometime around the harvest, 1226", monthNames), null); // unparseable
 });

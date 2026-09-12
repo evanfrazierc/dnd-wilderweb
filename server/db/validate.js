@@ -1,11 +1,20 @@
-import { parseGameDate } from "./gameDate.js";
+import { parseGameDate, isCanonicalGameDate } from "./gameDate.js";
+
+const DATE_FORMAT_HINT = 'must be formatted as "MonthName (N), Dth, YYYY" (e.g. "Erastus (2), 9th, 1227")';
 
 /**
  * Structural checks: is this a well-formed event of its type at all. These reject
  * the write (400) -- they're about malformed requests, not in-game validity.
  */
-export function validateShape(type, { note, region, payload }) {
+export function validateShape(type, { gameDate, note, region, payload }) {
   const errors = [];
+
+  // Blocking, not a checkWarnings in-game-validity concern (docs/adr/0005 is about whether the
+  // *state* an event describes makes sense; this is about whether the event is well-formed at
+  // all, same as requiring payload.building above) -- docs/adr/0016.
+  if (!isCanonicalGameDate(gameDate)) {
+    errors.push(`gameDate ${DATE_FORMAT_HINT} -- got ${JSON.stringify(gameDate)}`);
+  }
 
   switch (type) {
     case "ResourceChanged": {
@@ -15,10 +24,13 @@ export function validateShape(type, { note, region, payload }) {
         errors.push("ResourceChanged requires at least one non-zero entry in payload.changes");
       }
       if (payload?.newObligation) {
-        const { description, repaymentResource, amountTotal } = payload.newObligation;
+        const { description, repaymentResource, amountTotal, dueGameDate } = payload.newObligation;
         if (!description) errors.push("payload.newObligation requires a description");
         if (!repaymentResource) errors.push("payload.newObligation requires a repaymentResource");
         if (typeof amountTotal !== "number") errors.push("payload.newObligation requires a numeric amountTotal");
+        if (dueGameDate !== undefined && !isCanonicalGameDate(dueGameDate)) {
+          errors.push(`payload.newObligation.dueGameDate ${DATE_FORMAT_HINT} -- got ${JSON.stringify(dueGameDate)}`);
+        }
       }
       break;
     }
@@ -52,6 +64,9 @@ export function validateShape(type, { note, region, payload }) {
     }
     case "ObligationAmended": {
       if (typeof payload?.obligationId !== "number") errors.push("ObligationAmended requires payload.obligationId (a number)");
+      if (payload?.changes?.dueGameDate !== undefined && !isCanonicalGameDate(payload.changes.dueGameDate)) {
+        errors.push(`payload.changes.dueGameDate ${DATE_FORMAT_HINT} -- got ${JSON.stringify(payload.changes.dueGameDate)}`);
+      }
       break;
     }
     case "DMRuling": {

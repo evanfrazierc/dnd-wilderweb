@@ -12,7 +12,7 @@ import { existsSync } from "node:fs";
 import { openDb } from "../server/db/connection.js";
 import { createEvent } from "../server/db/events.js";
 import { createObligation } from "../server/db/obligations.js";
-import { parseGameDate } from "../server/db/gameDate.js";
+import { parseGameDate, canonicalizeGameDate, ordinalSuffix } from "../server/db/gameDate.js";
 import { diffResourceTotals } from "../server/db/reconcile.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -58,11 +58,16 @@ async function main() {
   await seedReferenceData(db, { calendar, introduction, buildings, stats });
   await seedResourceBaseline(db, stats);
 
+  // Every gameDate this script writes now has to be canonical (docs/adr/0016) -- built from the
+  // campaign's real month names rather than a bare "Month N", same as the live app's
+  // GameDatePicker always has.
+  const monthNames = new Map(calendar.months.map((m) => [m.number, m.name]));
+
   const warningsSeen = [];
-  await importHistory(db, history, warningsSeen);
-  await reconcileOpeningBalance(db, stats, warningsSeen);
+  await importHistory(db, history, monthNames, warningsSeen);
+  await reconcileOpeningBalance(db, stats, monthNames, warningsSeen);
   await importSettlements(db, settlements, warningsSeen);
-  await importCalendar(db, calendar, warningsSeen);
+  await importCalendar(db, calendar, monthNames, warningsSeen);
   await importDeities(db, deities, warningsSeen);
   await importLocations(db, locations, warningsSeen);
 
@@ -127,14 +132,18 @@ async function seedResourceBaseline(db, stats) {
 // history.json id 49: a resource loan repayable in Wealth. See CONTEXT.md's Obligation entry.
 const LOAN_TITLE = "Month 6 Loaned Resources";
 
-async function importHistory(db, history, warningsSeen) {
+async function importHistory(db, history, monthNames, warningsSeen) {
   for (const entry of history) {
+    const gameDate = canonicalizeGameDate(entry.gameDate, monthNames);
+    if (!gameDate) {
+      throw new Error(`history.json entry ${entry.id} (${entry.title}): gameDate ${JSON.stringify(entry.gameDate)} can't be canonicalized (a bare year, or an unrecognized month) -- fix it by hand in data/history.json, the way ids 33-36 were.`);
+    }
     const hasChanges = entry.changes && Object.keys(entry.changes).length > 0;
     const type = hasChanges ? "ResourceChanged" : "DMRuling";
     const note = [entry.title, entry.note].filter(Boolean).join(" — ");
     const result = await createEvent(db, {
       type,
-      gameDate: entry.gameDate,
+      gameDate,
       postedAt: entry.postedAt,
       actor: entry.postedBy ?? null,
       region: null,
@@ -147,41 +156,87 @@ async function importHistory(db, history, warningsSeen) {
     if (result.warnings.length) warningsSeen.push({ source: `history#${entry.id}`, warnings: result.warnings });
 
     if (entry.title === LOAN_TITLE) {
-      const due = parseGameDate(entry.gameDate);
+      const due = parseGameDate(gameDate);
       await createObligation(db, {
         description: "Resource loan, repayable in Wealth (history.json id 49)",
         originalResources: entry.changes,
         repaymentResource: "Wealth",
         amountTotal: 50,
-        dueGameDate: `Month ${due.month}, ${due.day}th, ${due.year + 8}`,
+        dueGameDate: `${monthNames.get(due.month)} (${due.month}), ${due.day}${ordinalSuffix(due.day)}, ${due.year + 8}`,
         createdByEventId: result.event.id,
       });
     }
   }
 }
 
-// settlements.json uses in-fiction names that don't match the building catalog. Canonicalized
-// here per the design session (Q2): the event's `building` is the catalog name (so prerequisite
-// and catalog-lookup validation works), the in-fiction name is kept as `displayName`.
-const BUILDING_ALIASES = {
-  "Stone Walls": { building: "Stone Wall", displayName: null },
-  "Village": { building: "Homes", displayName: "Village" },
-  "Iron Mine": { building: "Mine", displayName: "Iron Mine" },
-  "Stone Bridge": { building: "Bridge", displayName: "Stone Bridge" },
-  "Anora's Roost": { building: "Tower", displayName: "Anora's Roost" },
+// settlements.json is now an `npm run export` backup, not the original hand-authored file --
+// `name` is already the catalog name and `displayName` is its own field (the app did that
+// canonicalization itself, historically), so no alias lookup is needed here any more. (Kept
+// finding this out the hard way: the old alias table below was keyed by in-fiction names like
+// "Anora's Roost" that no longer appear as `b.name` anywhere in the current export, so every
+// displayName silently came out null.)
+//
+// settlements.json also carries no per-building date any more -- it's the CURRENT aggregate
+// state (one row per region+building, with a `count`), not a per-construction record. Real
+// per-building dates recovered from wilderlands-discord-export.txt's build-orders/
+// stats-bookkeeping channels (.scratch/discord-seed/findings.md has the reasoning): the date
+// used is always when the resources were spent/ordered, matching how every other event in this
+// migration is dated (not a later "constructs in"/"finished" completion date, which several of
+// these buildings separately record in their own `note`). Where the source itself only gave a
+// month (most of 1226's builds -- the DM's notation shifted from day-precise to month-only
+// partway through), day 1 is used as an explicit placeholder, same convention as everywhere
+// else (docs/adr/0016) -- flagged per-row below, not a recorded fact. The two Fishing Docks
+// (Argent River, Lake Silverstep) can't be told apart from the two build orders that each
+// mention one "Fishing Dock" with no region named -- resolved by elimination/context in the
+// comments below, flagged as the least-certain entries in this table.
+const SETTLEMENT_BUILD_DATES = {
+  "Argent River|Bridge": "Pelorune (1), 16th, 1225",
+  // Ambiguous: the 2nd of 2 "Fishing Dock" mentions, in the Month 6 1225 batch that's otherwise
+  // entirely Stirling Reach buildings. Argent River (already bridge-connected since Month 1, and
+  // later the site of a Shipyard) reads as the more likely "consolidate the home base" target of
+  // that batch than Lake Silverstep, which the party had already flagged for its fishing back in
+  // the very first scouting session (8/12/2025 note-sharing post) -- so it's assigned the
+  // *earlier* of the two orders instead. Low confidence; correct this first if you know better.
+  "Argent River|Fishing Dock": "Meloron (6), 1st, 1225",
+  "Carthrun|Mine": "Meloron (6), 1st, 1226", // "in 1226", no month given -- see data/history.json id 36
+  "Faerweald|Logging Camp": "Sarenith (4), 15th, 1225",
+  "Faerweald|Mine": "Shelune (3), 1st, 1226", // "as of 3 1226" -- day is a placeholder
+  "Lake Silverstep|Fishing Dock": "Erastus (2), 15th, 1225", // see Argent River|Fishing Dock above
+  "Mettlewood|Farm": "Bahamund (5), 1st, 1226", // "as of 5 1226" -- day is a placeholder
+  "Mettlewood|Homes": "Sarenith (4), 1st, 1226", // "as of 4 1226" -- day is a placeholder
+  "Mettlewood|Logging Camp": "Bahamund (5), 1st, 1226", // "as of 5 1226" -- day is a placeholder
+  "Narlmarches|Herbalist Hut": "Sarenith (4), 15th, 1225",
+  "Narlmarches|Logging Camp": "Pelorune (1), 16th, 1225",
+  "Narlmarches|Scout's Nest": "Bahamund (5), 1st, 1226", // "as of 5 1226" -- day is a placeholder
+  "Old Hills|Prison": "Meloron (6), 1st, 1225",
+  "Old Hills|Quarry": "Erastus (2), 15th, 1225",
+  "Old Hills|Tower": "Pelorune (1), 16th, 1225",
+  "Stirling Reach|Apothecary": "Erastus (2), 1st, 1226", // "as of 2 1226" -- day is a placeholder
+  "Stirling Reach|Farm": "Pelorune (1), 16th, 1225", // earliest of the eventual 5
+  "Stirling Reach|Market": "Erastus (2), 15th, 1225",
+  "Stirling Reach|Mill": "Meloron (6), 1st, 1225",
+  "Stirling Reach|Ranch": "Meloron (6), 1st, 1225",
+  "Stirling Reach|Smithy": "Meloron (6), 1st, 1225",
+  "Stirling Reach|Stables": "Meloron (6), 1st, 1225",
+  "Stirling Reach|Stone Wall": "Meloron (6), 1st, 1225", // order date -- completes Month 6, Year 3 per its own note
+  "Stirling Reach|Tavern": "Erastus (2), 15th, 1225",
+  "Stirling Reach|Town Hall": "Pelorune (1), 16th, 1225",
+  "Stirling Reach|Training Yard": "Desnus (12), 1st, 1226", // "on 12 1226" -- day is a placeholder
+  "Wilderwood|Logging Camp": "Sarenith (4), 15th, 1225",
 };
 
 // Closes the gap between history.json's replayed deltas and stats.json's snapshot with one
 // clearly-labeled, dated corrective event, rather than leaving resource_totals silently wrong
 // or pretending the gap doesn't exist (Q1: keep the log's authoritative claim honest).
-async function reconcileOpeningBalance(db, stats, warningsSeen) {
+async function reconcileOpeningBalance(db, stats, monthNames, warningsSeen) {
   const diffs = (await diffResourceTotals(db, stats)).filter((d) => d.mismatch && d.snapshot !== undefined);
   if (diffs.length === 0) return;
 
   const earliest = (await db.prepare("SELECT MIN(game_date_sort) m FROM events").get()).m;
   const earliestEvent = await db.prepare("SELECT game_date_raw FROM events WHERE game_date_sort = ?").get(earliest);
   const before = parseGameDate(earliestEvent.game_date_raw);
-  const gameDate = `Month ${before.month}, ${Math.max(1, before.day - 1)}th, ${before.year}`;
+  const day = Math.max(1, before.day - 1);
+  const gameDate = `${monthNames.get(before.month)} (${before.month}), ${day}${ordinalSuffix(day)}, ${before.year}`;
 
   const result = await createEvent(db, {
     type: "ResourceChanged",
@@ -199,17 +254,21 @@ async function reconcileOpeningBalance(db, stats, warningsSeen) {
 async function importSettlements(db, settlements, warningsSeen) {
   for (const region of settlements) {
     for (const b of region.buildings) {
-      const alias = BUILDING_ALIASES[b.name];
+      // Per-building date recovered from the discord export (SETTLEMENT_BUILD_DATES above);
+      // CAMPAIGN_START_GAME_DATE only as a last resort for a building the source never
+      // mentions building at all, which shouldn't currently happen -- every row in
+      // settlements.json has an entry above.
+      const gameDate = SETTLEMENT_BUILD_DATES[`${region.region}|${b.name}`] ?? CAMPAIGN_START_GAME_DATE;
       const result = await createEvent(db, {
         type: "BuildingConstructed",
-        gameDate: region.asOf,
-        postedAt: region.asOf,
+        gameDate,
+        postedAt: new Date().toISOString().slice(0, 10),
         actor: "Migration",
         region: region.region,
-        note: `Imported from settlements.json (as of ${region.asOf})`,
+        note: "Imported from settlements.json; dated from wilderlands-discord-export.txt (.scratch/discord-seed/findings.md).",
         payload: {
-          building: alias ? alias.building : b.name,
-          displayName: alias ? alias.displayName : null,
+          building: b.name,
+          displayName: b.displayName ?? null,
           count: b.count ?? 1,
           detail: b.detail,
         },
@@ -220,11 +279,11 @@ async function importSettlements(db, settlements, warningsSeen) {
   }
 }
 
-async function importCalendar(db, calendar, warningsSeen) {
+async function importCalendar(db, calendar, monthNames, warningsSeen) {
   const d = calendar.currentDate;
   const result = await createEvent(db, {
     type: "CalendarAdvanced",
-    gameDate: `Month ${d.month}, ${d.day}th, ${d.year}`,
+    gameDate: `${monthNames.get(d.month)} (${d.month}), ${d.day}${ordinalSuffix(d.day)}, ${d.year}`,
     postedAt: new Date().toISOString().slice(0, 10),
     actor: "Migration",
     region: null,
@@ -235,9 +294,13 @@ async function importCalendar(db, calendar, warningsSeen) {
   if (result.warnings.length) warningsSeen.push({ source: "calendar", warnings: result.warnings });
 }
 
-// No source date exists for lore/reference imports; anchored at the campaign's earliest
-// known game-date (history.json's earliest entries are year 1225).
-const CAMPAIGN_START_GAME_DATE = "1225";
+// No source date exists for lore/reference imports (deities, kingdoms) -- these are "known
+// facts" posted once, not tied to a construction or session date. Anchored at the campaign's
+// first game-month: the religions/locations/calendar channels were all posted (real-world)
+// before the first Confirmed Build Order (Pelorune 16th, 1225), so in-fiction they predate any
+// recorded play -- Pelorune (1) is as precise as that gets. Day 1 is a placeholder, not a
+// recorded fact (docs/adr/0016).
+const CAMPAIGN_START_GAME_DATE = "Pelorune (1), 1st, 1225";
 
 async function importDeities(db, deities, warningsSeen) {
   for (const deity of deities) {
@@ -255,18 +318,23 @@ async function importDeities(db, deities, warningsSeen) {
   }
 }
 
+// locations.json is now `{ kingdoms: [...] }`, matching LocationAmended's current per-kingdom
+// payload shape (`{name, changes}`, ADR-0011) rather than the whole-document replace this
+// script originally wrote -- one event per kingdom.
 async function importLocations(db, locations, warningsSeen) {
-  const result = await createEvent(db, {
-    type: "LocationAmended",
-    gameDate: CAMPAIGN_START_GAME_DATE,
-    postedAt: new Date().toISOString().slice(0, 10),
-    actor: "Migration",
-    region: null,
-    note: "Imported from locations.json",
-    payload: { data: locations },
-  });
-  if (!result.ok) throw new Error(`locations.json: ${result.errors.join("; ")}`);
-  if (result.warnings.length) warningsSeen.push({ source: "locations", warnings: result.warnings });
+  for (const kingdom of locations.kingdoms ?? []) {
+    const result = await createEvent(db, {
+      type: "LocationAmended",
+      gameDate: CAMPAIGN_START_GAME_DATE,
+      postedAt: new Date().toISOString().slice(0, 10),
+      actor: "Migration",
+      region: null,
+      note: "Imported from locations.json",
+      payload: { name: kingdom.name, changes: { capital: kingdom.capital, note: kingdom.note } },
+    });
+    if (!result.ok) throw new Error(`locations.json ${kingdom.name}: ${result.errors.join("; ")}`);
+    if (result.warnings.length) warningsSeen.push({ source: `locations#${kingdom.name}`, warnings: result.warnings });
+  }
 }
 
 async function report(db, stats, warningsSeen) {

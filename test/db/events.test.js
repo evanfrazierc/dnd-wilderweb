@@ -19,10 +19,49 @@ async function freshDb() {
   return db;
 }
 
+// docs/adr/0016: gameDate format is a structural (blocking) check, not a checkWarnings
+// in-game-validity one -- same footing as requiring payload.building.
+test("createEvent rejects a non-canonically-formatted gameDate regardless of event type", async () => {
+  const db = await freshDb();
+  for (const gameDate of ["1225", "Month 1, 1225", "Month 6 to Month 12, 1226", "", "whenever"]) {
+    const result = await createEvent(db, { type: "DMRuling", gameDate, note: "x", payload: {} });
+    assert.equal(result.ok, false, `expected ${JSON.stringify(gameDate)} to be rejected`);
+    assert.match(result.errors.join(), /gameDate/);
+  }
+  assert.equal((await db.prepare("SELECT COUNT(*) c FROM events").get()).c, 0, "none of the rejected writes should have landed");
+});
+
+test("createEvent rejects a non-canonical newObligation.dueGameDate and ObligationAmended.changes.dueGameDate", async () => {
+  const db = await freshDb();
+  await db.prepare("INSERT INTO resource_totals (grp, name, value) VALUES ('resources', 'Wealth', 0)").run();
+
+  const badNewObligation = await createEvent(db, {
+    type: "ResourceChanged",
+    gameDate: "Pelorune (1), 1st, 1225",
+    payload: {
+      changes: { Wood: 20 },
+      newObligation: { description: "Loan", repaymentResource: "Wealth", amountTotal: 50, dueGameDate: "1233" },
+    },
+  });
+  assert.equal(badNewObligation.ok, false);
+  assert.match(badNewObligation.errors.join(), /dueGameDate/);
+
+  const obligation = await createObligation(db, {
+    description: "Loan", originalResources: {}, repaymentResource: "Wealth", amountTotal: 50,
+  });
+  const badAmend = await createEvent(db, {
+    type: "ObligationAmended",
+    gameDate: "Pelorune (1), 1st, 1225",
+    payload: { obligationId: obligation.id, changes: { dueGameDate: "Month 6, 1233" } },
+  });
+  assert.equal(badAmend.ok, false);
+  assert.match(badAmend.errors.join(), /dueGameDate/);
+});
+
 test("ResourceChanged applies its delta to the projection", async () => {
   const db = await freshDb();
   const result = await createEvent(db, {
-    type: "ResourceChanged", gameDate: "Month 1, 1225", actor: "DM", payload: { changes: { Wood: -3 } },
+    type: "ResourceChanged", gameDate: "Pelorune (1), 1st, 1225", actor: "DM", payload: { changes: { Wood: -3 } },
   });
   assert.equal(result.ok, true);
   assert.deepEqual(result.warnings, []);
@@ -33,7 +72,7 @@ test("ResourceChanged applies its delta to the projection", async () => {
 test("ResourceChanged warns but still applies when it would go negative (ADR-0005)", async () => {
   const db = await freshDb();
   const result = await createEvent(db, {
-    type: "ResourceChanged", gameDate: "Month 1, 1225", payload: { changes: { Wood: -20 } },
+    type: "ResourceChanged", gameDate: "Pelorune (1), 1st, 1225", payload: { changes: { Wood: -20 } },
   });
   assert.equal(result.ok, true);
   assert.equal(result.warnings.length, 1);
@@ -45,7 +84,7 @@ test("ResourceChanged warns but still applies when it would go negative (ADR-000
 test("ResourceChanged rejects an empty changes object", async () => {
   const db = await freshDb();
   const result = await createEvent(db, {
-    type: "ResourceChanged", gameDate: "Month 1, 1225", payload: { changes: {} },
+    type: "ResourceChanged", gameDate: "Pelorune (1), 1st, 1225", payload: { changes: {} },
   });
   assert.equal(result.ok, false);
   assert.equal((await db.prepare("SELECT COUNT(*) c FROM events").get()).c, 0);
@@ -53,15 +92,15 @@ test("ResourceChanged rejects an empty changes object", async () => {
 
 test("DMRuling requires a note and must not carry changes", async () => {
   const db = await freshDb();
-  const missingNote = await createEvent(db, { type: "DMRuling", gameDate: "1225", payload: {} });
+  const missingNote = await createEvent(db, { type: "DMRuling", gameDate: "Pelorune (1), 1st, 1225", payload: {} });
   assert.equal(missingNote.ok, false);
 
   const withChanges = await createEvent(db, {
-    type: "DMRuling", gameDate: "1225", note: "Mills don't stack", payload: { changes: { Wood: 1 } },
+    type: "DMRuling", gameDate: "Pelorune (1), 1st, 1225", note: "Mills don't stack", payload: { changes: { Wood: 1 } },
   });
   assert.equal(withChanges.ok, false);
 
-  const valid = await createEvent(db, { type: "DMRuling", gameDate: "1225", note: "Mills don't stack", payload: {} });
+  const valid = await createEvent(db, { type: "DMRuling", gameDate: "Pelorune (1), 1st, 1225", note: "Mills don't stack", payload: {} });
   assert.equal(valid.ok, true);
   const row = await db.prepare("SELECT value FROM resource_totals WHERE name = 'Wood'").get();
   assert.equal(row.value, 10, "a DMRuling must not touch projections");
@@ -70,7 +109,7 @@ test("DMRuling requires a note and must not carry changes", async () => {
 test("BuildingConstructed records the building and warns on an unmet prerequisite", async () => {
   const db = await freshDb();
   const result = await createEvent(db, {
-    type: "BuildingConstructed", gameDate: "1225", region: "Stirling Reach",
+    type: "BuildingConstructed", gameDate: "Pelorune (1), 1st, 1225", region: "Stirling Reach",
     payload: { building: "Mill" },
   });
   assert.equal(result.ok, true);
@@ -82,15 +121,15 @@ test("BuildingConstructed records the building and warns on an unmet prerequisit
 
 test("BuildingConstructed with its prerequisite present raises no warning", async () => {
   const db = await freshDb();
-  await createEvent(db, { type: "BuildingConstructed", gameDate: "1225", region: "Stirling Reach", payload: { building: "Farm" } });
-  const result = await createEvent(db, { type: "BuildingConstructed", gameDate: "1226", region: "Stirling Reach", payload: { building: "Mill" } });
+  await createEvent(db, { type: "BuildingConstructed", gameDate: "Pelorune (1), 1st, 1225", region: "Stirling Reach", payload: { building: "Farm" } });
+  const result = await createEvent(db, { type: "BuildingConstructed", gameDate: "Pelorune (1), 1st, 1226", region: "Stirling Reach", payload: { building: "Mill" } });
   assert.deepEqual(result.warnings, []);
 });
 
 test("BuildingConstructed accepts an optional displayName alongside the catalog name", async () => {
   const db = await freshDb();
   await createEvent(db, {
-    type: "BuildingConstructed", gameDate: "1225", region: "Old Hills",
+    type: "BuildingConstructed", gameDate: "Pelorune (1), 1st, 1225", region: "Old Hills",
     payload: { building: "Farm", displayName: "Anora's Roost" },
   });
   const row = await db.prepare("SELECT display_name FROM settlement_buildings WHERE region = 'Old Hills'").get();
@@ -99,10 +138,10 @@ test("BuildingConstructed accepts an optional displayName alongside the catalog 
 
 test("BuildingAmended updates displayName and detail without touching count", async () => {
   const db = await freshDb();
-  await createEvent(db, { type: "BuildingConstructed", gameDate: "1225", region: "Old Hills", payload: { building: "Farm", count: 3 } });
+  await createEvent(db, { type: "BuildingConstructed", gameDate: "Pelorune (1), 1st, 1225", region: "Old Hills", payload: { building: "Farm", count: 3 } });
 
   const result = await createEvent(db, {
-    type: "BuildingAmended", gameDate: "1226", region: "Old Hills",
+    type: "BuildingAmended", gameDate: "Pelorune (1), 1st, 1226", region: "Old Hills",
     payload: { building: "Farm", changes: { displayName: "Anora's Roost", detail: "Watch post" } },
   });
   assert.equal(result.ok, true);
@@ -117,12 +156,12 @@ test("BuildingAmended updates displayName and detail without touching count", as
 test("BuildingAmended merges partial changes, leaving fields not mentioned untouched", async () => {
   const db = await freshDb();
   await createEvent(db, {
-    type: "BuildingConstructed", gameDate: "1225", region: "Old Hills",
+    type: "BuildingConstructed", gameDate: "Pelorune (1), 1st, 1225", region: "Old Hills",
     payload: { building: "Farm", displayName: "Old Name", detail: "Old detail" },
   });
 
   await createEvent(db, {
-    type: "BuildingAmended", gameDate: "1226", region: "Old Hills",
+    type: "BuildingAmended", gameDate: "Pelorune (1), 1st, 1226", region: "Old Hills",
     payload: { building: "Farm", changes: { displayName: "New Name" } },
   });
 
@@ -134,7 +173,7 @@ test("BuildingAmended merges partial changes, leaving fields not mentioned untou
 test("BuildingAmended warns when the building isn't currently built in that region", async () => {
   const db = await freshDb();
   const result = await createEvent(db, {
-    type: "BuildingAmended", gameDate: "1225", region: "Old Hills",
+    type: "BuildingAmended", gameDate: "Pelorune (1), 1st, 1225", region: "Old Hills",
     payload: { building: "Farm", changes: { detail: "x" } },
   });
   assert.equal(result.ok, true);
@@ -145,32 +184,32 @@ test("BuildingAmended warns when the building isn't currently built in that regi
 test("BuildingAmended rejects an empty changes object", async () => {
   const db = await freshDb();
   const result = await createEvent(db, {
-    type: "BuildingAmended", gameDate: "1225", region: "Old Hills", payload: { building: "Farm", changes: {} },
+    type: "BuildingAmended", gameDate: "Pelorune (1), 1st, 1225", region: "Old Hills", payload: { building: "Farm", changes: {} },
   });
   assert.equal(result.ok, false);
 });
 
 test("LocationAmended requires payload.name", async () => {
   const db = await freshDb();
-  const missingName = await createEvent(db, { type: "LocationAmended", gameDate: "1225", payload: { changes: {} } });
+  const missingName = await createEvent(db, { type: "LocationAmended", gameDate: "Pelorune (1), 1st, 1225", payload: { changes: {} } });
   assert.equal(missingName.ok, false);
 
   const valid = await createEvent(db, {
-    type: "LocationAmended", gameDate: "1225", payload: { name: "Kingdom of Casdenia", changes: {} },
+    type: "LocationAmended", gameDate: "Pelorune (1), 1st, 1225", payload: { name: "Kingdom of Casdenia", changes: {} },
   });
   assert.equal(valid.ok, true);
 });
 
 test("ObligationAmended requires payload.obligationId", async () => {
   const db = await freshDb();
-  const missingId = await createEvent(db, { type: "ObligationAmended", gameDate: "1225", payload: { changes: {} } });
+  const missingId = await createEvent(db, { type: "ObligationAmended", gameDate: "Pelorune (1), 1st, 1225", payload: { changes: {} } });
   assert.equal(missingId.ok, false);
 });
 
 test("ObligationAmended warns but still applies when it references a nonexistent obligation (ADR-0005)", async () => {
   const db = await freshDb();
   const result = await createEvent(db, {
-    type: "ObligationAmended", gameDate: "1225", payload: { obligationId: 999, changes: { description: "x" } },
+    type: "ObligationAmended", gameDate: "Pelorune (1), 1st, 1225", payload: { obligationId: 999, changes: { description: "x" } },
   });
   assert.equal(result.ok, true);
   assert.equal(result.warnings.length, 1);
@@ -184,12 +223,12 @@ test("ObligationAmended corrects description/dueGameDate without touching amount
     originalResources: { Wood: 20 },
     repaymentResource: "Wealth",
     amountTotal: 50,
-    dueGameDate: "Month 6, 16th, 1233",
+    dueGameDate: "Meloron (6), 16th, 1233",
   });
 
   const result = await createEvent(db, {
     type: "ObligationAmended",
-    gameDate: "1225",
+    gameDate: "Pelorune (1), 1st, 1225",
     payload: { obligationId: obligation.id, changes: { description: "Loan from the Countess of Ravenstone" } },
   });
   assert.equal(result.ok, true);
@@ -197,7 +236,7 @@ test("ObligationAmended corrects description/dueGameDate without touching amount
 
   const updated = await getObligation(db, obligation.id);
   assert.equal(updated.description, "Loan from the Countess of Ravenstone");
-  assert.equal(updated.dueGameDate, "Month 6, 16th, 1233"); // untouched -- not in `changes`
+  assert.equal(updated.dueGameDate, "Meloron (6), 16th, 1233"); // untouched -- not in `changes`
   assert.equal(updated.amountTotal, 50);
   assert.equal(updated.amountRemaining, 50);
   assert.equal(updated.repaymentResource, "Wealth");
@@ -205,12 +244,12 @@ test("ObligationAmended corrects description/dueGameDate without touching amount
   // A later save touching only dueGameDate must not clobber the description just corrected.
   await createEvent(db, {
     type: "ObligationAmended",
-    gameDate: "1226",
-    payload: { obligationId: obligation.id, changes: { dueGameDate: "Month 1, 1234" } },
+    gameDate: "Pelorune (1), 1st, 1226",
+    payload: { obligationId: obligation.id, changes: { dueGameDate: "Pelorune (1), 1st, 1234" } },
   });
   const reUpdated = await getObligation(db, obligation.id);
   assert.equal(reUpdated.description, "Loan from the Countess of Ravenstone");
-  assert.equal(reUpdated.dueGameDate, "Month 1, 1234");
+  assert.equal(reUpdated.dueGameDate, "Pelorune (1), 1st, 1234");
 });
 
 test("ObligationAmended can set satisfied directly, the app's only way to \"delete\" a loan", async () => {
@@ -220,12 +259,12 @@ test("ObligationAmended can set satisfied directly, the app's only way to \"dele
     originalResources: { Food: 30 },
     repaymentResource: "Wealth",
     amountTotal: 40,
-    dueGameDate: "Month 3, 1226",
+    dueGameDate: "Shelune (3), 1st, 1226",
   });
 
   const forgiven = await createEvent(db, {
     type: "ObligationAmended",
-    gameDate: "1225",
+    gameDate: "Pelorune (1), 1st, 1225",
     payload: { obligationId: obligation.id, changes: { satisfied: true } },
   });
   assert.equal(forgiven.ok, true);
@@ -238,7 +277,7 @@ test("ObligationAmended can set satisfied directly, the app's only way to \"dele
   // Reversible: the row stays, so a DM can un-forgive it too.
   await createEvent(db, {
     type: "ObligationAmended",
-    gameDate: "1226",
+    gameDate: "Pelorune (1), 1st, 1226",
     payload: { obligationId: obligation.id, changes: { satisfied: false } },
   });
   const reopened = await getObligation(db, obligation.id);
@@ -249,7 +288,7 @@ test("LocationAmended creates a new kingdom and merges partial changes onto an e
   const db = await freshDb();
   await createEvent(db, {
     type: "LocationAmended",
-    gameDate: "1225",
+    gameDate: "Pelorune (1), 1st, 1225",
     payload: { name: "Kingdom of Casdenia", changes: { capital: "Royal City of Casdenor", note: "Friendly." } },
   });
   let row = await db.prepare("SELECT * FROM kingdoms WHERE name = ?").get("Kingdom of Casdenia");
@@ -259,7 +298,7 @@ test("LocationAmended creates a new kingdom and merges partial changes onto an e
   // A later save touching only `note` must not clobber the capital set earlier.
   await createEvent(db, {
     type: "LocationAmended",
-    gameDate: "1226",
+    gameDate: "Pelorune (1), 1st, 1226",
     payload: { name: "Kingdom of Casdenia", changes: { note: "Now hostile." } },
   });
   row = await db.prepare("SELECT * FROM kingdoms WHERE name = ?").get("Kingdom of Casdenia");
@@ -273,10 +312,10 @@ test("ResourceChanged with payload.newObligation creates an Obligation tied to t
 
   const result = await createEvent(db, {
     type: "ResourceChanged",
-    gameDate: "Month 1, 1225",
+    gameDate: "Pelorune (1), 1st, 1225",
     payload: {
       changes: { Wood: 20, Stone: 20 },
-      newObligation: { description: "Test loan", repaymentResource: "Wealth", amountTotal: 50, dueGameDate: "Month 6, 1226" },
+      newObligation: { description: "Test loan", repaymentResource: "Wealth", amountTotal: 50, dueGameDate: "Meloron (6), 1st, 1226" },
     },
   });
   assert.equal(result.ok, true);
@@ -297,7 +336,7 @@ test("ResourceChanged rejects a malformed newObligation", async () => {
   const db = await freshDb();
   const result = await createEvent(db, {
     type: "ResourceChanged",
-    gameDate: "Month 1, 1225",
+    gameDate: "Pelorune (1), 1st, 1225",
     payload: { changes: { Wood: 5 }, newObligation: { description: "Missing fields" } },
   });
   assert.equal(result.ok, false);
@@ -305,9 +344,9 @@ test("ResourceChanged rejects a malformed newObligation", async () => {
 
 test("listEvents filters by type and region, sorted by game date", async () => {
   const db = await freshDb();
-  await createEvent(db, { type: "ResourceChanged", gameDate: "Month 6, 1226", payload: { changes: { Wood: 1 } } });
-  await createEvent(db, { type: "ResourceChanged", gameDate: "Month 1, 1225", payload: { changes: { Wood: 1 } } });
-  await createEvent(db, { type: "BuildingConstructed", gameDate: "Month 1, 1225", region: "Narlmarches", payload: { building: "Farm" } });
+  await createEvent(db, { type: "ResourceChanged", gameDate: "Meloron (6), 1st, 1226", payload: { changes: { Wood: 1 } } });
+  await createEvent(db, { type: "ResourceChanged", gameDate: "Pelorune (1), 1st, 1225", payload: { changes: { Wood: 1 } } });
+  await createEvent(db, { type: "BuildingConstructed", gameDate: "Pelorune (1), 1st, 1225", region: "Narlmarches", payload: { building: "Farm" } });
 
   const resourceEvents = await listEvents(db, { type: "ResourceChanged" });
   assert.equal(resourceEvents.length, 2);
@@ -320,9 +359,9 @@ test("listEvents filters by type and region, sorted by game date", async () => {
 
 test("listEvents keeps the most recent events once there are more than `limit`, not the earliest", async () => {
   const db = await freshDb();
-  await createEvent(db, { type: "DMRuling", gameDate: "Month 1, 1225", note: "oldest" });
-  await createEvent(db, { type: "DMRuling", gameDate: "Month 2, 1225", note: "middle" });
-  await createEvent(db, { type: "DMRuling", gameDate: "Month 3, 1225", note: "newest" });
+  await createEvent(db, { type: "DMRuling", gameDate: "Pelorune (1), 1st, 1225", note: "oldest" });
+  await createEvent(db, { type: "DMRuling", gameDate: "Erastus (2), 1st, 1225", note: "middle" });
+  await createEvent(db, { type: "DMRuling", gameDate: "Shelune (3), 1st, 1225", note: "newest" });
 
   const capped = await listEvents(db, { limit: 2 });
   assert.equal(capped.length, 2);

@@ -9,7 +9,7 @@ import { applyProjection } from "./projections.js";
  * { ok: true, event, warnings } on success. Warnings never block the write (ADR-0005).
  */
 export async function createEvent(db, { type, gameDate, postedAt, actor, region, note, payload }) {
-  const errors = validateShape(type, { note, region, payload });
+  const errors = validateShape(type, { gameDate, note, region, payload });
   if (errors.length > 0) return { ok: false, errors };
 
   const parsed = parseGameDate(gameDate);

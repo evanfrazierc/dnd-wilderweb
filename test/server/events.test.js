@@ -28,7 +28,7 @@ test("postToDiscord:true with no webhook configured reports a skipped, successfu
     const res = await fetch(`${baseUrl}/api/events`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "DMRuling", gameDate: "Test Date", note: "A note", postToDiscord: true }),
+      body: JSON.stringify({ type: "DMRuling", gameDate: "Pelorune (1), 1st, 1225", note: "A note", postToDiscord: true }),
     });
     assert.equal(res.status, 201);
     const body = await res.json();
@@ -44,7 +44,7 @@ test("postToDiscord:false omits discord from the response entirely", async () =>
     const res = await fetch(`${baseUrl}/api/events`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "DMRuling", gameDate: "Test Date", note: "A note", postToDiscord: false }),
+      body: JSON.stringify({ type: "DMRuling", gameDate: "Pelorune (1), 1st, 1225", note: "A note", postToDiscord: false }),
     });
     assert.equal(res.status, 201);
     const body = await res.json();
@@ -62,7 +62,7 @@ test("postToDiscord is not stored as part of the saved event's payload", async (
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         type: "ResourceChanged",
-        gameDate: "Test Date",
+        gameDate: "Pelorune (1), 1st, 1225",
         payload: { changes: { Wood: 1 } },
         postToDiscord: true,
       }),
@@ -82,7 +82,7 @@ test("a save that fails shape validation never attempts a Discord post", async (
     const res = await fetch(`${baseUrl}/api/events`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "DMRuling", gameDate: "Test Date", note: "", postToDiscord: true }),
+      body: JSON.stringify({ type: "DMRuling", gameDate: "Pelorune (1), 1st, 1225", note: "", postToDiscord: true }),
     });
     assert.equal(res.status, 400);
     const body = await res.json();
