@@ -54,7 +54,12 @@ test("a ResourceChanged referencing an obligation pays it down", async () => {
   assert.equal(settled.amountRemaining, 0);
   assert.equal(settled.satisfied, true);
 
-  assert.equal((await listSettlingEvents(db, obligation.id)).length, 2);
+  // Shaped like any other event (gameDate, parsed payload) -- not raw DB columns with
+  // payload still a JSON string.
+  const settling = await listSettlingEvents(db, obligation.id);
+  assert.equal(settling.length, 2);
+  assert.deepEqual(settling.map((e) => e.gameDate), ["Pelorune (1), 1st, 1226", "Erastus (2), 1st, 1226"]);
+  assert.deepEqual(settling[0].payload, { changes: { Wealth: -10 }, obligationId: obligation.id });
 });
 
 test("overpaying an obligation clamps remaining at zero rather than going negative", async () => {

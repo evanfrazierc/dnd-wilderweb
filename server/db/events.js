@@ -86,7 +86,7 @@ export async function listEvents(db, { type, region, from, to, limit = 200 } = {
   return rows.map(deserializeEvent);
 }
 
-function deserializeEvent(row) {
+export function deserializeEvent(row) {
   return {
     id: row.id,
     type: row.type,

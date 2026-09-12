@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { timingSafeEqual } from "node:crypto";
 import { getDb } from "./db/connection.js";
-import { createEvent, listEvents } from "./db/events.js";
+import { createEvent, listEvents, getEvent } from "./db/events.js";
 import { getProjection } from "./db/read.js";
 import { listObligations, getObligation, listSettlingEvents } from "./db/obligations.js";
 import {
@@ -134,8 +134,11 @@ export function createApp(db) {
     try {
       const obligation = await getObligation(db, Number(req.params.id));
       if (!obligation) return res.status(404).json({ error: "Not found" });
-      const settlingEvents = await listSettlingEvents(db, obligation.id);
-      res.json({ ...obligation, settlingEvents });
+      const [settlingEvents, creatingEvent] = await Promise.all([
+        listSettlingEvents(db, obligation.id),
+        obligation.createdByEventId ? getEvent(db, obligation.createdByEventId) : null,
+      ]);
+      res.json({ ...obligation, settlingEvents, creatingEvent });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

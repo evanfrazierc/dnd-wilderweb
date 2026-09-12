@@ -1,4 +1,5 @@
 import { parseGameDate, isCanonicalGameDate } from "./gameDate.js";
+import { deserializeEvent } from "./events.js";
 
 export async function createObligation(db, {
   description, originalResources, repaymentResource, amountTotal, dueGameDate, createdByEventId,
@@ -41,9 +42,11 @@ export async function listObligations(db, { satisfied } = {}) {
   return rows.map(deserialize);
 }
 
-/** Every ResourceChanged event that has settled (part of) this obligation. */
+/** Every ResourceChanged event that has settled (part of) this obligation, shaped the same
+ * way listEvents/getEvent return an event (gameDate, parsed payload, etc.) rather than raw
+ * snake_case DB columns with payload still a JSON string. */
 export async function listSettlingEvents(db, obligationId) {
-  return db
+  const rows = await db
     .prepare(`
       SELECT * FROM events
       WHERE type = 'ResourceChanged'
@@ -51,6 +54,7 @@ export async function listSettlingEvents(db, obligationId) {
       ORDER BY game_date_sort ASC
     `)
     .all(obligationId);
+  return rows.map(deserializeEvent);
 }
 
 function deserialize(row) {

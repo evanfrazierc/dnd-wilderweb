@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getProjection, getReference, getObligations } from "../api.js";
+import { getProjection, getReference, getObligations, getObligation } from "../api.js";
 import { useEventSubmit } from "../lib/useEventSubmit.js";
 import { useReferenceSave } from "../lib/useReferenceSave.js";
 import { useDraft } from "../lib/useDraft.js";
@@ -345,10 +345,57 @@ function RemoveObligationControl({ obligation, label, confirming, onConfirmStart
   );
 }
 
+function resourcesText(resources) {
+  return Object.entries(resources || {}).map(([name, amount]) => `${amount} ${name}`).join(", ");
+}
+
+// GET /api/obligations/:id (server/index.js) already returns originalResources, the creating
+// event, and every settling event -- listObligations (what loads the summary row) doesn't carry
+// any of that, so this fetches it lazily on expand rather than bloating every page load with
+// detail nobody asked to see yet.
+function ObligationDetails({ obligationId }) {
+  const [detail, setDetail] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    getObligation(obligationId).then(setDetail).catch((e) => setError(e.message));
+  }, [obligationId]);
+
+  if (error) return <p className="text-faint" style={{ fontSize: "0.8rem" }}>Failed to load details: {error}</p>;
+  if (!detail) return <p className="text-faint" style={{ fontSize: "0.8rem" }}>Loading…</p>;
+
+  const borrowed = resourcesText(detail.originalResources);
+
+  return (
+    <div style={{ width: "100%", marginTop: "0.5rem", fontSize: "0.82rem" }}>
+      {borrowed && (
+        <div className="text-faint">
+          Borrowed: {borrowed}
+          {detail.creatingEvent && ` on ${detail.creatingEvent.gameDate}`}
+        </div>
+      )}
+      {detail.settlingEvents.length === 0 ? (
+        <div className="text-faint" style={{ marginTop: "0.3rem" }}>No repayments logged yet.</div>
+      ) : (
+        <div style={{ marginTop: "0.3rem" }}>
+          <div className="text-faint">Repayment history:</div>
+          {detail.settlingEvents.map((e) => (
+            <div key={e.id} className="text-faint" style={{ paddingLeft: "0.6rem" }}>
+              {e.gameDate}: {-e.payload.changes[detail.repaymentResource]} {detail.repaymentResource}
+              {e.note ? ` — ${e.note}` : ""}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // A plain wrapping .building-name div, not the always-visible single-line <input> this
 // replaced -- that input couldn't wrap, which is what was clipping loan titles on mobile.
 function ObligationRow({ obligation, onChanged }) {
   const [action, setAction] = useState(null); // null | "repay" | "edit" | "remove" -- see EditObligationControl's comment
+  const [showDetails, setShowDetails] = useState(false);
   const pct = obligation.amountTotal > 0
     ? Math.min(100, ((obligation.amountTotal - obligation.amountRemaining) / obligation.amountTotal) * 100)
     : 0;
@@ -409,6 +456,10 @@ function ObligationRow({ obligation, onChanged }) {
           }}
         />
       )}
+      <button className="btn btn-icon" onClick={() => setShowDetails(!showDetails)} aria-label={showDetails ? "Hide details" : "Show details"}>
+        <Icon name={showDetails ? "ArrowUp" : "ArrowDown"} size={14} />
+      </button>
+      {showDetails && <ObligationDetails obligationId={obligation.id} />}
     </div>
   );
 }
