@@ -85,7 +85,7 @@ function BuildingCatalogEditor({ catalog, onSaved }) {
         list of prerequisite building names. Annual effect is the same format (negative values
         for upkeep, e.g. "Wealth: 1, Food: -1") -- only set it for a flat, guaranteed,
         per-building yearly effect; leave it blank for anything dice-based, population-scaled,
-        or player-invoked. It feeds the Dashboard's Annual Income &amp; Upkeep total (ADR-0009).
+        or player-invoked. It feeds the Dashboard's Annual Income &amp; Upkeep total.
       </p>
       {draft.map((r, i) => (
         <div key={i} className="card" style={{ marginTop: "0.6rem", display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "flex-end" }}>
