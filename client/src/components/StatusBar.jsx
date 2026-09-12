@@ -44,6 +44,10 @@ function summarizeEvent(event) {
       if (payload?.changes?.description) return `Loan updated: ${payload.changes.description}`;
       if (payload?.changes?.dueGameDate) return "Loan due date updated";
       return "Loan updated";
+    case "UnitRaised":
+      return `Raised ${payload?.count > 1 ? `${payload.count}x ` : ""}${payload?.unit}`;
+    case "UnitLost":
+      return `Lost ${payload?.count > 1 ? `${payload.count}x ` : ""}${payload?.unit}`;
     case "DMRuling":
       return note || "DM ruling";
     default:

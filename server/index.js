@@ -8,6 +8,7 @@ import { getProjection } from "./db/read.js";
 import { listObligations, getObligation, listSettlingEvents } from "./db/obligations.js";
 import {
   ValidationError, REFERENCE_RESOURCES, ensureRegionsSeeded, ensureKingdomsSeeded, migrateKingdomPlacesToRegions,
+  ensureUnitCatalogSeeded,
 } from "./db/reference.js";
 import { notifyDiscord } from "./discord.js";
 
@@ -40,7 +41,7 @@ function siteAuth(req, res, next) {
   res.status(401).send("Authentication required.");
 }
 
-const PROJECTION_RESOURCES = new Set(["stats", "settlements", "calendar", "deities", "locations"]);
+const PROJECTION_RESOURCES = new Set(["stats", "settlements", "calendar", "deities", "locations", "garrison"]);
 
 /** Builds the Express app against an already-open `db`, with no side effects of its own --
  * lets tests boot the real routing without binding a port or touching the real database
@@ -159,6 +160,7 @@ if (isMain) {
       await ensureRegionsSeeded(db);
       await ensureKingdomsSeeded(db);
       await migrateKingdomPlacesToRegions(db);
+      await ensureUnitCatalogSeeded(db);
       createApp(db).listen(port, () => {
         console.log(`Wilderweb server listening on http://localhost:${port}`);
       });

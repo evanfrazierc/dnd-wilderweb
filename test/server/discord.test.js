@@ -108,6 +108,30 @@ test("buildEmbed formats an ObligationAmended event", () => {
   ]);
 });
 
+test("buildEmbed formats a UnitRaised event, mirroring BuildingConstructed", () => {
+  const embed = buildEmbed({
+    type: "UnitRaised",
+    gameDate: "Erastus 4, 1227",
+    payload: { unit: "Militia", count: 3, detail: "Levied from the town" },
+  });
+  assert.equal(embed.title, "Unit Raised");
+  assert.deepEqual(embed.fields, [
+    { name: "Unit", value: "Militia", inline: true },
+    { name: "Count", value: "3", inline: true },
+    { name: "Detail", value: "Levied from the town" },
+  ]);
+});
+
+test("buildEmbed formats a UnitLost event", () => {
+  const embed = buildEmbed({
+    type: "UnitLost",
+    gameDate: "Erastus 4, 1227",
+    payload: { unit: "Guard", count: 1 },
+  });
+  assert.equal(embed.title, "Unit Lost");
+  assert.deepEqual(embed.fields, [{ name: "Unit", value: "Guard", inline: true }]);
+});
+
 test("buildEmbed includes the actor when present", () => {
   const embed = buildEmbed({
     type: "DMRuling",

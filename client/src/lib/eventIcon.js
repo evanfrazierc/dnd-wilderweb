@@ -8,6 +8,8 @@ export const EVENT_ICON = {
   BuildingConstructed: "Settlements",
   BuildingRemoved: "Trash",
   BuildingAmended: "Codex",
+  UnitRaised: "Weapons",
+  UnitLost: "Trash",
   CalendarAdvanced: "Calendar",
   DeityAmended: "Piety",
   LocationAmended: "MapPin",

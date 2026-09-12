@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   type TEXT NOT NULL CHECK (type IN (
     'ResourceChanged', 'BuildingConstructed', 'BuildingRemoved', 'BuildingAmended',
-    'CalendarAdvanced', 'DeityAmended', 'LocationAmended', 'ObligationAmended', 'DMRuling'
+    'CalendarAdvanced', 'DeityAmended', 'LocationAmended', 'ObligationAmended', 'DMRuling',
+    'UnitRaised', 'UnitLost'
   )),
   game_date_raw TEXT NOT NULL,
   game_date_sort INTEGER NOT NULL,
@@ -44,6 +45,15 @@ CREATE TABLE IF NOT EXISTS settlement_buildings (
   count INTEGER NOT NULL DEFAULT 1,
   detail TEXT,
   UNIQUE (region, building)
+);
+
+-- A Unit's current count (CONTEXT.md, docs/adr/0017): unlike settlement_buildings, this is one
+-- kingdom-wide roster, not per-region -- the garrison isn't attributed to a specific settlement.
+CREATE TABLE IF NOT EXISTS garrison_units (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  unit TEXT NOT NULL UNIQUE, -- must match unit_catalog.name
+  count INTEGER NOT NULL DEFAULT 1,
+  detail TEXT -- optional in-fiction note, e.g. "House Elmander guards"
 );
 
 CREATE TABLE IF NOT EXISTS calendar_state (
@@ -116,6 +126,18 @@ CREATE TABLE IF NOT EXISTS building_catalog (
   -- ALTER-TABLE-if-missing check, since this table predates the column (existing DBs
   -- already had building_catalog before this was added).
   annual_effect TEXT NOT NULL DEFAULT '{}'
+);
+
+-- A type of garrison unit (CONTEXT.md, docs/adr/0017) -- reference data structured like
+-- building_catalog, since a Unit is the same kind of thing: a catalog-referenced entity with a
+-- cost and building prerequisites.
+CREATE TABLE IF NOT EXISTS unit_catalog (
+  name TEXT PRIMARY KEY,
+  cost TEXT NOT NULL DEFAULT '{}', -- {resourceName: amount} to raise one
+  upkeep TEXT NOT NULL DEFAULT '{}', -- {resourceName: amount} per year, one unit
+  combat_bonus INTEGER NOT NULL DEFAULT 0,
+  requires TEXT NOT NULL DEFAULT '[]', -- building names, same shape as building_catalog.requires
+  note TEXT
 );
 
 -- Regions a building can be built in -- first-class reference data (docs/adr/0008) rather

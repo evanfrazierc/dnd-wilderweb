@@ -35,6 +35,10 @@ An event correcting an existing Obligation's `description` or `dueGameDate`, or 
 **DMRuling**:
 An event recording a DM clarification or correction with no resource or state delta. Always carries a note; never carries `changes`. Distinguishes a deliberate no-op ruling from a `ResourceChanged` with an empty delta, which today are indistinguishable and shouldn't be.
 
+**UnitRaised** / **UnitLost**:
+An event recording a Unit added to or removed from the garrison, referencing the unit catalog -- the same shape as `BuildingConstructed`/`BuildingRemoved`, except the garrison is one kingdom-wide roster rather than attributed to a region (ADR-0017). Upgrading a unit (Militia to Guard, a Troop gaining a mount) is a `UnitLost` for the old tier immediately followed by a `UnitRaised` for the new one, the same "no third meaning bolted onto an existing type" precedent `BuildingAmended` above already established for moving a building. A Unit's cost isn't auto-deducted from resources any more than a Building's is -- raising one is a record; the resource delta is a separate `ResourceChanged`.
+_Avoid_: Adventurers as a tracked Unit (deliberately excluded, ADR-0017 -- they're a temporary, one-year hire, not a standing part of the garrison)
+
 ### Supporting concepts
 
 **Actor**:
@@ -56,8 +60,8 @@ _Avoid_: loan (the loan is the `ResourceChanged` event that creates the Obligati
 The current-state tables (current resource totals, current buildings per region, etc.), derived from and updated transactionally alongside the event log. Not recomputed by full replay on every read.
 
 **Campaign state**:
-Data with event history: resources/assets/society totals, buildings built per region, the current in-game date, deities, locations.
+Data with event history: resources/assets/society totals, buildings built per region, the garrison, the current in-game date, deities, locations.
 _Avoid_: conflating with Reference data
 
 **Reference data**:
-Static rules/lore content, edited directly with no event history: the building catalog, the campaign introduction, the calendar's month and holiday definitions.
+Static rules/lore content, edited directly with no event history: the building catalog, the unit catalog, the campaign introduction, the calendar's month and holiday definitions.

@@ -19,6 +19,8 @@ const EVENT_TITLE = {
   LocationAmended: "Locations Updated",
   ObligationAmended: "Obligation Amended",
   DMRuling: "DM Ruling",
+  UnitRaised: "Unit Raised",
+  UnitLost: "Unit Lost",
 };
 
 const EVENT_COLOR = {
@@ -30,6 +32,8 @@ const EVENT_COLOR = {
   LocationAmended: 0x4a6fa5,
   ObligationAmended: 0x7a7160,
   DMRuling: 0x7a7160,
+  UnitRaised: 0x8a3f3f,
+  UnitLost: 0x5a2b2b,
 };
 
 function formatChanges(changes) {
@@ -77,6 +81,13 @@ function eventFields(event) {
       fields.push({ name: "Obligation", value: `#${payload.obligationId}`, inline: true });
       const changes = Object.entries(payload.changes || {}).map(([k, v]) => `${k}: ${v}`).join(", ");
       if (changes) fields.push({ name: "Changes", value: changes });
+      break;
+    }
+    case "UnitRaised":
+    case "UnitLost": {
+      fields.push({ name: "Unit", value: payload.unit, inline: true });
+      if (payload.count > 1) fields.push({ name: "Count", value: String(payload.count), inline: true });
+      if (payload.detail) fields.push({ name: "Detail", value: payload.detail });
       break;
     }
     case "DMRuling":

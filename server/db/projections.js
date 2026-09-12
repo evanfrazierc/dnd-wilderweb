@@ -33,6 +33,12 @@ export async function applyProjection(db, event) {
     case "ObligationAmended":
       await applyObligationAmended(db, payload);
       break;
+    case "UnitRaised":
+      await applyUnitRaised(db, payload);
+      break;
+    case "UnitLost":
+      await applyUnitLost(db, payload);
+      break;
     case "DMRuling":
       break; // no state change by construction (validate.js enforces this)
     default:
@@ -154,6 +160,31 @@ async function applyLocationAmended(db, payload) {
     ON CONFLICT (name) DO UPDATE SET
       capital = excluded.capital, note = excluded.note
   `).run(payload.name, merged.capital, merged.note);
+}
+
+// Mirrors applyBuildingConstructed/applyBuildingRemoved, keyed by `unit` instead of
+// `(region, building)` -- the garrison is one kingdom-wide roster (docs/adr/0017).
+async function applyUnitRaised(db, payload) {
+  const count = payload.count ?? 1;
+  await db.prepare(`
+    INSERT INTO garrison_units (unit, count, detail)
+    VALUES (?, ?, ?)
+    ON CONFLICT (unit) DO UPDATE SET
+      count = count + excluded.count,
+      detail = COALESCE(excluded.detail, garrison_units.detail)
+  `).run(payload.unit, count, payload.detail ?? null);
+}
+
+async function applyUnitLost(db, payload) {
+  const count = payload.count ?? 1;
+  const row = await db.prepare("SELECT * FROM garrison_units WHERE unit = ?").get(payload.unit);
+  if (!row) return; // already surfaced as a warning
+  const next = row.count - count;
+  if (next <= 0) {
+    await db.prepare("DELETE FROM garrison_units WHERE id = ?").run(row.id);
+  } else {
+    await db.prepare("UPDATE garrison_units SET count = ? WHERE id = ?").run(next, row.id);
+  }
 }
 
 async function applyObligationAmended(db, payload) {

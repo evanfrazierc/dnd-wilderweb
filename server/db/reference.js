@@ -57,6 +57,77 @@ export async function replaceBuildingCatalog(db, buildings) {
   });
 }
 
+/**
+ * A type of garrison unit (CONTEXT.md, docs/adr/0017) -- reference data structured like the
+ * building catalog just above, since a Unit is the same kind of thing: a catalog-referenced
+ * entity with a cost and building prerequisites.
+ */
+export async function readUnitCatalog(db) {
+  const rows = await db.prepare("SELECT * FROM unit_catalog ORDER BY name").all();
+  return rows.map((u) => ({
+    name: u.name,
+    cost: JSON.parse(u.cost),
+    upkeep: JSON.parse(u.upkeep),
+    combatBonus: u.combat_bonus,
+    requires: JSON.parse(u.requires),
+    note: u.note ?? undefined,
+  }));
+}
+
+export async function replaceUnitCatalog(db, units) {
+  const seen = new Set();
+  for (const u of units) {
+    requireFields(u, ["name"], "A unit catalog entry");
+    if (seen.has(u.name)) throw new ValidationError(`Duplicate unit catalog entry: "${u.name}"`);
+    seen.add(u.name);
+  }
+
+  return db.transaction(async (tx) => {
+    await tx.prepare("DELETE FROM unit_catalog").run();
+    const insert = tx.prepare(`
+      INSERT INTO unit_catalog (name, cost, upkeep, combat_bonus, requires, note)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
+    for (const u of units) {
+      await insert.run(
+        u.name, JSON.stringify(u.cost ?? {}), JSON.stringify(u.upkeep ?? {}),
+        u.combatBonus ?? 0, JSON.stringify(u.requires ?? []), u.note ?? null,
+      );
+    }
+  });
+}
+
+// Real starting values from wilderlands-discord-export.txt's #garrison channel (see
+// .scratch/discord-seed/messages.json and docs/adr/0017), not placeholders -- so the DM doesn't
+// have to retype the catalog by hand after this ships. Adventurers are deliberately excluded
+// (docs/adr/0017): the source describes them as temporary, one-year hires, not a standing unit.
+const UNIT_CATALOG_SEED = [
+  { name: "Militia", cost: { Food: 1 }, upkeep: {}, combatBonus: 0, requires: [],
+    note: "Levied from a Population at a cost of 1 Loyalty when done outside defensive purposes." },
+  { name: "Guard", cost: { Food: 1, Weapons: 1 }, upkeep: { Food: 1 }, combatBonus: 1, requires: ["Barracks"] },
+  { name: "Troop", cost: { Food: 1, Weapons: 1, Wealth: 1 }, upkeep: { Food: 1 }, combatBonus: 2, requires: ["Barracks"] },
+  { name: "Veteran", cost: { Food: 1, Loyalty: 2, Wealth: 2 }, upkeep: { Food: 1 }, combatBonus: 3, requires: ["Barracks"] },
+  { name: "Knight", cost: { Food: 1, Horses: 1, Wealth: 1, Weapons: 2 }, upkeep: { Food: 1, Wealth: 1 }, combatBonus: 4,
+    requires: ["Barracks"], note: "Castles can locally produce one Knight a year for instant local defense." },
+  // `requires` lists buildings only (matching building_catalog.requires' semantics, since
+  // checkWarnings looks these up in settlement_buildings) -- raising one of these from an
+  // existing Troop/Veteran, rather than from scratch, is the same UnitLost+UnitRaised pattern
+  // any other upgrade uses (docs/adr/0017), not something the catalog itself gates on.
+  { name: "Mounted Troop", cost: { Horses: 1 }, upkeep: { Food: 2 }, combatBonus: 2, requires: ["Stables"],
+    note: "A Troop given a mount via the Stables (pay 1 Horse); upkeep is +1 Food over a Troop's, and it gains mounted travel distance." },
+  { name: "Mounted Veteran", cost: { Horses: 1 }, upkeep: { Food: 2 }, combatBonus: 3, requires: ["Stables"],
+    note: "A Veteran given a mount via the Stables (pay 1 Horse); upkeep is +1 Food over a Veteran's, and it gains mounted travel distance." },
+];
+
+/** One-time, idempotent data bootstrap -- only runs while `unit_catalog` is empty, so it never
+ * clobbers a DM's edits. Mirrors ensureRegionsSeeded's gating. Called once from server/index.js's
+ * startup, same as the other ensure*Seeded functions. */
+export async function ensureUnitCatalogSeeded(db) {
+  const { c } = await db.prepare("SELECT COUNT(*) c FROM unit_catalog").get();
+  if (c > 0) return;
+  await replaceUnitCatalog(db, UNIT_CATALOG_SEED);
+}
+
 const RESOURCE_GROUPS = new Set(["resources", "assets", "society"]);
 
 export async function readResourceDefinitions(db) {
@@ -307,6 +378,7 @@ export async function migrateKingdomPlacesToRegions(db) {
 /** Single source of truth for which reference resources exist and how to read/write each. */
 export const REFERENCE_RESOURCES = {
   buildings: { read: readBuildingCatalog, write: replaceBuildingCatalog },
+  units: { read: readUnitCatalog, write: replaceUnitCatalog },
   introduction: { read: readIntroduction, write: replaceIntroduction },
   resourceDefinitions: { read: readResourceDefinitions, write: replaceResourceDefinitions },
   calendarStructure: { read: readCalendarStructure, write: replaceCalendarStructure },

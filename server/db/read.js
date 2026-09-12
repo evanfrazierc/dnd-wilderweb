@@ -10,6 +10,8 @@ export async function getProjection(db, resource) {
       return readStats(db);
     case "settlements":
       return readSettlements(db);
+    case "garrison":
+      return readGarrison(db);
     case "calendar":
       return readCalendar(db);
     case "deities":
@@ -53,6 +55,15 @@ async function readSettlements(db) {
     });
   }
   return Array.from(byRegion.entries()).map(([region, buildings]) => ({ region, buildings }));
+}
+
+async function readGarrison(db) {
+  const rows = await db.prepare("SELECT * FROM garrison_units ORDER BY unit").all();
+  return rows.map((r) => ({
+    name: r.unit,
+    count: r.count,
+    detail: r.detail ?? undefined,
+  }));
 }
 
 async function readCalendar(db) {

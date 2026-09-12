@@ -13,6 +13,8 @@ const EVENT_TYPES = [
   "ResourceChanged",
   "BuildingConstructed",
   "BuildingRemoved",
+  "UnitRaised",
+  "UnitLost",
   "CalendarAdvanced",
   "DeityAmended",
   "LocationAmended",

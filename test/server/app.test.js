@@ -24,6 +24,7 @@ async function startServer() {
 
 const VALID_PAYLOADS = {
   buildings: [{ name: "Farm", category: "Resources", effect: "Grows food", cost: { Wood: 5 }, requires: [] }],
+  units: [{ name: "Militia", cost: { Food: 1 }, upkeep: {}, combatBonus: 0, requires: [] }],
   introduction: { postedBy: "DM", postedAt: "2026-01-01", paragraphs: ["Welcome."] },
   resourceDefinitions: [{ grp: "resources", name: "Wood", description: "Lumber" }],
   calendarStructure: {

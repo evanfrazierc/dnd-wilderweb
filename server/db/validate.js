@@ -76,6 +76,13 @@ export function validateShape(type, { gameDate, note, region, payload }) {
       }
       break;
     }
+    case "UnitRaised":
+    case "UnitLost": {
+      // No region requirement, unlike BuildingConstructed/Removed -- the garrison is one
+      // kingdom-wide roster, not attributed to a settlement (docs/adr/0017).
+      if (!payload?.unit) errors.push(`${type} requires payload.unit`);
+      break;
+    }
     default:
       errors.push(`Unknown event type: ${type}`);
   }
@@ -165,6 +172,30 @@ export async function checkWarnings(db, type, { region, payload }) {
   if (type === "ObligationAmended") {
     const obligation = await db.prepare("SELECT 1 FROM obligations WHERE id = ?").get(payload.obligationId);
     if (!obligation) warnings.push(`References obligation #${payload.obligationId}, which does not exist`);
+  }
+
+  if (type === "UnitRaised") {
+    const catalog = await db.prepare("SELECT * FROM unit_catalog WHERE name = ?").get(payload.unit);
+    if (!catalog) {
+      warnings.push(`"${payload.unit}" is not in the unit catalog`);
+    } else {
+      const requires = JSON.parse(catalog.requires || "[]");
+      for (const req of requires) {
+        // Not scoped to a region, unlike BuildingConstructed's equivalent check -- the garrison
+        // isn't region-scoped, so "built somewhere" is the right question here.
+        const present = await db.prepare("SELECT 1 FROM settlement_buildings WHERE building = ?").get(req);
+        if (!present) {
+          warnings.push(`"${payload.unit}" requires "${req}", not yet built anywhere`);
+        }
+      }
+    }
+  }
+
+  if (type === "UnitLost") {
+    const present = await db.prepare("SELECT count FROM garrison_units WHERE unit = ?").get(payload.unit);
+    if (!present || present.count < (payload.count ?? 1)) {
+      warnings.push(`Losing more "${payload.unit}" than are recorded in the garrison`);
+    }
   }
 
   return warnings;

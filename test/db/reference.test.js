@@ -4,6 +4,8 @@ import { openDb } from "../../server/db/connection.js";
 import {
   ValidationError,
   replaceBuildingCatalog,
+  replaceUnitCatalog,
+  ensureUnitCatalogSeeded,
   replaceResourceDefinitions,
   replaceCalendarStructure,
   replaceIntroduction,
@@ -37,6 +39,51 @@ test("replaceBuildingCatalog rejects a duplicate name", async () => {
     ValidationError,
   );
   assert.equal((await db.prepare("SELECT COUNT(*) c FROM building_catalog").get()).c, 0);
+});
+
+test("replaceUnitCatalog replaces the whole catalog", async () => {
+  const db = await openDb(":memory:");
+  await db.prepare(`
+    INSERT INTO unit_catalog (name, cost, upkeep, combat_bonus, requires) VALUES ('Old Guard', '{}', '{}', 0, '[]')
+  `).run();
+
+  await replaceUnitCatalog(db, [
+    { name: "Militia", cost: { Food: 1 }, upkeep: {}, combatBonus: 0, requires: [] },
+    { name: "Guard", cost: { Food: 1, Weapons: 1 }, upkeep: { Food: 1 }, combatBonus: 1, requires: ["Barracks"] },
+  ]);
+
+  const rows = await db.prepare("SELECT * FROM unit_catalog ORDER BY name").all();
+  assert.deepEqual(rows.map((r) => r.name), ["Guard", "Militia"]);
+  assert.equal(JSON.parse(rows[0].requires)[0], "Barracks");
+  assert.equal(rows[0].combat_bonus, 1);
+});
+
+test("replaceUnitCatalog rejects a duplicate name", async () => {
+  const db = await openDb(":memory:");
+  await assert.rejects(
+    () => replaceUnitCatalog(db, [{ name: "Militia" }, { name: "Militia" }]),
+    ValidationError,
+  );
+  assert.equal((await db.prepare("SELECT COUNT(*) c FROM unit_catalog").get()).c, 0);
+});
+
+test("replaceUnitCatalog rejects a missing name", async () => {
+  const db = await openDb(":memory:");
+  await assert.rejects(() => replaceUnitCatalog(db, [{ combatBonus: 0 }]), ValidationError);
+});
+
+test("ensureUnitCatalogSeeded seeds the real garrison-channel unit types, and is idempotent", async () => {
+  const db = await openDb(":memory:");
+  await ensureUnitCatalogSeeded(db);
+  const first = await db.prepare("SELECT COUNT(*) c FROM unit_catalog").get();
+  assert.ok(first.c > 0);
+  const militia = await db.prepare("SELECT * FROM unit_catalog WHERE name = 'Militia'").get();
+  assert.ok(militia);
+
+  await replaceUnitCatalog(db, [{ name: "Custom Unit", cost: {}, upkeep: {}, combatBonus: 0, requires: [] }]);
+  await ensureUnitCatalogSeeded(db); // must not clobber the DM's edit -- gated on the table being empty
+  const after = await db.prepare("SELECT COUNT(*) c FROM unit_catalog").get();
+  assert.equal(after.c, 1);
 });
 
 test("replaceBuildingCatalog rejects a missing name", async () => {

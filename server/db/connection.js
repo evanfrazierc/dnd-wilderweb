@@ -217,6 +217,58 @@ async function ensureObligationAmendedEventType(client) {
   }
 }
 
+// Same rebuild-and-swap as ensureObligationAmendedEventType just above, for the same reason:
+// adding 'UnitRaised'/'UnitLost' to events.type's CHECK constraint (docs/adr/0017) only takes
+// effect on a table CREATEd fresh with the new list.
+async function ensureUnitEventTypesAdded(client) {
+  const result = await client.execute("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'events'");
+  const sql = result.rows[0]?.sql ?? "";
+  if (!sql || sql.includes("UnitRaised")) return;
+
+  await client.execute("PRAGMA foreign_keys = OFF");
+  try {
+    const tx = await client.transaction("write");
+    try {
+      await tx.execute(`
+        CREATE TABLE events_new (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          type TEXT NOT NULL CHECK (type IN (
+            'ResourceChanged', 'BuildingConstructed', 'BuildingRemoved', 'BuildingAmended',
+            'CalendarAdvanced', 'DeityAmended', 'LocationAmended', 'ObligationAmended', 'DMRuling',
+            'UnitRaised', 'UnitLost'
+          )),
+          game_date_raw TEXT NOT NULL,
+          game_date_sort INTEGER NOT NULL,
+          posted_at TEXT NOT NULL,
+          actor TEXT,
+          region TEXT,
+          note TEXT,
+          payload TEXT NOT NULL DEFAULT '{}',
+          warnings TEXT NOT NULL DEFAULT '[]',
+          created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        )
+      `);
+      await tx.execute(`
+        INSERT INTO events_new
+          (id, type, game_date_raw, game_date_sort, posted_at, actor, region, note, payload, warnings, created_at)
+        SELECT id, type, game_date_raw, game_date_sort, posted_at, actor, region, note, payload, warnings, created_at
+        FROM events
+      `);
+      await tx.execute("DROP TABLE events");
+      await tx.execute("ALTER TABLE events_new RENAME TO events");
+      await tx.execute("CREATE INDEX IF NOT EXISTS idx_events_game_date_sort ON events (game_date_sort)");
+      await tx.execute("CREATE INDEX IF NOT EXISTS idx_events_type ON events (type)");
+      await tx.execute("CREATE INDEX IF NOT EXISTS idx_events_region ON events (region)");
+      await tx.commit();
+    } catch (err) {
+      await tx.rollback();
+      throw err;
+    }
+  } finally {
+    await client.execute("PRAGMA foreign_keys = ON");
+  }
+}
+
 // One-time cleanup of a handful of specific, known-bad rows discovered in the live campaign
 // log: a browser-testing session's CalendarAdvanced entries and a build-then-immediately-
 // remove Ferry test (both confirmed by the DM to be test artifacts, not campaign history --
@@ -512,6 +564,11 @@ async function initSchema(client) {
   // Must run after the rename above: by now the table is named `regions` either way
   // (freshly created that way, or renamed back), never `settlements`.
   await ensureColumn(client, "regions", "kingdom", "TEXT");
+  // Unlike ensureObligationAmendedEventType above, this one has no "predates the rename"
+  // guarantee -- it's new today, so it runs after ensureRegionRename instead, once the events
+  // table's region column is guaranteed to be named `region` either way (its rebuild hardcodes
+  // that name, same as ensureObligationAmendedEventType's does).
+  await ensureUnitEventTypesAdded(client);
   await ensureKnownDataCorrections(client);
   await ensureCurrentDateAdvancedPastRealActivity(client);
   await ensureConsistentDateFormatting(client);
