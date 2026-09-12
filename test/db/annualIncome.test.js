@@ -10,6 +10,17 @@ async function insertBuilding(db, name, annualEffect) {
   `).run(name, JSON.stringify(annualEffect ?? {}));
 }
 
+async function insertUnit(db, name, upkeep) {
+  await db.prepare(`
+    INSERT INTO unit_catalog (name, cost, upkeep, combat_bonus, requires)
+    VALUES (?, '{}', ?, 0, '[]')
+  `).run(name, JSON.stringify(upkeep ?? {}));
+}
+
+async function insertGarrison(db, unit, count) {
+  await db.prepare("INSERT INTO garrison_units (unit, count) VALUES (?, ?)").run(unit, count);
+}
+
 test("computeAnnualIncomeUpkeep returns no lines when no building has an annual effect", async () => {
   const db = await openDb(":memory:");
   await insertBuilding(db, "Roads", {});
@@ -58,6 +69,47 @@ test("computeAnnualIncomeUpkeep ignores buildings with no settlement_buildings r
   const db = await openDb(":memory:");
   await insertBuilding(db, "Logging Camp", { Wood: 1 });
   // No settlement_buildings row for it at all.
+  const result = await computeAnnualIncomeUpkeep(db);
+  assert.deepEqual(result.lines, []);
+});
+
+// docs/adr/0017 / docs/adr/0009's amendment: a unit's upkeep folds into the same total,
+// negated (it's stored as a plain positive magnitude, always a deduction).
+test("computeAnnualIncomeUpkeep negates a unit's upkeep, multiplied by its count", async () => {
+  const db = await openDb(":memory:");
+  await insertUnit(db, "Guard", { Food: 1 });
+  await insertGarrison(db, "Guard", 3);
+
+  const result = await computeAnnualIncomeUpkeep(db);
+  assert.deepEqual(result.lines, [{ resource: "Food", net: -3, breakdown: ["-3 (3 × Guard)"] }]);
+});
+
+test("computeAnnualIncomeUpkeep nets a unit's upkeep against a building's income for the same resource", async () => {
+  const db = await openDb(":memory:");
+  await insertBuilding(db, "Farm", { Food: 5 });
+  await db.prepare("INSERT INTO settlement_buildings (region, building, count) VALUES ('Stirling Reach', 'Farm', 1)").run();
+  await insertUnit(db, "Guard", { Food: 1 });
+  await insertGarrison(db, "Guard", 2);
+
+  const result = await computeAnnualIncomeUpkeep(db);
+  assert.equal(result.lines.length, 1);
+  assert.equal(result.lines[0].resource, "Food");
+  assert.equal(result.lines[0].net, 3); // +5 from the Farm, -2 from 2 Guards
+  assert.equal(result.lines[0].breakdown.length, 2);
+});
+
+test("computeAnnualIncomeUpkeep ignores units with no garrison_units rows", async () => {
+  const db = await openDb(":memory:");
+  await insertUnit(db, "Guard", { Food: 1 });
+  // No garrison_units row for it at all.
+  const result = await computeAnnualIncomeUpkeep(db);
+  assert.deepEqual(result.lines, []);
+});
+
+test("computeAnnualIncomeUpkeep skips units with no upkeep, e.g. Militia", async () => {
+  const db = await openDb(":memory:");
+  await insertUnit(db, "Militia", {});
+  await insertGarrison(db, "Militia", 5);
   const result = await computeAnnualIncomeUpkeep(db);
   assert.deepEqual(result.lines, []);
 });

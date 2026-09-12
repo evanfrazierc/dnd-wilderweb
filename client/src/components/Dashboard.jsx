@@ -757,13 +757,13 @@ export default function Dashboard() {
             <div className="rule" />
           </div>
           <p className="text-dim" style={{ fontSize: "0.82rem" }}>
-            Computed from currently-built buildings' known annual effects. Excludes anything
-            dice-based, player-invoked, or population-scaled (e.g. a Mill's farm bonus, or
-            Population/Guard food consumption). Edit a building's annual effect in the
-            catalog to include more.
+            Computed from currently-built buildings' known annual effects and the garrison's
+            unit upkeep. Excludes anything dice-based, player-invoked, or population-scaled
+            (e.g. a Mill's farm bonus, or Population's own food consumption). Edit a building's
+            annual effect, or a unit's upkeep, in its catalog to include more.
           </p>
           {stats.annualIncomeUpkeep.lines.length === 0 ? (
-            <div className="empty-state">No buildings with a known annual effect yet.</div>
+            <div className="empty-state">No buildings or units with a known annual effect yet.</div>
           ) : (
           <div className="grid grid-2 ledger-grid">
             {stats.annualIncomeUpkeep.lines.map((line) => (

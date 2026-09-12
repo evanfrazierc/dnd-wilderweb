@@ -64,7 +64,11 @@ rebuild-and-swap `ensureObligationAmendedEventType` already established, since S
 a `CHECK` constraint in place); `server/db/validate.js`, `server/db/projections.js`,
 `server/db/read.js`, `server/db/reference.js` all get Unit-shaped counterparts to their
 Building-shaped functions; `server/discord.js` gets embed formatting; the client gets a new
-Garrison page mirroring Settlements.
+Garrison page mirroring Settlements. `server/db/annualIncome.js`'s Dashboard total also sums the
+garrison's upkeep alongside buildings' `annual_effect` (docs/adr/0009's amendment) -- `upkeep` is
+stored as a plain positive magnitude ("upkeep 1 Food" per the source, same convention as `cost`),
+negated at the point it's folded into the total rather than asking the catalog to store a
+double-negative for what's always a deduction.
 
 ## What doesn't change
 
