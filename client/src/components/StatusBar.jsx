@@ -3,57 +3,7 @@ import { getProjection, getEvents } from "../api.js";
 import Icon from "./Icon.jsx";
 import { currentMonth, formatDate, seasonColor } from "../lib/campaign.js";
 import { EVENT_ICON } from "../lib/eventIcon.js";
-
-// "+3 Wealth, -1 Wood" -- omits zero deltas (a ResourceChanged with a counterparty and a net
-// wash of 0 is still meaningful, but has nothing to list here).
-function changesSummary(changes) {
-  const entries = Object.entries(changes || {}).filter(([, delta]) => delta !== 0);
-  if (entries.length === 0) return null;
-  return entries.map(([name, delta]) => `${delta > 0 ? "+" : ""}${delta} ${name}`).join(", ");
-}
-
-// One line per event type, favoring what actually changed (resources, a building, a due
-// date) over the generic type name -- the note is still available as this element's title
-// tooltip, and DMRuling (which never carries payload.changes) falls back to it here too.
-function summarizeEvent(event) {
-  const { type, payload, region, note } = event;
-  switch (type) {
-    case "ResourceChanged": {
-      const changes = changesSummary(payload?.changes);
-      if (payload?.newObligation) {
-        return `New loan: ${payload.newObligation.description}${changes ? ` (${changes})` : ""}`;
-      }
-      if (payload?.obligationId && changes) return `Loan repayment: ${changes}`;
-      return changes || note || "Resource change";
-    }
-    case "BuildingConstructed":
-      return `Built ${payload?.displayName || payload?.building}${region ? ` in ${region}` : ""}`;
-    case "BuildingRemoved":
-      return `Removed ${payload?.building}${region ? ` from ${region}` : ""}`;
-    case "BuildingAmended":
-      return `Edited ${payload?.building}${region ? ` in ${region}` : ""}`;
-    case "CalendarAdvanced":
-      return `Advanced to ${event.gameDate}`;
-    case "DeityAmended":
-      return `Updated ${payload?.name}`;
-    case "LocationAmended":
-      return `Updated ${payload?.name}`;
-    case "ObligationAmended":
-      if (payload?.changes?.satisfied === true) return "Loan forgiven";
-      if (payload?.changes?.satisfied === false) return "Loan reinstated";
-      if (payload?.changes?.description) return `Loan updated: ${payload.changes.description}`;
-      if (payload?.changes?.dueGameDate) return "Loan due date updated";
-      return "Loan updated";
-    case "UnitRaised":
-      return `Raised ${payload?.count > 1 ? `${payload.count}x ` : ""}${payload?.unit}`;
-    case "UnitLost":
-      return `Lost ${payload?.count > 1 ? `${payload.count}x ` : ""}${payload?.unit}`;
-    case "DMRuling":
-      return note || "DM ruling";
-    default:
-      return note || type;
-  }
-}
+import { summarizeEvent } from "../lib/eventSummary.js";
 
 export default function StatusBar() {
   const [calendar, setCalendar] = useState(null);

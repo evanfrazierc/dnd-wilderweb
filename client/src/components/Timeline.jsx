@@ -8,6 +8,7 @@ import GameDatePicker from "./GameDatePicker.jsx";
 import { formatGameDate, isCompleteGameDate } from "../lib/gameDate.js";
 import { parseChanges } from "../lib/parseChanges.js";
 import { EVENT_ICON } from "../lib/eventIcon.js";
+import { summarizeEvent } from "../lib/eventSummary.js";
 
 const EVENT_TYPES = [
   "ResourceChanged",
@@ -314,6 +315,9 @@ export default function Timeline() {
                     posted {entry.postedAt}
                   </span>
                 </div>
+                <p className="timeline-summary" style={{ marginTop: "0.5rem", fontWeight: 600 }}>
+                  {summarizeEvent(entry)}
+                </p>
                 {entry.type === "ResourceChanged" && Object.keys(entry.payload?.changes || {}).length > 0 && (
                   <div className="tag-row">
                     {Object.entries(entry.payload.changes).map(([res, val]) => (
@@ -325,7 +329,11 @@ export default function Timeline() {
                     ))}
                   </div>
                 )}
-                {entry.note && <p className="text-dim" style={{ marginTop: "0.6rem", fontSize: "0.88rem" }}>{entry.note}</p>}
+                {/* DMRuling's summary line above IS its note (summarizeEvent falls back to it) --
+                    showing it again here would just repeat the same text. */}
+                {entry.note && entry.type !== "DMRuling" && (
+                  <p className="text-dim" style={{ marginTop: "0.4rem", fontSize: "0.88rem" }}>{entry.note}</p>
+                )}
                 <WarningsList warnings={entry.warnings} />
               </div>
             </div>
