@@ -477,19 +477,20 @@ test("ensureKnownDataCorrections' calendar_state recovery keeps a real CalendarA
 // ensureConsistentDateFormatting normalizes every event's gameDate string to one shape without
 // changing what date anything actually represents -- covers every bucket found in the real
 // campaign log (numeric with/without day, old-style named with/without day, wrong ordinal
-// suffixes, a month range, the DM-supplied correction for real-world "as of" dates) plus the
-// one thing it deliberately leaves alone (a bare year -- docs/adr/0016).
+// suffixes, a month range, the DM-supplied correction for real-world "as of" dates, the two
+// hand-researched bare-year corrections for specific already-existing rows) plus what it still
+// leaves alone in general (any other bare year -- docs/adr/0016).
 test("ensureConsistentDateFormatting normalizes every known date shape to one consistent format", async () => {
   const dir = mkdtempSync(path.join(tmpdir(), "wilderweb-test-"));
   const dbPath = path.join(dir, "test.db");
   try {
     const db = await openDb(dbPath);
 
-    async function insertEvent(id, gameDateRaw, gameDateSort) {
+    async function insertEvent(id, gameDateRaw, gameDateSort, { actor = null, note = null } = {}) {
       await db.prepare(`
-        INSERT INTO events (id, type, game_date_raw, game_date_sort, posted_at, payload)
-        VALUES (?, 'DMRuling', ?, ?, '2026-01-01', '{}')
-      `).run(id, gameDateRaw, gameDateSort);
+        INSERT INTO events (id, type, game_date_raw, game_date_sort, posted_at, actor, note, payload)
+        VALUES (?, 'DMRuling', ?, ?, '2026-01-01', ?, ?, '{}')
+      `).run(id, gameDateRaw, gameDateSort, actor, note);
     }
 
     // The migration needs month names to reformat with -- only months referenced below.
@@ -503,6 +504,10 @@ test("ensureConsistentDateFormatting normalizes every known date shape to one co
     await insertEvent(6, "2025-09-14", 729000); // real-world "as of" date, DM-supplied correction
     await insertEvent(7, "1225", 441000); // bare year -- no month recorded, left alone
     await insertEvent(8, "Month 6 to Month 12, 1226", 441510); // range -- collapses to its first month, day 1
+    await insertEvent(9, "1225", 441000, { actor: "Migration" }); // hand-corrected: original migration's placeholder
+    await insertEvent(10, "1226", 441360, { actor: "Migration", note: "Some unrelated note" }); // decoy: actor alone isn't enough
+    await insertEvent(11, "1226", 441360, { note: "Forge Weapons at Smithy" }); // hand-corrected: matched by note
+    await insertEvent(12, "1225", 441000, { note: "Some other 1225 event" }); // decoy: an ordinary bare year stays untouched
 
     // obligations.due_game_date_raw is the same kind of string in a separate table.
     await db.prepare(`
@@ -523,6 +528,10 @@ test("ensureConsistentDateFormatting normalizes every known date shape to one co
     assert.equal(await raw(6), "Erastus (2), 3rd, 1227");
     assert.equal(await raw(7), "1225"); // untouched -- no month recorded to build a real date from
     assert.equal(await raw(8), "Meloron (6), 1st, 1226");
+    assert.equal(await raw(9), "Pelorune (1), 1st, 1225");
+    assert.equal(await raw(10), "1226"); // untouched -- actor alone doesn't match the 1226 correction
+    assert.equal(await raw(11), "Meloron (6), 1st, 1226");
+    assert.equal(await raw(12), "1225"); // untouched -- not one of the specific hand-corrected rows
 
     // The sort key was recomputed to match the new string, not left stale.
     const row1 = await reopened.prepare("SELECT game_date_sort FROM events WHERE id = 1").get();

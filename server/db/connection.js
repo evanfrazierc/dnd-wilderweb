@@ -394,14 +394,39 @@ async function ensureCurrentDateAdvancedPastRealActivity(client) {
   });
 }
 
+// Bare-year rows already in the live database that predate docs/adr/0016 (canonicalizeGameDate
+// won't guess a month for these in general -- these are hand-researched, one-off exceptions for
+// specific rows that already exist, the same idea as isoCorrection just below). Cross-referenced
+// against wilderlands-discord-export.txt (.scratch/discord-seed/findings.md has the reasoning):
+// - The original migration's "no source date exists for lore/reference imports" placeholder
+//   (scripts/migrate.js's CAMPAIGN_START_GAME_DATE) -- every DeityAmended/LocationAmended event
+//   it created is attributed to actor "Migration" and was left as a bare "1225", a marker no
+//   live-app write can produce (the picker always supplies a full date) so this can't misfire on
+//   a real player-authored event.
+// - Three ResourceChanged entries from history.json (ids 33/35/36) whose Discord source gave a
+//   year but no month ("through 1226" / "in 1226") -- identified by their exact note text,
+//   which only these three rows carry, rather than by id (ids aren't stable across a fresh
+//   local migrate, note text is).
+const MIGRATION_IMPORT_CAMPAIGN_START = "Pelorune (1), 1st, 1225";
+const HISTORY_BATCH_ANCHOR_1226 = "Meloron (6), 1st, 1226";
+const HISTORY_BATCH_ANCHOR_NOTES = new Set([
+  "Forge Weapons at Smithy",
+  "Annual trade with Carthrun",
+  "Building Iron Mine near Carthrun",
+]);
+
 // Returns the normalized string for a raw date, or null if this raw string isn't covered by
-// this pass (a bare year -- no month recorded, so canonicalizeGameDate won't guess one -- or
-// genuinely unparseable text; both left as they already were). Shared between
-// events.game_date_raw and obligations.due_game_date_raw, which carry the exact same kind of
-// string. Delegates the actual reserialization to gameDate.js's canonicalizeGameDate, which
-// also backstops new writes (docs/adr/0016) -- one canonical shape, one place that produces it.
-function normalizeDate(raw, monthNames, isoCorrection) {
+// this pass (a bare year not covered by one of the specific corrections above -- no month
+// recorded, so canonicalizeGameDate won't guess one -- or genuinely unparseable text; both left
+// as they already were). Shared between events.game_date_raw and obligations.due_game_date_raw,
+// which carry the exact same kind of string (obligations has no actor/note, so `context` is
+// always {} there and only the generic path applies). Delegates the actual reserialization to
+// gameDate.js's canonicalizeGameDate, which also backstops new writes (docs/adr/0016) -- one
+// canonical shape, one place that produces it.
+function normalizeDate(raw, monthNames, isoCorrection, { actor, note } = {}) {
   if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return isoCorrection; // a real-world "as of" date, not an in-fiction one
+  if (raw === "1225" && actor === "Migration") return MIGRATION_IMPORT_CAMPAIGN_START;
+  if (raw === "1226" && HISTORY_BATCH_ANCHOR_NOTES.has(note)) return HISTORY_BATCH_ANCHOR_1226;
   return canonicalizeGameDate(raw, monthNames);
 }
 
@@ -412,8 +437,9 @@ function normalizeDate(raw, monthNames, isoCorrection) {
 // (client/src/lib/gameDate.js). A day the source never recorded becomes day 1 (the same
 // placeholder convention canonicalizeGameDate applies everywhere); a month range collapses to
 // its first month, day 1. Doesn't invent what year/month/day anything actually represents where
-// that's genuinely unknown: bare years (no month at all to build a real date from) are left
-// alone. The "2025-09-14"-style migration entries never had an in-fiction date recorded at all
+// that's genuinely unknown: a bare year (no month at all to build a real date from) is left
+// alone in general, except the specific already-existing rows normalizeDate hand-corrects above.
+// The "2025-09-14"-style migration entries never had an in-fiction date recorded at all
 // -- the DM supplied "Erastus 3rd, 1227" for that whole batch directly (see chat log) rather
 // than this guessing one. Gated on each row's current string already matching its target shape,
 // so this is a safe no-op forever after the one time it actually needs to run.
@@ -423,9 +449,9 @@ async function ensureConsistentDateFormatting(client) {
   const monthNames = new Map(monthsResult.rows.map((r) => [r.number, r.name]));
   const isoCorrection = "Erastus (2), 3rd, 1227";
 
-  const events = await client.execute("SELECT id, game_date_raw FROM events");
+  const events = await client.execute("SELECT id, game_date_raw, actor, note FROM events");
   for (const row of events.rows) {
-    const next = normalizeDate(row.game_date_raw, monthNames, isoCorrection);
+    const next = normalizeDate(row.game_date_raw, monthNames, isoCorrection, { actor: row.actor, note: row.note });
     if (next && next !== row.game_date_raw) {
       await client.execute({
         sql: "UPDATE events SET game_date_raw = ?, game_date_sort = ? WHERE id = ?",
