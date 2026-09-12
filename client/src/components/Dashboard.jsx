@@ -349,10 +349,10 @@ function resourcesText(resources) {
   return Object.entries(resources || {}).map(([name, amount]) => `${amount} ${name}`).join(", ");
 }
 
-// GET /api/obligations/:id (server/index.js) already returns originalResources, the creating
-// event, and every settling event -- listObligations (what loads the summary row) doesn't carry
-// any of that, so this fetches it lazily on expand rather than bloating every page load with
-// detail nobody asked to see yet.
+// GET /api/obligations/:id (server/index.js) returns originalResources, the creating event,
+// and every settling event -- listObligations (what loads the summary row) doesn't carry any
+// of that, so each row fetches its own detail separately rather than the list endpoint growing
+// to carry every obligation's full history whether or not it's currently visible.
 function ObligationDetails({ obligationId }) {
   const [detail, setDetail] = useState(null);
   const [error, setError] = useState(null);
@@ -395,7 +395,6 @@ function ObligationDetails({ obligationId }) {
 // replaced -- that input couldn't wrap, which is what was clipping loan titles on mobile.
 function ObligationRow({ obligation, onChanged }) {
   const [action, setAction] = useState(null); // null | "repay" | "edit" | "remove" -- see EditObligationControl's comment
-  const [showDetails, setShowDetails] = useState(false);
   const pct = obligation.amountTotal > 0
     ? Math.min(100, ((obligation.amountTotal - obligation.amountRemaining) / obligation.amountTotal) * 100)
     : 0;
@@ -456,10 +455,7 @@ function ObligationRow({ obligation, onChanged }) {
           }}
         />
       )}
-      <button className="btn btn-icon" onClick={() => setShowDetails(!showDetails)} aria-label={showDetails ? "Hide details" : "Show details"}>
-        <Icon name={showDetails ? "ArrowUp" : "ArrowDown"} size={14} />
-      </button>
-      {showDetails && <ObligationDetails obligationId={obligation.id} />}
+      <ObligationDetails obligationId={obligation.id} />
     </div>
   );
 }
