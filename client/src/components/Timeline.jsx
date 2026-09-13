@@ -139,7 +139,7 @@ function NewEntryForm({ obligations, knownResourceNames, onAdd }) {
         </div>
       )}
       <WarningsList
-        warnings={unknownNames.map((name) => `"${name}" isn't a known resource -- check spelling, or add it via Dashboard → Manage resources`)}
+        warnings={unknownNames.map((name) => `"${name}" isn't a known resource: check spelling, or add it via Dashboard → Manage resources`)}
       />
       {hasChanges && obligations.length > 0 && (
         <label style={{ display: "block", marginTop: "0.6rem" }}>
@@ -294,7 +294,7 @@ export default function Timeline() {
           <select
             value={sortMode}
             onChange={(e) => setSortMode(e.target.value)}
-            title="A mis-parsed or corrupted game date can sort an entry out of chronological order -- switch to Recently added to find it regardless"
+            title="A mis-parsed or corrupted game date can sort an entry out of chronological order; switch to Recently added to find it regardless"
           >
             <option value="gameDate">Sort: game date</option>
             <option value="recent">Sort: recently added</option>
@@ -307,7 +307,7 @@ export default function Timeline() {
       </div>
 
       {newestFirst.length === 0 ? (
-        <div className="empty-state">The chronicle is blank — log the first entry above.</div>
+        <div className="empty-state">The chronicle is blank. Log the first entry above.</div>
       ) : (
         <div className="timeline">
           {newestFirst.map((entry) => (

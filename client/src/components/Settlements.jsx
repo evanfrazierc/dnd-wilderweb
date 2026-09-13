@@ -84,7 +84,7 @@ function BuildingCatalogEditor({ catalog, onSaved }) {
       <p className="text-faint" style={{ fontSize: "0.8rem" }}>
         Cost is a comma-separated list like "Wood: 10, Stone: 5". Requires is a comma-separated
         list of prerequisite building names. Annual effect is the same format (negative values
-        for upkeep, e.g. "Wealth: 1, Food: -1") -- only set it for a flat, guaranteed,
+        for upkeep, e.g. "Wealth: 1, Food: -1"). Only set it for a flat, guaranteed,
         per-building yearly effect; leave it blank for anything dice-based, population-scaled,
         or player-invoked. It feeds the Dashboard's Annual Income &amp; Upkeep total.
       </p>
@@ -313,7 +313,7 @@ function RegionsEditor({ regions, kingdomNames, onSaved }) {
       </div>
       <p className="text-faint" style={{ fontSize: "0.8rem" }}>
         Renaming a region updates every building currently built there. Removing one is
-        refused while it still has buildings -- move or remove them first.
+        refused while it still has buildings; move or remove them first.
       </p>
       {draft.map((r, i) => (
         <div key={i} style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem", alignItems: "flex-end", flexWrap: "wrap" }}>
@@ -563,7 +563,7 @@ export default function Settlements() {
 
             {region.buildings.length === 0 && (
               <div className="empty-state" style={{ padding: "1.25rem" }}>
-                Untouched — nothing built here yet.
+                Untouched: nothing built here yet.
               </div>
             )}
 

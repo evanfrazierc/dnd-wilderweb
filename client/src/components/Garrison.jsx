@@ -315,7 +315,7 @@ export default function Garrison() {
 
       <p className="text-dim hero-note">
         Raising or losing a unit here logs it as a UnitRaised / UnitLost event on the Timeline.
-        A unit's cost isn't deducted automatically -- log the resource change separately, same
+        A unit's cost isn't deducted automatically. Log the resource change separately, same
         as building a building.
       </p>
       {status && (

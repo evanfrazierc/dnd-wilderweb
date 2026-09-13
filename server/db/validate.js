@@ -13,7 +13,7 @@ export function validateShape(type, { gameDate, note, region, payload }) {
   // *state* an event describes makes sense; this is about whether the event is well-formed at
   // all, same as requiring payload.building above) -- docs/adr/0016.
   if (!isCanonicalGameDate(gameDate)) {
-    errors.push(`gameDate ${DATE_FORMAT_HINT} -- got ${JSON.stringify(gameDate)}`);
+    errors.push(`gameDate ${DATE_FORMAT_HINT}; got ${JSON.stringify(gameDate)}`);
   }
 
   switch (type) {
@@ -29,7 +29,7 @@ export function validateShape(type, { gameDate, note, region, payload }) {
         if (!repaymentResource) errors.push("payload.newObligation requires a repaymentResource");
         if (typeof amountTotal !== "number") errors.push("payload.newObligation requires a numeric amountTotal");
         if (dueGameDate !== undefined && !isCanonicalGameDate(dueGameDate)) {
-          errors.push(`payload.newObligation.dueGameDate ${DATE_FORMAT_HINT} -- got ${JSON.stringify(dueGameDate)}`);
+          errors.push(`payload.newObligation.dueGameDate ${DATE_FORMAT_HINT}; got ${JSON.stringify(dueGameDate)}`);
         }
       }
       break;
@@ -65,14 +65,14 @@ export function validateShape(type, { gameDate, note, region, payload }) {
     case "ObligationAmended": {
       if (typeof payload?.obligationId !== "number") errors.push("ObligationAmended requires payload.obligationId (a number)");
       if (payload?.changes?.dueGameDate !== undefined && !isCanonicalGameDate(payload.changes.dueGameDate)) {
-        errors.push(`payload.changes.dueGameDate ${DATE_FORMAT_HINT} -- got ${JSON.stringify(payload.changes.dueGameDate)}`);
+        errors.push(`payload.changes.dueGameDate ${DATE_FORMAT_HINT}; got ${JSON.stringify(payload.changes.dueGameDate)}`);
       }
       break;
     }
     case "DMRuling": {
       if (!note || !note.trim()) errors.push("DMRuling requires a non-empty note");
       if (payload && payload.changes && Object.keys(payload.changes).length > 0) {
-        errors.push("DMRuling must not carry payload.changes -- use ResourceChanged instead");
+        errors.push("DMRuling must not carry payload.changes; use ResourceChanged instead");
       }
       break;
     }
@@ -107,7 +107,7 @@ export async function checkWarnings(db, type, { region, payload }) {
     for (const [name, delta] of Object.entries(payload.changes || {})) {
       const row = await findResourceRow(db, name);
       if (!row) {
-        warnings.push(`Unknown resource name "${name}" -- not in resource_totals`);
+        warnings.push(`"${name}" isn't a known resource; check spelling, or add it via Manage resources`);
         continue;
       }
       const next = row.value + delta;
@@ -123,7 +123,7 @@ export async function checkWarnings(db, type, { region, payload }) {
       } else {
         const paid = -1 * (payload.changes?.[obligation.repayment_resource] ?? 0);
         if (paid <= 0) {
-          warnings.push(`References obligation #${payload.obligationId} but has no negative ${obligation.repayment_resource} delta -- this will not reduce its balance`);
+          warnings.push(`References obligation #${payload.obligationId} but has no negative ${obligation.repayment_resource} delta; this will not reduce its balance`);
         }
       }
     }
@@ -160,7 +160,7 @@ export async function checkWarnings(db, type, { region, payload }) {
       .prepare("SELECT 1 FROM settlement_buildings WHERE region = ? AND building = ?")
       .get(region, payload.building);
     if (!present) {
-      warnings.push(`"${payload.building}" is not currently built in ${region} -- nothing to amend`);
+      warnings.push(`"${payload.building}" is not currently built in ${region}; nothing to amend`);
     }
   }
 

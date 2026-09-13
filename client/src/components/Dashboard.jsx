@@ -50,7 +50,7 @@ function ResourceDefinitionsEditor({ definitions, onSaved }) {
       </div>
       <p className="text-faint" style={{ fontSize: "0.8rem" }}>
         Adding a resource starts it at 0; removing one is refused while its current value
-        isn't 0 -- zero it out with a resource change first.
+        isn't 0. Zero it out with a resource change first.
       </p>
       {draft.map((r, i) => (
         <div key={i} style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem", alignItems: "flex-end", flexWrap: "wrap" }}>
@@ -383,7 +383,7 @@ function ObligationDetails({ obligationId }) {
           {detail.settlingEvents.map((e) => (
             <div key={e.id} className="text-faint" style={{ paddingLeft: "0.6rem" }}>
               {e.gameDate}: {-e.payload.changes[detail.repaymentResource]} {detail.repaymentResource}
-              {e.note ? ` — ${e.note}` : ""}
+              {e.note ? ` · ${e.note}` : ""}
             </div>
           ))}
         </div>
@@ -581,7 +581,7 @@ function AddLoanForm({ knownResourceNames, onAdded }) {
         <input
           value={changesText}
           onChange={(e) => setChangesText(e.target.value)}
-          placeholder="e.g. +50 Wealth -- what the loan actually paid out"
+          placeholder="e.g. +50 Wealth: what the loan actually paid out"
           style={{ width: "100%" }}
         />
       </label>
@@ -597,7 +597,7 @@ function AddLoanForm({ knownResourceNames, onAdded }) {
         </div>
       )}
       <WarningsList
-        warnings={unknownNames.map((name) => `"${name}" isn't a known resource -- check spelling, or add it via Manage resources above`)}
+        warnings={unknownNames.map((name) => `"${name}" isn't a known resource: check spelling, or add it via Manage resources above`)}
       />
       <label style={{ display: "block", marginTop: "0.5rem" }}>
         Note (optional)

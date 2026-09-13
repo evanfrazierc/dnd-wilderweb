@@ -8,7 +8,7 @@ export async function createObligation(db, {
   // before this runs; this is the backstop for createObligation's other caller (migrate.js's
   // loan import), which writes straight to the DB with no validateShape in between (docs/adr/0016).
   if (dueGameDate !== undefined && dueGameDate !== null && !isCanonicalGameDate(dueGameDate)) {
-    throw new Error(`createObligation: dueGameDate must be formatted as "MonthName (N), Dth, YYYY" -- got ${JSON.stringify(dueGameDate)}`);
+    throw new Error(`createObligation: dueGameDate must be formatted as "MonthName (N), Dth, YYYY"; got ${JSON.stringify(dueGameDate)}`);
   }
   const due = dueGameDate ? parseGameDate(dueGameDate) : null;
   const info = await db.prepare(`

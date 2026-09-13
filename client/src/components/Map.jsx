@@ -53,7 +53,7 @@ export default function Map() {
       </div>
 
       <p className="text-dim hero-note">
-        Uploading a new image logs it as a MapUpdated event on the Timeline -- past versions
+        Uploading a new image logs it as a MapUpdated event on the Timeline. Past versions
         aren't discarded, just not browsable here yet.
       </p>
 
@@ -61,13 +61,13 @@ export default function Map() {
         {map === undefined ? (
           <div className="loading">Loading map…</div>
         ) : map === null ? (
-          <div className="empty-state">The map is blank — upload one below.</div>
+          <div className="empty-state">The map is blank. Upload one below.</div>
         ) : (
           <>
             <img src={map.imageDataUri} alt="Current campaign map" style={{ maxWidth: "100%", borderRadius: "8px" }} />
             <div className="text-faint" style={{ marginTop: "0.6rem", fontSize: "0.82rem" }}>
               As of {map.gameDate}
-              {map.note && ` — ${map.note}`}
+              {map.note && ` · ${map.note}`}
             </div>
           </>
         )}
@@ -87,7 +87,7 @@ export default function Map() {
           style={{ flex: "1 1 auto" }}
         />
         <input
-          placeholder="Note (optional) — what got revealed this session?"
+          placeholder="Note (optional): what got revealed this session?"
           value={note}
           onChange={(e) => setNote(e.target.value)}
           style={{ flex: "1 1 auto" }}

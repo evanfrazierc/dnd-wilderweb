@@ -377,7 +377,7 @@ function KingdomCard({ kingdom, regions, onSaved }) {
           </div>
         ) : (
           <p className="text-faint" style={{ fontSize: "0.78rem", margin: "0.3rem 0 0" }}>
-            None claimed yet -- add or assign one from Settlements → Manage regions.
+            None claimed yet. Add or assign one from Settlements → Manage regions.
           </p>
         )}
       </div>
@@ -468,7 +468,7 @@ function LocationsTab() {
     <div>
       <div className="section-title-row">
         <span className="text-faint" style={{ fontSize: "0.82rem" }}>
-          Known kingdoms across the map -- capital, notable places, and rumors. Each kingdom
+          Known kingdoms across the map: capital, notable places, and rumors. Each kingdom
           saves on its own as a LocationAmended event.
         </span>
       </div>
@@ -484,7 +484,7 @@ function LocationsTab() {
         <div className="rule" />
       </div>
       <p className="text-faint" style={{ fontSize: "0.78rem", marginTop: "-0.4rem" }}>
-        Same regions the Settlements page tracks buildings by -- edit them there (Settlements
+        Same regions the Settlements page tracks buildings by. Edit them there (Settlements
         → Manage regions), not here.
       </p>
       <div className="card">
