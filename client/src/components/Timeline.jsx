@@ -138,11 +138,11 @@ function NewEntryForm({ obligations, knownResourceNames, onAdd }) {
         </div>
       )}
       <WarningsList
-        warnings={unknownNames.map((name) => `Unknown resource name "${name}" -- not in resource_totals`)}
+        warnings={unknownNames.map((name) => `"${name}" isn't a known resource -- check spelling, or add it via Dashboard → Manage resources`)}
       />
       {hasChanges && obligations.length > 0 && (
         <label style={{ display: "block", marginTop: "0.6rem" }}>
-          Settles an obligation (optional)
+          Settles a loan (optional)
           <select value={obligationId} onChange={(e) => setObligationId(e.target.value)} style={{ width: "100%" }}>
             <option value="">None</option>
             {obligations.map((o) => (

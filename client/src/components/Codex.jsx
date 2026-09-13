@@ -38,7 +38,7 @@ function IntroductionTab() {
   });
 
   if (error) return <div className="error-box">Failed to load introduction: {error}</div>;
-  if (!intro || !draft) return <div className="loading">Loading…</div>;
+  if (!intro || !draft) return <div className="loading">Loading introduction…</div>;
 
   function field(key, value) {
     set([key], value);
@@ -280,7 +280,7 @@ function DeitiesTab() {
   }, []);
 
   if (error) return <div className="error-box">Failed to load deities: {error}</div>;
-  if (!deities) return <div className="loading">Loading…</div>;
+  if (!deities) return <div className="loading">Loading deities…</div>;
 
   return (
     <div>
@@ -461,7 +461,7 @@ function LocationsTab() {
   }, []);
 
   if (error) return <div className="error-box">Failed to load locations: {error}</div>;
-  if (!kingdoms || !regions) return <div className="loading">Loading…</div>;
+  if (!kingdoms || !regions) return <div className="loading">Loading locations…</div>;
 
   return (
     <div>

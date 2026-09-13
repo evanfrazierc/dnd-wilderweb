@@ -45,7 +45,7 @@ export default function GameDatePicker({ value, onChange, autoDefault = true, al
 
   return (
     <span style={{ display: "inline-flex", flexWrap: "wrap", gap: "0.35rem", alignItems: "center", ...style }}>
-      <select value={value?.month ?? ""} onChange={(e) => field("month", e.target.value)}>
+      <select aria-label="Month" value={value?.month ?? ""} onChange={(e) => field("month", e.target.value)}>
         <option value="" disabled>Month…</option>
         {structure.months.map((m) => (
           <option key={m.number} value={m.number}>{m.number}. {m.name}</option>
@@ -58,6 +58,7 @@ export default function GameDatePicker({ value, onChange, autoDefault = true, al
         value={value?.day ?? ""}
         onChange={(e) => field("day", e.target.value)}
         placeholder="Day"
+        aria-label="Day"
         style={{ width: "4rem" }}
       />
       <input
@@ -65,6 +66,7 @@ export default function GameDatePicker({ value, onChange, autoDefault = true, al
         value={value?.year ?? ""}
         onChange={(e) => field("year", e.target.value)}
         placeholder="Year"
+        aria-label="Year"
         style={{ width: "5rem" }}
       />
       {allowClear && value && (

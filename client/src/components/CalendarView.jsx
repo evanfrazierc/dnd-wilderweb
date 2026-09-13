@@ -63,7 +63,7 @@ function CalendarStructureEditor({ structure, onSaved }) {
         <span className="icon-badge">
           <Icon name="Codex" size={17} />
         </span>
-        <h3>Edit calendar structure</h3>
+        <h3>Manage calendar structure</h3>
       </div>
       <p className="text-faint" style={{ fontSize: "0.8rem" }}>
         Holidays are a comma-separated list like "1: New Year: Pelor, 15: Harvest".
@@ -228,7 +228,7 @@ export default function CalendarView() {
         <div className="hero-meta">
           <span className="pill accent">{calendar.currentDate.yearLabel}</span>
           <button className="btn btn-sm" onClick={() => setShowStructureEditor(!showStructureEditor)}>
-            {showStructureEditor ? "Hide" : "Edit"} calendar structure
+            {showStructureEditor ? "Hide" : "Manage"} calendar structure
           </button>
           {currentSeason && (
             <span className="season-tag" style={{ "--season-color": seasonColor(currentSeason) }}>

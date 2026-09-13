@@ -335,7 +335,7 @@ function RemoveObligationControl({ obligation, label, confirming, onConfirmStart
       <GameDatePicker value={gameDate} onChange={setGameDate} />
       <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
         <button className="btn btn-sm btn-danger" onClick={confirmForgive} disabled={!isCompleteGameDate(gameDate)}>
-          Confirm
+          Confirm forgiveness
         </button>
         <button className="btn btn-sm" onClick={onCancel}>Cancel</button>
         {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
@@ -587,7 +587,7 @@ function AddLoanForm({ knownResourceNames, onAdded }) {
         </div>
       )}
       <WarningsList
-        warnings={unknownNames.map((name) => `Unknown resource name "${name}" -- not in resource_totals`)}
+        warnings={unknownNames.map((name) => `"${name}" isn't a known resource -- check spelling, or add it via Manage resources above`)}
       />
       <label style={{ display: "block", marginTop: "0.5rem" }}>
         Note (optional)
