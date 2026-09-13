@@ -262,7 +262,7 @@ export default function CalendarView() {
             <input
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="What happened this tick"
+              placeholder="What happened"
               style={{ width: "100%" }}
             />
           </label>

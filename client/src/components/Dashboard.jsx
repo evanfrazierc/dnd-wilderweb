@@ -684,6 +684,12 @@ export default function Dashboard() {
     });
   }
 
+  function discardDraft() {
+    setDraft(stats);
+    setGameDate(null);
+    setNote("");
+  }
+
   if (error) return <div className="error-box">Failed to load stats: {error}</div>;
   if (!stats || !draft) return <div className="loading">Loading kingdom stats…</div>;
 
@@ -771,6 +777,9 @@ export default function Dashboard() {
             <button className="btn btn-primary" onClick={save} disabled={!isCompleteGameDate(gameDate)}>
               <Icon name="Scroll" size={14} />
               Save changes
+            </button>
+            <button type="button" className="btn" onClick={discardDraft}>
+              Cancel
             </button>
             <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />
             {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
