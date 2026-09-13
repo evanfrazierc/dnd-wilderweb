@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { getEvents, getObligations, getProjection, setEventHidden } from "../api.js";
+import { getEvents, getObligations, getProjection, postEventToDiscord, setEventHidden } from "../api.js";
 import { useEventSubmit } from "../lib/useEventSubmit.js";
 import Icon from "./Icon.jsx";
 import WarningsList from "./WarningsList.jsx";
@@ -32,6 +32,20 @@ const EVENT_TYPES = [
   "ObligationAmended",
   "DMRuling",
 ];
+
+// The same set of types whose own save form offers the "Post to Discord" checkbox (see
+// useEventSubmit.js's callers) -- BuildingAmended, DeityAmended, LocationAmended,
+// ObligationAmended, DMRuling, and MapUpdated are corrections/lore-upkeep/never-postable by the
+// app's own convention (CLAUDE.md, CONTEXT.md), so a retroactive post from Timeline shouldn't
+// offer them either.
+const DISCORD_ELIGIBLE_TYPES = new Set([
+  "ResourceChanged",
+  "BuildingConstructed",
+  "BuildingRemoved",
+  "UnitRaised",
+  "UnitLost",
+  "CalendarAdvanced",
+]);
 
 function NewEntryForm({ obligations, knownResourceNames, onAdd }) {
   const [gameDate, setGameDate] = useState(null);
@@ -212,6 +226,86 @@ function NewEntryForm({ obligations, knownResourceNames, onAdd }) {
   );
 }
 
+// Its own local status, same shape as useEventSubmit.js's ("Posting...", "Posted to Discord.",
+// "Discord not configured.", "Error: ...") -- not that hook itself, since there's no event to
+// submit here, just an existing one to re-notify about.
+function TimelineEntry({ entry, highlighted, onToggleHidden }) {
+  const [discordStatus, setDiscordStatus] = useState("");
+
+  function postToDiscord() {
+    setDiscordStatus("Posting...");
+    postEventToDiscord(entry.id)
+      .then((result) => {
+        if (result.discord?.ok === false) setDiscordStatus(`Error: ${result.discord.error}`);
+        else if (result.discord?.skipped) setDiscordStatus("Discord not configured.");
+        else setDiscordStatus("Posted to Discord.");
+      })
+      .catch((e) => setDiscordStatus(`Error: ${e.message}`));
+  }
+
+  return (
+    <div className="timeline-entry">
+      <div className="timeline-marker" />
+      <div
+        id={`event-${entry.id}`}
+        className={`card timeline-card${highlighted ? " highlighted" : ""}`}
+        style={entry.hidden ? { opacity: 0.55 } : undefined}
+      >
+        <div className="section-title-row">
+          <div>
+            <span className="icon-badge sm" style={{ marginRight: "0.4rem" }}>
+              <Icon name={EVENT_ICON[entry.type] || "Scroll"} size={13} />
+            </span>
+            <span className="pill accent">{entry.gameDate}</span>{" "}
+            <span className="pill">{entry.type}</span>{" "}
+            {entry.region && <span className="pill">{entry.region}</span>}
+            {entry.actor && <span className="pill">{entry.actor}</span>}
+            {entry.hidden && <span className="pill bad">Hidden</span>}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
+            <span className="text-faint" style={{ fontSize: "0.78rem" }}>
+              posted {entry.postedAt}
+            </span>
+            {DISCORD_ELIGIBLE_TYPES.has(entry.type) && (
+              <button className="btn btn-sm" onClick={postToDiscord} disabled={discordStatus === "Posting..."}>
+                Post to Discord
+              </button>
+            )}
+            <button className="btn btn-sm" onClick={() => onToggleHidden(entry)}>
+              {entry.hidden ? "Unhide" : "Hide"}
+            </button>
+          </div>
+        </div>
+        <p className="timeline-summary" style={{ marginTop: "0.5rem", fontWeight: 600 }}>
+          {summarizeEvent(entry)}
+        </p>
+        {entry.type === "ResourceChanged" && Object.keys(entry.payload?.changes || {}).length > 0 && (
+          <div className="tag-row">
+            {Object.entries(entry.payload.changes).map(([res, val]) => (
+              <span key={res} className={`pill ${val >= 0 ? "good" : "bad"}`}>
+                <Icon name={res} size={12} />
+                {val >= 0 ? "+" : ""}
+                {val} {res}
+              </span>
+            ))}
+          </div>
+        )}
+        {/* DMRuling's summary line above IS its note (summarizeEvent falls back to it) --
+            showing it again here would just repeat the same text. */}
+        {entry.note && entry.type !== "DMRuling" && (
+          <p className="text-dim" style={{ marginTop: "0.4rem", fontSize: "0.88rem" }}>{entry.note}</p>
+        )}
+        {discordStatus && (
+          <div style={{ marginTop: "0.5rem" }}>
+            <StatusPill status={discordStatus} />
+          </div>
+        )}
+        <WarningsList warnings={entry.warnings} />
+      </div>
+    </div>
+  );
+}
+
 export default function Timeline() {
   const [events, setEvents] = useState(null);
   const [obligations, setObligations] = useState([]);
@@ -342,55 +436,12 @@ export default function Timeline() {
       ) : (
         <div className="timeline">
           {newestFirst.map((entry) => (
-            <div className="timeline-entry" key={entry.id}>
-              <div className="timeline-marker" />
-              <div
-                id={`event-${entry.id}`}
-                className={`card timeline-card${highlightActive && entry.id === requestedEventId() ? " highlighted" : ""}`}
-                style={entry.hidden ? { opacity: 0.55 } : undefined}
-              >
-                <div className="section-title-row">
-                  <div>
-                    <span className="icon-badge sm" style={{ marginRight: "0.4rem" }}>
-                      <Icon name={EVENT_ICON[entry.type] || "Scroll"} size={13} />
-                    </span>
-                    <span className="pill accent">{entry.gameDate}</span>{" "}
-                    <span className="pill">{entry.type}</span>{" "}
-                    {entry.region && <span className="pill">{entry.region}</span>}
-                    {entry.actor && <span className="pill">{entry.actor}</span>}
-                    {entry.hidden && <span className="pill bad">Hidden</span>}
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-                    <span className="text-faint" style={{ fontSize: "0.78rem" }}>
-                      posted {entry.postedAt}
-                    </span>
-                    <button className="btn btn-sm" onClick={() => toggleHidden(entry)}>
-                      {entry.hidden ? "Unhide" : "Hide"}
-                    </button>
-                  </div>
-                </div>
-                <p className="timeline-summary" style={{ marginTop: "0.5rem", fontWeight: 600 }}>
-                  {summarizeEvent(entry)}
-                </p>
-                {entry.type === "ResourceChanged" && Object.keys(entry.payload?.changes || {}).length > 0 && (
-                  <div className="tag-row">
-                    {Object.entries(entry.payload.changes).map(([res, val]) => (
-                      <span key={res} className={`pill ${val >= 0 ? "good" : "bad"}`}>
-                        <Icon name={res} size={12} />
-                        {val >= 0 ? "+" : ""}
-                        {val} {res}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {/* DMRuling's summary line above IS its note (summarizeEvent falls back to it) --
-                    showing it again here would just repeat the same text. */}
-                {entry.note && entry.type !== "DMRuling" && (
-                  <p className="text-dim" style={{ marginTop: "0.4rem", fontSize: "0.88rem" }}>{entry.note}</p>
-                )}
-                <WarningsList warnings={entry.warnings} />
-              </div>
-            </div>
+            <TimelineEntry
+              key={entry.id}
+              entry={entry}
+              highlighted={highlightActive && entry.id === requestedEventId()}
+              onToggleHidden={toggleHidden}
+            />
           ))}
         </div>
       )}

@@ -89,6 +89,23 @@ export function createApp(db) {
     }
   });
 
+  // Re-sends an already-saved event's embed (Timeline's "Post to Discord" button) -- for when the
+  // DM forgot to check the box, or wants to re-announce something. Doesn't record that a post
+  // happened: events are immutable once created (CONTEXT.md's Event entry) apart from `hidden`,
+  // so this can be clicked more than once for the same event, same as the checkbox at save time
+  // could always be left ticked on a second, corrected save.
+  app.post("/api/events/:id/post-to-discord", async (req, res) => {
+    try {
+      const event = await getEvent(db, Number(req.params.id));
+      if (!event) return res.status(404).json({ error: "Not found" });
+      const baseUrl = `${req.protocol}://${req.get("host")}`;
+      const discord = await notifyDiscord(event, { baseUrl });
+      res.json({ discord });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   app.post("/api/events", async (req, res) => {
     try {
       // postToDiscord is a delivery instruction from the save form, not part of the event

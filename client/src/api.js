@@ -35,6 +35,12 @@ export function setEventHidden(id, hidden) {
   }).then(handle);
 }
 
+// Re-sends an already-saved event's embed -- Timeline's per-entry "Post to Discord" button.
+// Returns { discord } in the same { ok, skipped?, error? } shape postEvent's response carries.
+export function postEventToDiscord(id) {
+  return fetch(`/api/events/${id}/post-to-discord`, { method: "POST" }).then(handle);
+}
+
 // Returns { event, warnings } on success. Warnings are informational, not errors --
 // the write still succeeded (docs/adr/0005-validation-warns-not-blocks.md).
 export function postEvent(event) {

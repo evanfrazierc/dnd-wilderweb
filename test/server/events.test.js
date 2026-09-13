@@ -157,6 +157,72 @@ test("PATCH /api/events/:id/hidden 404s for an unknown event", async () => {
   }
 });
 
+test("POST /api/events/:id/post-to-discord re-notifies an already-saved event", async () => {
+  const received = [];
+  const fakeWebhook = http.createServer((req, res) => {
+    let raw = "";
+    req.on("data", (chunk) => (raw += chunk));
+    req.on("end", () => {
+      received.push(JSON.parse(raw));
+      res.writeHead(200);
+      res.end();
+    });
+  });
+  await new Promise((resolve) => fakeWebhook.listen(0, resolve));
+  process.env.DISCORD_WEBHOOK_URL = `http://localhost:${fakeWebhook.address().port}`;
+
+  const { baseUrl, close } = await startServer();
+  try {
+    // Saved with postToDiscord left off entirely -- the DM forgot to tick the box.
+    const created = await fetch(`${baseUrl}/api/events`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "ResourceChanged", gameDate: "Pelorune (1), 1st, 1225", payload: { changes: { Wood: 5 } } }),
+    }).then((r) => r.json());
+    assert.equal(created.discord, undefined);
+    assert.equal(received.length, 0);
+
+    const res = await fetch(`${baseUrl}/api/events/${created.event.id}/post-to-discord`, { method: "POST" });
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.discord.ok, true);
+    assert.equal(received.length, 1);
+    assert.equal(received[0].embeds[0].url, `${baseUrl}/timeline?event=${created.event.id}`);
+  } finally {
+    delete process.env.DISCORD_WEBHOOK_URL;
+    await close();
+    await new Promise((resolve) => fakeWebhook.close(resolve));
+  }
+});
+
+test("POST /api/events/:id/post-to-discord reports a skipped result with no webhook configured", async () => {
+  delete process.env.DISCORD_WEBHOOK_URL;
+  const { baseUrl, close } = await startServer();
+  try {
+    const created = await fetch(`${baseUrl}/api/events`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "DMRuling", gameDate: "Pelorune (1), 1st, 1225", note: "x" }),
+    }).then((r) => r.json());
+
+    const res = await fetch(`${baseUrl}/api/events/${created.event.id}/post-to-discord`, { method: "POST" });
+    assert.equal(res.status, 200);
+    assert.deepEqual((await res.json()).discord, { ok: true, skipped: true });
+  } finally {
+    await close();
+  }
+});
+
+test("POST /api/events/:id/post-to-discord 404s for an unknown event", async () => {
+  const { baseUrl, close } = await startServer();
+  try {
+    const res = await fetch(`${baseUrl}/api/events/999/post-to-discord`, { method: "POST" });
+    assert.equal(res.status, 404);
+  } finally {
+    await close();
+  }
+});
+
 test("a save that fails shape validation never attempts a Discord post", async () => {
   process.env.DISCORD_WEBHOOK_URL = "http://127.0.0.1:1"; // would fail loudly if ever called
   const { baseUrl, close } = await startServer();

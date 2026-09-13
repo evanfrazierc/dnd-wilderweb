@@ -156,7 +156,9 @@ checkbox state; see the hook's own comment). Reads go through
 - **Timeline** (replaces the old History Log): lists events newest-first, filterable by
   type/region, and its "log a new entry" form covers just `ResourceChanged`/`DMRuling`
   (auto-detected by whether resource changes were entered) — every other event type goes through
-  its own view's form.
+  its own view's form. Each entry also has a "Post to Discord" button
+  (`POST /api/events/:id/post-to-discord`) for re-notifying about an already-saved event -- shown
+  only for the types that offer the checkbox at save time in the first place, same list as above.
 
 ## Agent skills
 
