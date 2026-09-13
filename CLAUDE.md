@@ -118,8 +118,11 @@ if Discord is unreachable or unconfigured (ADR-0006).
 
 ### Client (`client/`) is page views that emit events, not blind writes
 
-`client/src/App.jsx` is a simple tab switcher (no router); its `PAGES` array is the authoritative,
-current list of top-level views — Dashboard, Calendar, Settlements, Garrison, Timeline, and Codex
+`client/src/App.jsx` is a tab switcher with no router library, but each top-level page is a real,
+linkable URL (`client/src/lib/usePageRoute.js` syncs the active page with `window.location` via
+the History API — no dependency needed, since `server/index.js`'s catch-all already serves
+`index.html` for any non-`/api` path). Its `PAGES` array is the authoritative, current list of
+top-level views — Dashboard, Calendar, Settlements, Garrison, Timeline, and Codex
 (lore/deities/locations/map) as of this writing, but check there rather than trusting a count
 here. Every write goes through `client/src/api.js`'s `postEvent` and the shared
 `client/src/lib/useEventSubmit.js` hook (submit, track status, surface warnings —

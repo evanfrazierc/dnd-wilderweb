@@ -1,4 +1,3 @@
-import { useState } from "react";
 import "./App.css";
 import Dashboard from "./components/Dashboard.jsx";
 import CalendarView from "./components/CalendarView.jsx";
@@ -8,6 +7,7 @@ import Timeline from "./components/Timeline.jsx";
 import Codex from "./components/Codex.jsx";
 import StatusBar from "./components/StatusBar.jsx";
 import Icon from "./components/Icon.jsx";
+import { usePageRoute } from "./lib/usePageRoute.js";
 
 const PAGES = [
   { key: "dashboard", label: "Dashboard", icon: "Atlas", Component: Dashboard },
@@ -18,8 +18,10 @@ const PAGES = [
   { key: "codex", label: "Codex", icon: "Codex", Component: Codex },
 ];
 
+const PAGE_KEYS = PAGES.map((p) => p.key);
+
 function App() {
-  const [page, setPage] = useState("dashboard");
+  const [page, navigate] = usePageRoute(PAGE_KEYS, "dashboard");
   const active = PAGES.find((p) => p.key === page);
   const Active = active.Component;
 
@@ -38,13 +40,17 @@ function App() {
         <ul className="nav-list">
           {PAGES.map((p) => (
             <li key={p.key}>
-              <button
+              <a
+                href={`/${p.key}`}
                 className={`nav-item${page === p.key ? " active" : ""}`}
-                onClick={() => setPage(p.key)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate(p.key);
+                }}
               >
                 <Icon name={p.icon} size={17} />
                 <span className="nav-label">{p.label}</span>
-              </button>
+              </a>
             </li>
           ))}
         </ul>
