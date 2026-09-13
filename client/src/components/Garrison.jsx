@@ -5,6 +5,7 @@ import { useReferenceSave } from "../lib/useReferenceSave.js";
 import { useDraft } from "../lib/useDraft.js";
 import Icon from "./Icon.jsx";
 import WarningsList from "./WarningsList.jsx";
+import StatusPill from "./StatusPill.jsx";
 import PostToDiscordToggle from "./PostToDiscordToggle.jsx";
 import GameDatePicker from "./GameDatePicker.jsx";
 import { formatGameDate, isCompleteGameDate } from "../lib/gameDate.js";
@@ -100,7 +101,7 @@ function UnitCatalogEditor({ catalog, onSaved }) {
         {dirty && (
           <>
             <button className="btn btn-primary" onClick={saveCatalog}>Save catalog</button>
-            {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+            <StatusPill status={status} />
           </>
         )}
       </div>
@@ -247,7 +248,7 @@ function LoseUnitControl({ unit, label, onLost }) {
       <button className="btn btn-sm" onClick={() => setConfirming(false)}>
         Cancel
       </button>
-      {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+      <StatusPill status={status} />
       <WarningsList warnings={warnings} />
     </div>
   );
@@ -319,7 +320,7 @@ export default function Garrison() {
       </p>
       {status && (
         <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", flexWrap: "wrap" }}>
-          <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>
+          <StatusPill status={status} />
         </div>
       )}
       <WarningsList warnings={warnings} />

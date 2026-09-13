@@ -3,6 +3,7 @@ import { getEvents, getObligations, getProjection, setEventHidden } from "../api
 import { useEventSubmit } from "../lib/useEventSubmit.js";
 import Icon from "./Icon.jsx";
 import WarningsList from "./WarningsList.jsx";
+import StatusPill from "./StatusPill.jsx";
 import PostToDiscordToggle from "./PostToDiscordToggle.jsx";
 import GameDatePicker from "./GameDatePicker.jsx";
 import { formatGameDate, isCompleteGameDate } from "../lib/gameDate.js";
@@ -196,7 +197,7 @@ function NewEntryForm({ obligations, knownResourceNames, onAdd }) {
           Add entry
         </button>
         {hasChanges && <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />}
-        {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+        <StatusPill status={status} />
       </div>
       <WarningsList warnings={warnings} />
     </form>

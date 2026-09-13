@@ -169,6 +169,24 @@
   white-space: nowrap;
 }
 
+/* Unrest at threshold is a rebellion-risk warning, not routine status -- it earns the same
+   authored glow language as the calendar's "today" cell (DESIGN.md's Glow-Not-Lift rule),
+   just in the bad/red semantic instead of the season accent, so it reads as urgent rather
+   than merely current. */
+.unrest-alert {
+  animation: pulse-alert 2.4s ease-in-out infinite;
+}
+
+@keyframes pulse-alert {
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--bad) 35%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--bad) 12%, transparent);
+  }
+}
+
 .main-content {
   padding: 2.2rem 2.5rem 4rem;
   max-width: 1180px;
@@ -238,5 +256,13 @@
 
   .status-bar {
     padding: 0.6rem 1.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Rebellion risk still needs to read at a glance -- keep the ring, drop the breathing. */
+  .unrest-alert {
+    animation: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--bad) 35%, transparent);
   }
 }

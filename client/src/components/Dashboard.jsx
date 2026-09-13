@@ -5,6 +5,7 @@ import { useReferenceSave } from "../lib/useReferenceSave.js";
 import { useDraft } from "../lib/useDraft.js";
 import Icon from "./Icon.jsx";
 import WarningsList from "./WarningsList.jsx";
+import StatusPill from "./StatusPill.jsx";
 import PostToDiscordToggle from "./PostToDiscordToggle.jsx";
 import GameDatePicker from "./GameDatePicker.jsx";
 import { formatGameDate, isCompleteGameDate } from "../lib/gameDate.js";
@@ -81,7 +82,7 @@ function ResourceDefinitionsEditor({ definitions, onSaved }) {
         {dirty && (
           <>
             <button className="btn btn-primary" onClick={saveDefinitions}>Save resources</button>
-            {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+            <StatusPill status={status} />
           </>
         )}
       </div>
@@ -207,7 +208,7 @@ function RepayObligationControl({ obligation, label, expanded, onExpand, onColla
         </button>
         <button className="btn btn-sm" onClick={onCollapse}>Cancel</button>
         <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />
-        {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+        <StatusPill status={status} />
       </div>
       <WarningsList warnings={warnings} />
     </div>
@@ -293,7 +294,7 @@ function EditObligationControl({ obligation, label, expanded, onExpand, onCollap
           </button>
         )}
         <button className="btn btn-sm" onClick={onCollapse}>Cancel</button>
-        {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+        <StatusPill status={status} />
       </div>
       <WarningsList warnings={warnings} />
     </div>
@@ -338,7 +339,7 @@ function RemoveObligationControl({ obligation, label, confirming, onConfirmStart
           Confirm forgiveness
         </button>
         <button className="btn btn-sm" onClick={onCancel}>Cancel</button>
-        {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+        <StatusPill status={status} />
       </div>
       <WarningsList warnings={warnings} />
     </div>
@@ -601,7 +602,7 @@ function AddLoanForm({ knownResourceNames, onAdded }) {
         </button>
         <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />
         <button type="button" className="btn btn-sm" onClick={cancel}>Cancel</button>
-        {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+        <StatusPill status={status} />
       </div>
       <WarningsList warnings={warnings} />
     </form>
@@ -782,7 +783,7 @@ export default function Dashboard() {
               Cancel
             </button>
             <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />
-            {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+            <StatusPill status={status} />
           </div>
           <WarningsList warnings={warnings} />
         </div>

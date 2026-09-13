@@ -63,7 +63,7 @@ export default function StatusBar() {
       <div className="status-spacer" />
 
       {unrestHigh && (
-        <span className="pill bad" title="Unrest has reached the population count: rebellion risk">
+        <span className="pill bad unrest-alert" title="Unrest has reached the population count: rebellion risk">
           <Icon name="Unrest" size={13} />
           Unrest at threshold
         </span>

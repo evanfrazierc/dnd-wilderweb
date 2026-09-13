@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getProjection, uploadMap } from "../api.js";
 import Icon from "./Icon.jsx";
 import GameDatePicker from "./GameDatePicker.jsx";
+import StatusPill from "./StatusPill.jsx";
 import { formatGameDate, isCompleteGameDate } from "../lib/gameDate.js";
 
 // A MapUpdated event carrying the raw file as the request body, not a JSON payload through
@@ -96,7 +97,7 @@ export default function Map() {
           <Icon name="Plus" size={14} />
           Upload
         </button>
-        {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+        <StatusPill status={status} />
       </form>
     </div>
   );

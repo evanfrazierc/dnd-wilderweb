@@ -5,6 +5,7 @@ import { useReferenceSave } from "../lib/useReferenceSave.js";
 import { useDraft } from "../lib/useDraft.js";
 import Icon from "./Icon.jsx";
 import WarningsList from "./WarningsList.jsx";
+import StatusPill from "./StatusPill.jsx";
 import PostToDiscordToggle from "./PostToDiscordToggle.jsx";
 import GameDatePicker from "./GameDatePicker.jsx";
 import { formatGameDate } from "../lib/gameDate.js";
@@ -102,7 +103,7 @@ function CalendarStructureEditor({ structure, onSaved }) {
         {dirty && (
           <>
             <button className="btn btn-primary" onClick={saveStructure}>Save structure</button>
-            {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+            <StatusPill status={status} />
           </>
         )}
       </div>
@@ -270,7 +271,7 @@ export default function CalendarView() {
             Save
           </button>
           <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />
-          {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+          <StatusPill status={status} />
         </div>
         <WarningsList warnings={warnings} />
       </div>

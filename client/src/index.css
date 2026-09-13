@@ -377,6 +377,25 @@ input[type="number"] {
   background: color-mix(in srgb, var(--holiday-color, var(--accent-strong)) 16%, transparent);
 }
 
+/* The save-result pill (StatusPill.jsx) lands once per save rather than popping in --
+   the one moment across 20+ save forms where the app acknowledges "this happened." Plays
+   only on mount (React keeps the same element as status text changes from Saving... to
+   Saved.), so it never replays mid-message. */
+.status-pill {
+  animation: pill-land 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes pill-land {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .warning-list {
   margin-top: 0.6rem;
   padding: 0.5rem 0.75rem;
@@ -922,5 +941,41 @@ input[type="number"] {
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* Reduced motion drops spatial movement and infinite loops but keeps the state itself
+   legible: a page still fades in (just without the rise), a save still lands (just
+   without the settle), and "today"/"unrest at threshold" still show as a steady ring
+   instead of a breathing one -- the meaning survives, only the motion is removed. */
+@media (prefers-reduced-motion: reduce) {
+  .fade-in {
+    animation-name: fadeInReduced;
+  }
+
+  @keyframes fadeInReduced {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .status-pill {
+    animation-name: pillLandReduced;
+  }
+
+  @keyframes pillLandReduced {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .day-cell.today {
+    animation: none;
   }
 }

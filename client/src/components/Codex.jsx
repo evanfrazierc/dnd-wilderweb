@@ -5,6 +5,7 @@ import { useReferenceSave } from "../lib/useReferenceSave.js";
 import { useDraft } from "../lib/useDraft.js";
 import Icon from "./Icon.jsx";
 import WarningsList from "./WarningsList.jsx";
+import StatusPill from "./StatusPill.jsx";
 import GameDatePicker from "./GameDatePicker.jsx";
 import { formatGameDate, isCompleteGameDate } from "../lib/gameDate.js";
 
@@ -111,7 +112,7 @@ function IntroductionTab() {
       <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginTop: "0.75rem" }}>
         {dirty && <button className="btn btn-primary" onClick={() => save(draft)}>Save</button>}
         <button className="btn btn-sm" onClick={() => setEditing(false)}>Done editing</button>
-        {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+        <StatusPill status={status} />
       </div>
     </div>
   );
@@ -200,7 +201,7 @@ function DeityCard({ deity, onSaved }) {
           <button className="btn btn-primary btn-sm" onClick={save} disabled={!isCompleteGameDate(gameDate)}>
             Save
           </button>
-          {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+          <StatusPill status={status} />
         </div>
       )}
       <WarningsList warnings={warnings} />
@@ -261,7 +262,7 @@ function NewDeityForm({ onAdded }) {
       <button type="button" className="btn btn-sm" onClick={() => setExpanded(false)}>
         Cancel
       </button>
-      {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+      <StatusPill status={status} />
       <WarningsList warnings={warnings} />
     </form>
   );
@@ -386,7 +387,7 @@ function KingdomCard({ kingdom, regions, onSaved }) {
           <button className="btn btn-sm btn-primary" onClick={save} disabled={!isCompleteGameDate(gameDate)}>
             Save
           </button>
-          {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+          <StatusPill status={status} />
         </div>
       )}
       <WarningsList warnings={warnings} />
@@ -438,7 +439,7 @@ function NewKingdomForm({ onAdded }) {
       <button type="button" className="btn btn-sm" onClick={() => setExpanded(false)}>
         Cancel
       </button>
-      {status && <span className={`pill ${status.startsWith("Error") ? "bad" : "good"}`}>{status}</span>}
+      <StatusPill status={status} />
       <WarningsList warnings={warnings} />
     </form>
   );
