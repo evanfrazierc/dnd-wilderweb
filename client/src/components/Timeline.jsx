@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getEvents, getObligations, getProjection } from "../api.js";
+import { getEvents, getObligations, getProjection, setEventHidden } from "../api.js";
 import { useEventSubmit } from "../lib/useEventSubmit.js";
 import Icon from "./Icon.jsx";
 import WarningsList from "./WarningsList.jsx";
@@ -210,11 +210,12 @@ export default function Timeline() {
   const [typeFilter, setTypeFilter] = useState("");
   const [regionFilter, setRegionFilter] = useState("");
   const [sortMode, setSortMode] = useState("gameDate"); // "gameDate" | "recent"
+  const [showHidden, setShowHidden] = useState(false);
   const [error, setError] = useState(null);
 
   function load() {
     return Promise.all([
-      getEvents({ type: typeFilter || undefined, region: regionFilter || undefined, limit: 500 }),
+      getEvents({ type: typeFilter || undefined, region: regionFilter || undefined, limit: 500, includeHidden: showHidden }),
       getObligations(),
     ]).then(([e, o]) => {
       setEvents(e);
@@ -225,7 +226,13 @@ export default function Timeline() {
   useEffect(() => {
     load().catch((e) => setError(e.message));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [typeFilter, regionFilter]);
+  }, [typeFilter, regionFilter, showHidden]);
+
+  // Hidden by default (docs/adr/0019) -- showHidden reveals both hidden and unhidden together,
+  // there's no hidden-only view, so this is additive rather than swapping the filter.
+  function toggleHidden(entry) {
+    setEventHidden(entry.id, !entry.hidden).then(load).catch((e) => setError(e.message));
+  }
 
   useEffect(() => {
     getProjection("stats")
@@ -291,6 +298,10 @@ export default function Timeline() {
             <option value="gameDate">Sort: game date</option>
             <option value="recent">Sort: recently added</option>
           </select>
+          <label style={{ display: "flex", alignItems: "center", gap: "0.35rem", fontSize: "0.85rem" }}>
+            <input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} />
+            Show hidden
+          </label>
         </div>
       </div>
 
@@ -301,7 +312,7 @@ export default function Timeline() {
           {newestFirst.map((entry) => (
             <div className="timeline-entry" key={entry.id}>
               <div className="timeline-marker" />
-              <div className="card timeline-card">
+              <div className="card timeline-card" style={entry.hidden ? { opacity: 0.55 } : undefined}>
                 <div className="section-title-row">
                   <div>
                     <span className="icon-badge sm" style={{ marginRight: "0.4rem" }}>
@@ -311,10 +322,16 @@ export default function Timeline() {
                     <span className="pill">{entry.type}</span>{" "}
                     {entry.region && <span className="pill">{entry.region}</span>}
                     {entry.actor && <span className="pill">{entry.actor}</span>}
+                    {entry.hidden && <span className="pill bad">Hidden</span>}
                   </div>
-                  <span className="text-faint" style={{ fontSize: "0.78rem" }}>
-                    posted {entry.postedAt}
-                  </span>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                    <span className="text-faint" style={{ fontSize: "0.78rem" }}>
+                      posted {entry.postedAt}
+                    </span>
+                    <button className="btn btn-sm" onClick={() => toggleHidden(entry)}>
+                      {entry.hidden ? "Unhide" : "Hide"}
+                    </button>
+                  </div>
                 </div>
                 <p className="timeline-summary" style={{ marginTop: "0.5rem", fontWeight: 600 }}>
                   {summarizeEvent(entry)}

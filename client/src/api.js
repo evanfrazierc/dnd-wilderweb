@@ -26,6 +26,15 @@ export function getEvents(params = {}) {
   return fetch(`/api/events${suffix}`).then(handle);
 }
 
+// Timeline visibility only, not a new event (docs/adr/0019).
+export function setEventHidden(id, hidden) {
+  return fetch(`/api/events/${id}/hidden`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ hidden }),
+  }).then(handle);
+}
+
 // Returns { event, warnings } on success. Warnings are informational, not errors --
 // the write still succeeded (docs/adr/0005-validation-warns-not-blocks.md).
 export function postEvent(event) {

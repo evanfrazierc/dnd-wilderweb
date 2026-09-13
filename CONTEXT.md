@@ -7,7 +7,7 @@ A campaign tracker for a D&D hexcrawl/kingdom-building game. The domain is the c
 ### Events
 
 **Event**:
-An immutable record of something that happened to campaign state. Events are the authoritative history; current values are a projection kept in sync with them, not a separately-maintained record.
+An immutable record of something that happened to campaign state. Events are the authoritative history; current values are a projection kept in sync with them, not a separately-maintained record. The one exception is `hidden` (ADR-0019) -- whether the Timeline lists an entry by default, toggled directly rather than through another event, since it's display state about the log, not a fact about the campaign; nothing else about a stored event ever changes after it's created.
 _Avoid_: log entry, record, transaction (too generic)
 
 **ResourceChanged**:

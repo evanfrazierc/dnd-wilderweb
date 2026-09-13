@@ -15,7 +15,11 @@ CREATE TABLE IF NOT EXISTS events (
   note TEXT,
   payload TEXT NOT NULL DEFAULT '{}',
   warnings TEXT NOT NULL DEFAULT '[]',
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  -- Display-only: whether this entry is hidden from the Timeline by default (docs/adr/0019).
+  -- Not part of the event's own recorded facts, so toggling it is a direct update, not a new
+  -- event -- the one exception to "every change is an event" in this schema.
+  hidden INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE INDEX IF NOT EXISTS idx_events_game_date_sort ON events (game_date_sort);

@@ -44,7 +44,7 @@ export async function getEvent(db, id) {
   return row ? deserializeEvent(row) : null;
 }
 
-export async function listEvents(db, { type, region, from, to, limit = 200 } = {}) {
+export async function listEvents(db, { type, region, from, to, limit = 200, includeHidden = false } = {}) {
   const clauses = [];
   const params = [];
 
@@ -63,6 +63,11 @@ export async function listEvents(db, { type, region, from, to, limit = 200 } = {
   if (to != null) {
     clauses.push("game_date_sort <= ?");
     params.push(to);
+  }
+  // Hidden by default (docs/adr/0019) -- includeHidden:true is Timeline's "show hidden too"
+  // toggle, which shows both, not just hidden ones (there's no "hidden only" mode).
+  if (!includeHidden) {
+    clauses.push("hidden = 0");
   }
 
   const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
@@ -99,5 +104,15 @@ export function deserializeEvent(row) {
     payload: JSON.parse(row.payload),
     warnings: JSON.parse(row.warnings),
     createdAt: row.created_at,
+    hidden: !!row.hidden,
   };
+}
+
+/** Toggles whether an event is hidden from the Timeline by default -- a direct update, not a
+ * new event (docs/adr/0019): it changes nothing about what the event itself recorded, only
+ * whether the log shows it by default. Returns the updated event, or null if it doesn't exist. */
+export async function setEventHidden(db, id, hidden) {
+  const info = await db.prepare("UPDATE events SET hidden = ? WHERE id = ?").run(hidden ? 1 : 0, id);
+  if (info.changes === 0) return null;
+  return getEvent(db, id);
 }

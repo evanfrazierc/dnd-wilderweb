@@ -75,6 +75,55 @@ test("postToDiscord is not stored as part of the saved event's payload", async (
   }
 });
 
+test("PATCH /api/events/:id/hidden toggles visibility, and GET /api/events respects it", async () => {
+  const { baseUrl, close } = await startServer();
+  try {
+    const created = await fetch(`${baseUrl}/api/events`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "DMRuling", gameDate: "Pelorune (1), 1st, 1225", note: "x" }),
+    }).then((r) => r.json());
+    const id = created.event.id;
+
+    const hideRes = await fetch(`${baseUrl}/api/events/${id}/hidden`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hidden: true }),
+    });
+    assert.equal(hideRes.status, 200);
+    assert.equal((await hideRes.json()).hidden, true);
+
+    const defaultList = await fetch(`${baseUrl}/api/events`).then((r) => r.json());
+    assert.ok(!defaultList.some((e) => e.id === id));
+
+    const fullList = await fetch(`${baseUrl}/api/events?includeHidden=true`).then((r) => r.json());
+    assert.ok(fullList.find((e) => e.id === id).hidden);
+
+    const unhideRes = await fetch(`${baseUrl}/api/events/${id}/hidden`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hidden: false }),
+    });
+    assert.equal((await unhideRes.json()).hidden, false);
+  } finally {
+    await close();
+  }
+});
+
+test("PATCH /api/events/:id/hidden 404s for an unknown event", async () => {
+  const { baseUrl, close } = await startServer();
+  try {
+    const res = await fetch(`${baseUrl}/api/events/999/hidden`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hidden: true }),
+    });
+    assert.equal(res.status, 404);
+  } finally {
+    await close();
+  }
+});
+
 test("a save that fails shape validation never attempts a Discord post", async () => {
   process.env.DISCORD_WEBHOOK_URL = "http://127.0.0.1:1"; // would fail loudly if ever called
   const { baseUrl, close } = await startServer();

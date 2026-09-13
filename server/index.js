@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { timingSafeEqual } from "node:crypto";
 import { getDb } from "./db/connection.js";
-import { createEvent, listEvents, getEvent } from "./db/events.js";
+import { createEvent, listEvents, getEvent, setEventHidden } from "./db/events.js";
 import { getProjection } from "./db/read.js";
 import { attachMapImage, MapVersionError } from "./db/mapVersions.js";
 import { listObligations, getObligation, listSettlingEvents } from "./db/obligations.js";
@@ -57,7 +57,7 @@ export function createApp(db) {
   app.use(express.json({ limit: "2mb" }));
 
   app.get("/api/events", async (req, res) => {
-    const { type, region, from, to, limit } = req.query;
+    const { type, region, from, to, limit, includeHidden } = req.query;
     try {
       const events = await listEvents(db, {
         type,
@@ -65,8 +65,21 @@ export function createApp(db) {
         from: from != null ? Number(from) : undefined,
         to: to != null ? Number(to) : undefined,
         limit: limit != null ? Number(limit) : undefined,
+        includeHidden: includeHidden === "true",
       });
       res.json(events);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Toggles Timeline visibility only -- not part of the event log proper (docs/adr/0019), so
+  // this is a direct update rather than going through createEvent.
+  app.patch("/api/events/:id/hidden", async (req, res) => {
+    try {
+      const event = await setEventHidden(db, Number(req.params.id), Boolean(req.body?.hidden));
+      if (!event) return res.status(404).json({ error: "Not found" });
+      res.json(event);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

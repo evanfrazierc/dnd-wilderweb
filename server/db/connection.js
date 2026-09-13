@@ -623,6 +623,11 @@ async function initSchema(client) {
   // that name, same as ensureObligationAmendedEventType's does).
   await ensureUnitEventTypesAdded(client);
   await ensureMapEventTypeAdded(client);
+  // Must run after the two rebuild-and-swap migrations above -- each one's own frozen CREATE
+  // TABLE statement predates `hidden` and doesn't carry it across, so this re-adds it
+  // afterward if either of them just ran (docs/adr/0019). A safe no-op otherwise, same as
+  // building_catalog's annual_effect column above.
+  await ensureColumn(client, "events", "hidden", "INTEGER NOT NULL DEFAULT 0");
   await ensureKnownDataCorrections(client);
   await ensureCurrentDateAdvancedPastRealActivity(client);
   await ensureConsistentDateFormatting(client);

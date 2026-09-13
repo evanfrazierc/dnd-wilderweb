@@ -229,6 +229,10 @@ test("re-opening a database with the pre-Map events schema migrates it without l
 
     const old = await db.prepare("SELECT * FROM events WHERE note = ?").get("a pre-Map event");
     assert.ok(old);
+    // This fixture also predates `hidden` (docs/adr/0019) -- confirms ensureColumn correctly
+    // restores it with its default after the Map rebuild-and-swap's own frozen CREATE TABLE
+    // (which doesn't know about `hidden`) would otherwise have dropped it.
+    assert.equal(old.hidden, 0);
 
     const info = await db.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'events'").get();
     assert.match(info.sql, /MapUpdated/);

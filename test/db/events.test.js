@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { openDb } from "../../server/db/connection.js";
-import { createEvent, listEvents } from "../../server/db/events.js";
+import { createEvent, listEvents, setEventHidden } from "../../server/db/events.js";
 import { getObligation, createObligation } from "../../server/db/obligations.js";
 
 async function freshDb() {
@@ -370,4 +370,39 @@ test("listEvents keeps the most recent events once there are more than `limit`, 
   // history (Timeline, StatusBar). Still returned oldest-first within the kept set.
   assert.deepEqual(capped.map((e) => e.note), ["middle", "newest"]);
   assert.ok(capped[0].gameDateSort < capped[1].gameDateSort);
+});
+
+// docs/adr/0019: hidden is display state, not a new event -- a direct update on the row.
+test("a new event is not hidden by default", async () => {
+  const db = await freshDb();
+  const result = await createEvent(db, { type: "DMRuling", gameDate: "Pelorune (1), 1st, 1225", note: "x" });
+  assert.equal(result.event.hidden, false);
+});
+
+test("setEventHidden toggles hidden and returns the updated event, or null for an unknown id", async () => {
+  const db = await freshDb();
+  const created = await createEvent(db, { type: "DMRuling", gameDate: "Pelorune (1), 1st, 1225", note: "x" });
+
+  const hidden = await setEventHidden(db, created.event.id, true);
+  assert.equal(hidden.hidden, true);
+
+  const shown = await setEventHidden(db, created.event.id, false);
+  assert.equal(shown.hidden, false);
+
+  assert.equal(await setEventHidden(db, 999, true), null);
+});
+
+test("listEvents excludes hidden entries by default, and includeHidden:true shows both", async () => {
+  const db = await freshDb();
+  const visible = await createEvent(db, { type: "DMRuling", gameDate: "Pelorune (1), 1st, 1225", note: "visible" });
+  const hidden = await createEvent(db, { type: "DMRuling", gameDate: "Erastus (2), 1st, 1225", note: "hidden" });
+  await setEventHidden(db, hidden.event.id, true);
+
+  const defaultView = await listEvents(db);
+  assert.deepEqual(defaultView.map((e) => e.note), ["visible"]);
+
+  const all = await listEvents(db, { includeHidden: true });
+  assert.deepEqual(all.map((e) => e.note).sort(), ["hidden", "visible"]);
+  assert.equal(all.find((e) => e.id === visible.event.id).hidden, false);
+  assert.equal(all.find((e) => e.id === hidden.event.id).hidden, true);
 });
