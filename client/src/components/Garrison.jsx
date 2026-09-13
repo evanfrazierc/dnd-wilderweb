@@ -243,7 +243,7 @@ function LoseUnitControl({ unit, label, onLost }) {
       <GameDatePicker value={gameDate} onChange={setGameDate} />
       <PostToDiscordToggle checked={postToDiscord} onChange={setPostToDiscord} />
       <button className="btn btn-sm btn-danger" onClick={confirmLoss} disabled={!isCompleteGameDate(gameDate)}>
-        Confirm
+        Confirm loss
       </button>
       <button className="btn btn-sm" onClick={() => setConfirming(false)}>
         Cancel

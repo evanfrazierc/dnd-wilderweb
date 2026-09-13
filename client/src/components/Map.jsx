@@ -59,7 +59,7 @@ export default function Map() {
 
       <div className="card" style={{ marginTop: "1.25rem" }}>
         {map === undefined ? (
-          <div className="loading">Loading…</div>
+          <div className="loading">Loading map…</div>
         ) : map === null ? (
           <div className="empty-state">The map is blank — upload one below.</div>
         ) : (

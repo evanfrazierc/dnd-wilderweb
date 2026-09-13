@@ -542,26 +542,35 @@ function AddLoanForm({ knownResourceNames, onAdded }) {
   return (
     <form onSubmit={submitForm} className="add-building-form" style={{ flexDirection: "column", alignItems: "stretch" }}>
       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-        <input
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          style={{ flex: "2 1 14rem" }}
-          autoFocus
-        />
-        <input
-          placeholder="Repayment resource"
-          value={repaymentResource}
-          onChange={(e) => setRepaymentResource(e.target.value)}
-          style={{ flex: "1 1 8rem" }}
-        />
-        <input
-          type="number"
-          placeholder="Amount owed"
-          value={amountTotal}
-          onChange={(e) => setAmountTotal(e.target.value)}
-          style={{ flex: "1 1 8rem" }}
-        />
+        <label style={{ flex: "2 1 14rem" }}>
+          Description
+          <br />
+          <input
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            style={{ width: "100%" }}
+            autoFocus
+          />
+        </label>
+        <label style={{ flex: "1 1 8rem" }}>
+          Repayment resource
+          <br />
+          <input
+            value={repaymentResource}
+            onChange={(e) => setRepaymentResource(e.target.value)}
+            style={{ width: "100%" }}
+          />
+        </label>
+        <label style={{ flex: "1 1 8rem" }}>
+          Amount owed
+          <br />
+          <input
+            type="number"
+            value={amountTotal}
+            onChange={(e) => setAmountTotal(e.target.value)}
+            style={{ width: "100%" }}
+          />
+        </label>
       </div>
       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.5rem", alignItems: "center" }}>
         <span className="text-faint" style={{ fontSize: "0.76rem" }}>Due date (optional):</span>
