@@ -4,6 +4,7 @@ import Dashboard from "./components/Dashboard.jsx";
 import CalendarView from "./components/CalendarView.jsx";
 import Settlements from "./components/Settlements.jsx";
 import Garrison from "./components/Garrison.jsx";
+import Map from "./components/Map.jsx";
 import Timeline from "./components/Timeline.jsx";
 import Codex from "./components/Codex.jsx";
 import StatusBar from "./components/StatusBar.jsx";
@@ -14,6 +15,7 @@ const PAGES = [
   { key: "calendar", label: "Calendar", icon: "Calendar", Component: CalendarView },
   { key: "settlements", label: "Settlements", icon: "Settlements", Component: Settlements },
   { key: "garrison", label: "Garrison", icon: "Weapons", Component: Garrison },
+  { key: "map", label: "Map", icon: "MapPin", Component: Map },
   { key: "timeline", label: "Timeline", icon: "History", Component: Timeline },
   { key: "codex", label: "Codex", icon: "Codex", Component: Codex },
 ];

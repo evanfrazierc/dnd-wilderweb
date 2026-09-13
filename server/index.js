@@ -5,6 +5,7 @@ import { timingSafeEqual } from "node:crypto";
 import { getDb } from "./db/connection.js";
 import { createEvent, listEvents, getEvent } from "./db/events.js";
 import { getProjection } from "./db/read.js";
+import { attachMapImage, MapVersionError } from "./db/mapVersions.js";
 import { listObligations, getObligation, listSettlingEvents } from "./db/obligations.js";
 import {
   ValidationError, REFERENCE_RESOURCES, ensureRegionsSeeded, ensureKingdomsSeeded, migrateKingdomPlacesToRegions,
@@ -41,7 +42,11 @@ function siteAuth(req, res, next) {
   res.status(401).send("Authentication required.");
 }
 
-const PROJECTION_RESOURCES = new Set(["stats", "settlements", "calendar", "deities", "locations", "garrison"]);
+const PROJECTION_RESOURCES = new Set(["stats", "settlements", "calendar", "deities", "locations", "garrison", "map"]);
+
+// Generous relative to the sibling campaign images already floating around (some run 6-7MB) --
+// this is a personal-campaign tool, not a service worth defending against pathological uploads.
+const MAP_IMAGE_LIMIT = "15mb";
 
 /** Builds the Express app against an already-open `db`, with no side effects of its own --
  * lets tests boot the real routing without binding a port or touching the real database
@@ -78,6 +83,30 @@ export function createApp(db) {
       const discord = postToDiscord ? await notifyDiscord(result.event) : undefined;
       res.status(201).json({ event: result.event, warnings: result.warnings, discord });
     } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // A MapUpdated event carrying the raw image as its body, not JSON -- docs/adr/0018.
+  // express.raw() here (route-scoped, not app.use()) leaves the global express.json() above
+  // untouched for every other route; { type: () => true } accepts whatever Content-Type the
+  // upload actually sent rather than guessing a fixed image/* allowlist up front.
+  app.post("/api/map", express.raw({ type: () => true, limit: MAP_IMAGE_LIMIT }), async (req, res) => {
+    try {
+      if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
+        return res.status(400).json({ errors: ["No image data in the request body"] });
+      }
+      const { gameDate, note, actor } = req.query;
+      const result = await createEvent(db, { type: "MapUpdated", gameDate, note, actor, region: null, payload: {} });
+      if (!result.ok) return res.status(400).json({ errors: result.errors });
+
+      await attachMapImage(db, result.event.id, {
+        imageData: req.body,
+        mimeType: req.headers["content-type"] || "application/octet-stream",
+      });
+      res.status(201).json({ event: result.event, warnings: result.warnings });
+    } catch (err) {
+      if (err instanceof MapVersionError) return res.status(400).json({ errors: [err.message] });
       res.status(500).json({ error: err.message });
     }
   });
@@ -148,6 +177,17 @@ export function createApp(db) {
   app.use(express.static(clientDist));
   app.get(/^\/(?!api).*/, (req, res) => {
     res.sendFile(path.join(clientDist, "index.html"));
+  });
+
+  // Body-parser errors (express.json/express.raw above) reject in middleware, before any route
+  // handler's own try/catch runs -- without this, an oversized map upload would fall through to
+  // Express's default plain-text error page instead of the JSON error shape every other failure
+  // in this app returns.
+  app.use((err, req, res, next) => {
+    if (err?.type === "entity.too.large") {
+      return res.status(413).json({ errors: [`Upload too large (limit ${err.limit ? `${Math.round(err.limit / 1024 / 1024)}mb` : "exceeded"})`] });
+    }
+    next(err);
   });
 
   return app;

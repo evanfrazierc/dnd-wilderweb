@@ -56,3 +56,19 @@ export function putReference(resource, data) {
     body: JSON.stringify(data),
   }).then(handle);
 }
+
+// A MapUpdated event carrying the raw file as its body, not JSON (docs/adr/0018) -- gameDate/
+// note/actor travel as query params instead, since the body is the image itself. Returns
+// { event, warnings } like postEvent, just without the postToDiscord option (never offered
+// for this type -- see docs/adr/0018).
+export function uploadMap(file, { gameDate, note, actor } = {}) {
+  const qs = new URLSearchParams();
+  if (gameDate) qs.set("gameDate", gameDate);
+  if (note) qs.set("note", note);
+  if (actor) qs.set("actor", actor);
+  return fetch(`/api/map?${qs}`, {
+    method: "POST",
+    headers: { "Content-Type": file.type || "application/octet-stream" },
+    body: file,
+  }).then(handle);
+}

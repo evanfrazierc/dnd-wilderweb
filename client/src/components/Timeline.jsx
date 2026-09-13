@@ -16,6 +16,7 @@ const EVENT_TYPES = [
   "BuildingRemoved",
   "UnitRaised",
   "UnitLost",
+  "MapUpdated",
   "CalendarAdvanced",
   "DeityAmended",
   "LocationAmended",

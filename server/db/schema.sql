@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS events (
   type TEXT NOT NULL CHECK (type IN (
     'ResourceChanged', 'BuildingConstructed', 'BuildingRemoved', 'BuildingAmended',
     'CalendarAdvanced', 'DeityAmended', 'LocationAmended', 'ObligationAmended', 'DMRuling',
-    'UnitRaised', 'UnitLost'
+    'UnitRaised', 'UnitLost', 'MapUpdated'
   )),
   game_date_raw TEXT NOT NULL,
   game_date_sort INTEGER NOT NULL,
@@ -54,6 +54,18 @@ CREATE TABLE IF NOT EXISTS garrison_units (
   unit TEXT NOT NULL UNIQUE, -- must match unit_catalog.name
   count INTEGER NOT NULL DEFAULT 1,
   detail TEXT -- optional in-fiction note, e.g. "House Elmander guards"
+);
+
+-- One row per MapUpdated event (docs/adr/0018) -- the image itself, kept out of events.payload
+-- for the same reason settlement_buildings/garrison_units live alongside their event types
+-- rather than embedding everything in payload: a multi-MB image inline would bloat every
+-- generic event-list fetch (Timeline, StatusBar) regardless of whether anyone's looking at the
+-- map. "Current" is whichever row's event has the latest game_date_sort -- no separate pointer
+-- table, since that's already exactly "latest by date" with nothing to aggregate.
+CREATE TABLE IF NOT EXISTS map_versions (
+  event_id INTEGER PRIMARY KEY REFERENCES events (id),
+  image_data BLOB NOT NULL,
+  mime_type TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS calendar_state (

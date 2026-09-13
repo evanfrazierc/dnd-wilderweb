@@ -83,6 +83,12 @@ export function validateShape(type, { gameDate, note, region, payload }) {
       if (!payload?.unit) errors.push(`${type} requires payload.unit`);
       break;
     }
+    case "MapUpdated": {
+      // Nothing to validate structurally -- the image itself arrives out of band, as the raw
+      // body of the POST /api/map request that creates this event, not through payload
+      // (docs/adr/0018).
+      break;
+    }
     default:
       errors.push(`Unknown event type: ${type}`);
   }

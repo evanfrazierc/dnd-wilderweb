@@ -39,6 +39,9 @@ An event recording a DM clarification or correction with no resource or state de
 An event recording a Unit added to or removed from the garrison, referencing the unit catalog -- the same shape as `BuildingConstructed`/`BuildingRemoved`, except the garrison is one kingdom-wide roster rather than attributed to a region (ADR-0017). Upgrading a unit (Militia to Guard, a Troop gaining a mount) is a `UnitLost` for the old tier immediately followed by a `UnitRaised` for the new one, the same "no third meaning bolted onto an existing type" precedent `BuildingAmended` above already established for moving a building. A Unit's cost isn't auto-deducted from resources any more than a Building's is -- raising one is a record; the resource delta is a separate `ResourceChanged`.
 _Avoid_: Adventurers as a tracked Unit (deliberately excluded, ADR-0017 -- they're a temporary, one-year hire, not a standing part of the garrison)
 
+**MapUpdated**:
+An event recording a new version of the world map image. Unlike every other event, its `payload` carries none of the actual content -- the image itself is too large to embed in every generic event-list fetch (Timeline, StatusBar), so it lives in `map_versions`, one row per event, attached in a follow-up call rather than atomically with the event itself (ADR-0018). Never posted to Discord: doing so would need a public URL for Discord to fetch the image from, but every route in this app sits behind the shared-password gate (CLAUDE.md), so there isn't one.
+
 ### Supporting concepts
 
 **Actor**:

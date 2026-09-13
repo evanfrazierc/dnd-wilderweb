@@ -58,6 +58,8 @@ export function summarizeEvent(event) {
       return `Raised ${countPrefix(payload?.count)}${payload?.unit}`;
     case "UnitLost":
       return `Lost ${countPrefix(payload?.count)}${payload?.unit}`;
+    case "MapUpdated":
+      return note ? `Map updated: ${note}` : "Map updated";
     case "DMRuling":
       return note || "DM ruling";
     default:

@@ -10,6 +10,7 @@ export const EVENT_ICON = {
   BuildingAmended: "Codex",
   UnitRaised: "Weapons",
   UnitLost: "Trash",
+  MapUpdated: "MapPin",
   CalendarAdvanced: "Calendar",
   DeityAmended: "Piety",
   LocationAmended: "MapPin",

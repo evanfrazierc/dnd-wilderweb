@@ -185,6 +185,73 @@ test("re-opening a database with the pre-Unit events schema migrates it without 
   }
 });
 
+// Same idea again for ensureMapEventTypeAdded (docs/adr/0018) -- a legacy events table already
+// past the Unit migration (production's actual current shape) but missing 'MapUpdated'.
+test("re-opening a database with the pre-Map events schema migrates it without losing data", async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "wilderweb-test-"));
+  const dbPath = path.join(dir, "test.db");
+  try {
+    const legacy = new DatabaseSync(dbPath);
+    legacy.exec(`
+      CREATE TABLE events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        type TEXT NOT NULL CHECK (type IN (
+          'ResourceChanged', 'BuildingConstructed', 'BuildingRemoved', 'BuildingAmended',
+          'CalendarAdvanced', 'DeityAmended', 'LocationAmended', 'ObligationAmended', 'DMRuling',
+          'UnitRaised', 'UnitLost'
+        )),
+        game_date_raw TEXT NOT NULL,
+        game_date_sort INTEGER NOT NULL,
+        posted_at TEXT NOT NULL,
+        actor TEXT,
+        region TEXT,
+        note TEXT,
+        payload TEXT NOT NULL DEFAULT '{}',
+        warnings TEXT NOT NULL DEFAULT '[]',
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+      CREATE INDEX idx_events_game_date_sort ON events (game_date_sort);
+      CREATE INDEX idx_events_type ON events (type);
+      CREATE INDEX idx_events_region ON events (region);
+      CREATE TABLE map_versions (
+        event_id INTEGER PRIMARY KEY REFERENCES events (id),
+        image_data BLOB NOT NULL,
+        mime_type TEXT NOT NULL
+      );
+    `);
+    legacy.prepare(`
+      INSERT INTO events (type, game_date_raw, game_date_sort, posted_at, note, payload)
+      VALUES ('DMRuling', 'Pelorune (1), 1st, 1225', 1, '2025-01-01', 'a pre-Map event', '{}')
+    `).run();
+    legacy.close();
+
+    const db = await openDb(dbPath);
+
+    const old = await db.prepare("SELECT * FROM events WHERE note = ?").get("a pre-Map event");
+    assert.ok(old);
+
+    const info = await db.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'events'").get();
+    assert.match(info.sql, /MapUpdated/);
+    await db.prepare(`
+      INSERT INTO events (type, game_date_raw, game_date_sort, posted_at, payload)
+      VALUES ('MapUpdated', 'Pelorune (1), 1st, 1225', 1, '2025-01-01', '{}')
+    `).run();
+
+    db.close();
+
+    const reopened = await openDb(dbPath);
+    const count = await reopened.prepare("SELECT COUNT(*) c FROM events").get();
+    assert.equal(count.c, 2); // migrating again is a no-op, not a duplicate rebuild
+    reopened.close();
+  } finally {
+    try {
+      rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 });
+    } catch {
+      // leaked temp dir under the OS temp root; not worth failing the test over.
+    }
+  }
+});
+
 // A genuine pre-ADR-0014 database (a real `regions` table that never went through the
 // Settlement rename at all) is already in ensureRegionRename's target shape -- confirms its gate
 // correctly treats this as a no-op rather than mistaking schema.sql's own bootstrap-created

@@ -3,6 +3,7 @@
  * Projection and Reference data are different lifecycles, so they get different modules. */
 
 import { computeAnnualIncomeUpkeep } from "./annualIncome.js";
+import { getCurrentMap } from "./mapVersions.js";
 
 export async function getProjection(db, resource) {
   switch (resource) {
@@ -18,9 +19,25 @@ export async function getProjection(db, resource) {
       return readDeities(db);
     case "locations":
       return readLocations(db);
+    case "map":
+      return readMap(db);
     default:
       return null;
   }
+}
+
+// The image is a BLOB in the database, but every other projection read is JSON -- base64 into a
+// data: URI so the client can drop it straight into an <img src> with no separate binary route.
+async function readMap(db) {
+  const current = await getCurrentMap(db);
+  if (!current) return null;
+  return {
+    eventId: current.event_id,
+    imageDataUri: `data:${current.mime_type};base64,${Buffer.from(current.image_data).toString("base64")}`,
+    gameDate: current.game_date_raw,
+    note: current.note ?? undefined,
+    postedAt: current.posted_at,
+  };
 }
 
 async function readStats(db) {

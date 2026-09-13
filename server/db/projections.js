@@ -39,6 +39,8 @@ export async function applyProjection(db, event) {
     case "UnitLost":
       await applyUnitLost(db, payload);
       break;
+    case "MapUpdated":
+      break; // no effect yet -- the image attaches in a follow-up call (docs/adr/0018), not here
     case "DMRuling":
       break; // no state change by construction (validate.js enforces this)
     default:
