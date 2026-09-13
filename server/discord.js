@@ -100,10 +100,17 @@ function eventFields(event) {
   return fields;
 }
 
-/** Pure and exported for testing -- the network call in notifyDiscord is the only impure part. */
-export function buildEmbed(event) {
+/** Pure and exported for testing -- the network call in notifyDiscord is the only impure part.
+ * `baseUrl` (the site's own origin, e.g. "https://wilderweb.example.com") is optional and
+ * caller-supplied -- see notifyDiscord's own comment for why it isn't read from an env var. When
+ * given, the embed's title becomes a link to this event's spot on the Timeline
+ * (`/timeline?event=<id>`, resolved client-side by Timeline.jsx). Discord never needs to fetch
+ * this URL itself (unlike an inline image), so the site's shared-password gate, if any, doesn't
+ * block it -- clicking just hits the site's normal login like any other link. */
+export function buildEmbed(event, { baseUrl } = {}) {
   return {
     title: EVENT_TITLE[event.type] || event.type,
+    url: baseUrl && event.id != null ? `${baseUrl}/timeline?event=${event.id}` : undefined,
     color: EVENT_COLOR[event.type] ?? 0xb8862f,
     fields: eventFields(event),
     footer: { text: event.gameDate },
@@ -111,8 +118,12 @@ export function buildEmbed(event) {
 }
 
 /** Returns { ok: true, skipped: true } with no network call when no webhook is configured,
- * { ok: true } on a successful post, or { ok: false, error } on any failure -- never throws. */
-export async function notifyDiscord(event) {
+ * { ok: true } on a successful post, or { ok: false, error } on any failure -- never throws.
+ * `baseUrl` comes from the request that triggered this save (server/index.js derives it from
+ * `req.protocol`/`req.get("host")`) rather than a configured constant, so the embed's link is
+ * always right for whatever domain someone is actually hitting instead of a value that can drift
+ * out of sync with the real deployment. */
+export async function notifyDiscord(event, { baseUrl } = {}) {
   const url = process.env.DISCORD_WEBHOOK_URL;
   if (!url) return { ok: true, skipped: true };
 
@@ -120,7 +131,7 @@ export async function notifyDiscord(event) {
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ embeds: [buildEmbed(event)] }),
+      body: JSON.stringify({ embeds: [buildEmbed(event, { baseUrl })] }),
     });
     if (!res.ok) return { ok: false, error: `Discord webhook returned ${res.status}` };
     return { ok: true };

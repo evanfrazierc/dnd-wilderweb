@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import http from "node:http";
 import { createApp } from "../../server/index.js";
 import { openDb } from "../../server/db/connection.js";
 
@@ -35,6 +36,38 @@ test("postToDiscord:true with no webhook configured reports a skipped, successfu
     assert.deepEqual(body.discord, { ok: true, skipped: true });
   } finally {
     await close();
+  }
+});
+
+test("the Discord embed links back to the saved event using the request's own host, not a configured constant", async () => {
+  const received = [];
+  const fakeWebhook = http.createServer((req, res) => {
+    let raw = "";
+    req.on("data", (chunk) => (raw += chunk));
+    req.on("end", () => {
+      received.push(JSON.parse(raw));
+      res.writeHead(200);
+      res.end();
+    });
+  });
+  await new Promise((resolve) => fakeWebhook.listen(0, resolve));
+  process.env.DISCORD_WEBHOOK_URL = `http://localhost:${fakeWebhook.address().port}`;
+
+  const { baseUrl, close } = await startServer();
+  try {
+    const res = await fetch(`${baseUrl}/api/events`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "DMRuling", gameDate: "Pelorune (1), 1st, 1225", note: "A note", postToDiscord: true }),
+    });
+    const body = await res.json();
+    assert.equal(body.discord.ok, true);
+    assert.equal(received.length, 1);
+    assert.equal(received[0].embeds[0].url, `${baseUrl}/timeline?event=${body.event.id}`);
+  } finally {
+    delete process.env.DISCORD_WEBHOOK_URL;
+    await close();
+    await new Promise((resolve) => fakeWebhook.close(resolve));
   }
 });
 

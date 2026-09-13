@@ -53,6 +53,10 @@ const MAP_IMAGE_LIMIT = "15mb";
  * (see test/server/app.test.js). */
 export function createApp(db) {
   const app = express();
+  // Render (and most PaaS hosts) terminate TLS at a reverse proxy and forward plain HTTP
+  // internally -- without this, req.protocol always reports "http" even when the real, public
+  // request was https, which would leak into the Discord embed link built below.
+  app.set("trust proxy", true);
   app.use(siteAuth);
   app.use(express.json({ limit: "2mb" }));
 
@@ -93,7 +97,8 @@ export function createApp(db) {
       const result = await createEvent(db, eventInput);
       if (!result.ok) return res.status(400).json({ errors: result.errors });
 
-      const discord = postToDiscord ? await notifyDiscord(result.event) : undefined;
+      const baseUrl = `${req.protocol}://${req.get("host")}`;
+      const discord = postToDiscord ? await notifyDiscord(result.event, { baseUrl }) : undefined;
       res.status(201).json({ event: result.event, warnings: result.warnings, discord });
     } catch (err) {
       res.status(500).json({ error: err.message });

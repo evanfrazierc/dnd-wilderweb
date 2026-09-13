@@ -114,7 +114,10 @@ see ADR-0003 for why actors still stay free-text either way.
 `POST /api/events` also takes an optional `postToDiscord` flag (not part of the event itself,
 stripped before it reaches `createEvent`) — when true, `server/discord.js`'s `notifyDiscord`
 best-effort-posts a formatted embed to `DISCORD_WEBHOOK_URL`, never blocking or failing the save
-if Discord is unreachable or unconfigured (ADR-0006).
+if Discord is unreachable or unconfigured (ADR-0006). The embed's title links back to
+`/timeline?event=<id>` on whatever host the triggering request actually came in on (`req.protocol`
++ `req.get("host")`, hence `trust proxy` being set — Render terminates TLS in front of the app),
+not a configured constant.
 
 ### Client (`client/`) is page views that emit events, not blind writes
 

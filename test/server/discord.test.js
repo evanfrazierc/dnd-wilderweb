@@ -19,6 +19,19 @@ test("buildEmbed formats a ResourceChanged event", () => {
   ]);
 });
 
+test("buildEmbed links to the event's spot on the Timeline when a baseUrl is given", () => {
+  const embed = buildEmbed(
+    { id: 42, type: "DMRuling", gameDate: "Erastus 4, 1227", note: "A note", payload: {} },
+    { baseUrl: "https://wilderweb.example.com" },
+  );
+  assert.equal(embed.url, "https://wilderweb.example.com/timeline?event=42");
+});
+
+test("buildEmbed omits the url entirely without a baseUrl", () => {
+  const embed = buildEmbed({ id: 42, type: "DMRuling", gameDate: "x", note: "x", payload: {} });
+  assert.equal(embed.url, undefined);
+});
+
 test("buildEmbed formats a BuildingConstructed event with a display name", () => {
   const embed = buildEmbed({
     type: "BuildingConstructed",

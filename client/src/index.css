@@ -877,6 +877,15 @@ input[type="number"] {
   padding: 1rem 1.2rem;
 }
 
+/* A one-time "you arrived here" cue for a Discord-linked entry (Timeline.jsx clears the
+   .highlighted class after 3s) -- reuses .card's own existing border-color/box-shadow
+   transition rather than adding a bespoke one, so it settles at the same pace the rest of the
+   app's cards already do. Color/shadow only, no movement, so it needs no reduced-motion path. */
+.timeline-card.highlighted {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow-md);
+}
+
 /* --- Codex --- */
 
 .book-tabs {

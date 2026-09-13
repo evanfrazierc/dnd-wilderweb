@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getEvents, getObligations, getProjection, setEventHidden } from "../api.js";
 import { useEventSubmit } from "../lib/useEventSubmit.js";
 import Icon from "./Icon.jsx";
@@ -10,6 +10,14 @@ import { formatGameDate, isCompleteGameDate } from "../lib/gameDate.js";
 import { parseChanges } from "../lib/parseChanges.js";
 import { EVENT_ICON } from "../lib/eventIcon.js";
 import { summarizeEvent } from "../lib/eventSummary.js";
+
+// Reads the ?event=<id> a Discord embed link (server/discord.js's buildEmbed) points at, so a
+// click lands directly on that entry instead of the top of a 100+-entry list.
+function requestedEventId() {
+  const raw = new URLSearchParams(window.location.search).get("event");
+  const id = raw ? Number(raw) : NaN;
+  return Number.isFinite(id) ? id : null;
+}
 
 const EVENT_TYPES = [
   "ResourceChanged",
@@ -211,8 +219,12 @@ export default function Timeline() {
   const [typeFilter, setTypeFilter] = useState("");
   const [regionFilter, setRegionFilter] = useState("");
   const [sortMode, setSortMode] = useState("gameDate"); // "gameDate" | "recent"
-  const [showHidden, setShowHidden] = useState(false);
+  // A deep link must resolve even if the entry it points at happens to be hidden (ADR-0019) --
+  // otherwise a shared Discord link could silently 404 into an empty-looking page.
+  const [showHidden, setShowHidden] = useState(() => requestedEventId() !== null);
   const [error, setError] = useState(null);
+  const [highlightActive, setHighlightActive] = useState(() => requestedEventId() !== null);
+  const scrolledToRequested = useRef(false);
 
   function load() {
     return Promise.all([
@@ -243,6 +255,25 @@ export default function Timeline() {
       })
       .catch(() => {});
   }, []);
+
+  // Runs once the requested entry is actually in the DOM. Guarded by a ref rather than just
+  // depending on `events` so a later, unrelated reload (toggling a filter, adding a new entry)
+  // doesn't re-scroll someone back to a link they already followed.
+  useEffect(() => {
+    const id = requestedEventId();
+    if (!events || id === null || scrolledToRequested.current) return;
+    const el = document.getElementById(`event-${id}`);
+    if (!el) return;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
+    scrolledToRequested.current = true;
+  }, [events]);
+
+  useEffect(() => {
+    if (!highlightActive) return;
+    const timer = setTimeout(() => setHighlightActive(false), 3000);
+    return () => clearTimeout(timer);
+  }, [highlightActive]);
 
   if (error) return <div className="error-box">Failed to load the timeline: {error}</div>;
   if (!events) return <div className="loading">Loading the timeline…</div>;
@@ -313,7 +344,11 @@ export default function Timeline() {
           {newestFirst.map((entry) => (
             <div className="timeline-entry" key={entry.id}>
               <div className="timeline-marker" />
-              <div className="card timeline-card" style={entry.hidden ? { opacity: 0.55 } : undefined}>
+              <div
+                id={`event-${entry.id}`}
+                className={`card timeline-card${highlightActive && entry.id === requestedEventId() ? " highlighted" : ""}`}
+                style={entry.hidden ? { opacity: 0.55 } : undefined}
+              >
                 <div className="section-title-row">
                   <div>
                     <span className="icon-badge sm" style={{ marginRight: "0.4rem" }}>
