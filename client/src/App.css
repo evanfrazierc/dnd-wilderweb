@@ -198,7 +198,7 @@
 }
 
 @media (max-width: 900px) {
-  /* A left sidebar doesn't fit a phone -- five flat, equally-important
+  /* A left sidebar doesn't fit a phone -- flat, equally-important
      destinations read better as a persistent bottom tab bar (thumb reach,
      no extra tap to see where you can go) than tucked behind a hamburger. */
   .sidebar {

@@ -187,8 +187,9 @@ Spacing is rem-based throughout rather than a named token scale, generally stepp
 ~0.3rem / 0.5rem / 0.75rem / 1rem / 1.25rem / 1.75rem / 2.5rem as a surface's importance grows.
 
 At `900px` and below, the sidebar collapses from a fixed vertical column into a static horizontal
-bar (nav labels hide, only icons remain), and the content column's left margin drops to 0 --
-there is no intermediate tablet layout, it's a single breakpoint.
+bottom bar (each item stacks its icon over a small label rather than dropping the label), and the
+content column's left margin drops to 0 -- there is no intermediate tablet layout, it's a single
+breakpoint.
 
 ## Elevation & Depth
 
@@ -271,10 +272,10 @@ sidebar -- a radial-gradient bronze disc, the app's one true "icon," not reused 
   not solid).
 - **Book tabs** (Codex): an underline-tab pattern instead of the sidebar's filled-pill pattern --
   transparent background always, `--text-dim` at rest, `--accent-strong` text with a solid
-  `--accent` underline when active. Used specifically for switching between the Codex's three
+  `--accent` underline when active. Used specifically for switching between the Codex's
   sub-views, distinct from primary page navigation.
-- **Mobile (≤900px):** sidebar becomes a horizontal icon-only bar; labels hidden, not
-  wrapped or truncated.
+- **Mobile (≤900px):** sidebar becomes a horizontal bottom bar; each item keeps a small label
+  stacked under its icon rather than dropping to icon-only.
 
 ### Timeline (signature component)
 A vertical thread (`linear-gradient` from `--border-strong` to `--border-soft`, 1px wide) runs

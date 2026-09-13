@@ -9,7 +9,8 @@ web
 ## Users
 
 Two people: the DM (primary) and a co-DM/collaborator, both of whom make edits -- recording
-resource changes, buildings, calendar advances, deity/location updates -- not just viewing.
+resource changes, buildings, garrison units, calendar advances, deity/location updates, loans,
+and map revisions -- not just viewing.
 Players in the Wilderweb tabletop campaign are not confirmed users of the app itself; they follow
 campaign news through the Discord channel the app posts to (the per-save "Post to Discord"
 toggle), not through the web app.
@@ -17,8 +18,9 @@ toggle), not through the web app.
 ## Product Purpose
 
 Tracks the evolving state of a Kingmaker-style D&D hexcrawl/kingdom-building campaign (resources,
-buildings, the in-game calendar, deities, and world locations) as an event log rather than a
-mutable spreadsheet, so every change has a "why" and a "when" attached to it, not just a "what."
+buildings, the garrison, the in-game calendar, deities, world locations, tracked loans, and the
+world map) as an event log rather than a mutable spreadsheet, so every change has a "why" and a
+"when" attached to it, not just a "what."
 Success is an accurate, auditable record the DMs can trust and update quickly during or between
 sessions.
 
@@ -40,10 +42,12 @@ campaign news without needing the app themselves.
 
 ## Capabilities and Constraints
 
-- No accounts/login (ADR-0003): "actor" is a free-text name, not an authenticated identity.
-  Auditability was the goal, not access control.
-- Two known writers today; if that changes, distinct write permissions would need real auth,
-  which doesn't exist yet.
+- No per-user accounts (ADR-0003): "actor" is a free-text name, not an authenticated identity.
+  Auditability was the goal, not access control. The app supports an optional shared-password
+  gate (opt-in per deployment, not currently known to be turned on), but even that would identify
+  nobody -- anyone who has it edits as any name.
+- Two known writers today; if that changes, distinct write permissions would need real per-user
+  auth, which doesn't exist yet.
 - Hosted on Render's free tier with a Turso (libSQL) database (ADR-0007) -- chosen for a
   persistent, always-on, no-credit-card option comfortably sized for "a two-person campaign
   tracker."
@@ -63,8 +67,9 @@ campaign news without needing the app themselves.
 ## Evidence on Hand
 
 Real campaign data already lives in the database: about 100 recorded events, a populated building
-catalog, 9+ regions, a full deity pantheon, and a calendar structure with named months/holidays
-(see the Settlements, Codex, and Calendar views). No testimonials, press, or marketing assets
+catalog, a unit catalog and garrison roster, 9+ regions, a full deity pantheon, a calendar
+structure with named months/holidays, and a current world map image (see the Settlements,
+Garrison, Codex, Calendar, and Dashboard views). No testimonials, press, or marketing assets
 exist or are needed -- this isn't a marketed product.
 
 ## Product Principles
@@ -74,7 +79,7 @@ exist or are needed -- this isn't a marketed product.
 2. Warn, don't block: in-fiction validity checks (unmet prerequisites, negative resources)
    surface warnings, not hard failures -- a DM's judgment call outranks the app's.
 3. Small and trusted, not access-controlled: two known DMs edit; scope stays small enough that
-   free-text attribution is enough, not a login system.
+   free-text attribution is enough, not per-user accounts.
 4. Campaign news optionally reaches players via Discord, not by asking them to use the app.
 5. Built for this one campaign: in-fiction names, structure, and lore can be assumed stable
    rather than treated as user-configurable.
