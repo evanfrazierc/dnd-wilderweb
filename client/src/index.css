@@ -780,6 +780,42 @@ input[type="number"] {
   margin-top: 0.1rem;
 }
 
+/* --- Loans (Dashboard) --- */
+
+.loan-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.loan-card {
+  padding: 1rem 1.2rem;
+}
+
+.loan-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.loan-meter {
+  height: 10px;
+}
+
+.loan-progress {
+  flex: 0 0 auto;
+  text-align: right;
+}
+
+.loan-progress .stat-value {
+  justify-content: flex-end;
+}
+
+.loan-progress-resource {
+  font-size: 0.72rem;
+  margin-top: 0.15rem;
+}
+
 .icon-badge.building-cat-Main-Settlement {
   background: var(--accent-soft);
   color: var(--accent-strong);

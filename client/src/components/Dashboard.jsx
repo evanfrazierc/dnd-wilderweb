@@ -392,69 +392,82 @@ function ObligationDetails({ obligationId }) {
   );
 }
 
-// A plain wrapping .building-name div, not the always-visible single-line <input> this
-// replaced -- that input couldn't wrap, which is what was clipping loan titles on mobile.
+// Its own card (not a shared-list building-row) so the one number that actually matters here --
+// how much of the debt is paid off -- gets the same Fraunces "stat value" treatment Dashboard's
+// resource totals get, plus a meter with real presence instead of a 6px hairline buried in
+// caption text. The flex-wrap + width:100% trick below is unchanged from the old building-row:
+// an expanded Repay/Edit/Remove control still breaks onto its own line within the head.
 function ObligationRow({ obligation, onChanged }) {
   const [action, setAction] = useState(null); // null | "repay" | "edit" | "remove" -- see EditObligationControl's comment
   const pct = obligation.amountTotal > 0
     ? Math.min(100, ((obligation.amountTotal - obligation.amountRemaining) / obligation.amountTotal) * 100)
     : 0;
   const label = obligation.description;
+  const repaid = obligation.amountTotal - obligation.amountRemaining;
 
   return (
-    <div className="building-row" style={{ flexWrap: "wrap" }}>
-      <span className={`icon-badge sm ${obligation.satisfied ? "good" : ""}`}>
-        <Icon name={obligation.repaymentResource} size={16} />
-      </span>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div className="building-name">{obligation.description}</div>
-        <div className="meter good" style={{ marginTop: "0.3rem" }}>
-          <span style={{ transform: `scaleX(${pct / 100})` }} />
+    <div className="card loan-card">
+      <div className="loan-card-head" style={{ flexWrap: "wrap" }}>
+        <span className={`icon-badge ${obligation.satisfied ? "good" : ""}`}>
+          <Icon name={obligation.repaymentResource} size={18} />
+        </span>
+        <div style={{ flex: "1 1 10rem", minWidth: 0 }}>
+          <div className="building-name">{obligation.description}</div>
+          <div className="meter good loan-meter" style={{ marginTop: "0.45rem" }}>
+            <span style={{ transform: `scaleX(${pct / 100})` }} />
+          </div>
         </div>
-        <div className="text-faint building-detail">
-          {obligation.amountTotal - obligation.amountRemaining} / {obligation.amountTotal} {obligation.repaymentResource} repaid
-          {obligation.dueGameDate && ` · due ${obligation.dueGameDate}`}
-          {obligation.satisfied && " · settled"}
+        <div className="loan-progress">
+          <span className="stat-value">
+            {repaid} / {obligation.amountTotal}
+          </span>
+          <div className="text-faint loan-progress-resource">{obligation.repaymentResource} repaid</div>
         </div>
+        {(action === null || action === "repay") && obligation.amountRemaining > 0 && (
+          <RepayObligationControl
+            obligation={obligation}
+            label={label}
+            expanded={action === "repay"}
+            onExpand={() => setAction("repay")}
+            onCollapse={() => setAction(null)}
+            onRepaid={() => {
+              setAction(null);
+              onChanged();
+            }}
+          />
+        )}
+        {(action === null || action === "edit") && (
+          <EditObligationControl
+            obligation={obligation}
+            label={label}
+            expanded={action === "edit"}
+            onExpand={() => setAction("edit")}
+            onCollapse={() => setAction(null)}
+            onChanged={() => {
+              setAction(null);
+              onChanged();
+            }}
+          />
+        )}
+        {(action === null || action === "remove") && (
+          <RemoveObligationControl
+            obligation={obligation}
+            label={label}
+            confirming={action === "remove"}
+            onConfirmStart={() => setAction("remove")}
+            onCancel={() => setAction(null)}
+            onRemoved={() => {
+              setAction(null);
+              onChanged();
+            }}
+          />
+        )}
       </div>
-      {(action === null || action === "repay") && obligation.amountRemaining > 0 && (
-        <RepayObligationControl
-          obligation={obligation}
-          label={label}
-          expanded={action === "repay"}
-          onExpand={() => setAction("repay")}
-          onCollapse={() => setAction(null)}
-          onRepaid={() => {
-            setAction(null);
-            onChanged();
-          }}
-        />
-      )}
-      {(action === null || action === "edit") && (
-        <EditObligationControl
-          obligation={obligation}
-          label={label}
-          expanded={action === "edit"}
-          onExpand={() => setAction("edit")}
-          onCollapse={() => setAction(null)}
-          onChanged={() => {
-            setAction(null);
-            onChanged();
-          }}
-        />
-      )}
-      {(action === null || action === "remove") && (
-        <RemoveObligationControl
-          obligation={obligation}
-          label={label}
-          confirming={action === "remove"}
-          onConfirmStart={() => setAction("remove")}
-          onCancel={() => setAction(null)}
-          onRemoved={() => {
-            setAction(null);
-            onChanged();
-          }}
-        />
+      {(obligation.dueGameDate || obligation.satisfied) && (
+        <div className="tag-row" style={{ marginTop: "0.7rem" }}>
+          {obligation.dueGameDate && <span className="pill">Due {obligation.dueGameDate}</span>}
+          {obligation.satisfied && <span className="pill good">Settled</span>}
+        </div>
       )}
       <ObligationDetails obligationId={obligation.id} />
     </div>
@@ -530,17 +543,15 @@ function AddLoanForm({ knownResourceNames, onAdded }) {
 
   if (!expanded) {
     return (
-      <div className="add-building-form">
-        <button type="button" className="btn btn-sm" onClick={() => setExpanded(true)}>
-          <Icon name="Plus" size={14} />
-          Add loan
-        </button>
-      </div>
+      <button type="button" className="btn btn-sm" style={{ alignSelf: "flex-start" }} onClick={() => setExpanded(true)}>
+        <Icon name="Plus" size={14} />
+        Add loan
+      </button>
     );
   }
 
   return (
-    <form onSubmit={submitForm} className="add-building-form" style={{ flexDirection: "column", alignItems: "stretch" }}>
+    <form onSubmit={submitForm} className="card">
       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
         <label style={{ flex: "2 1 14rem" }}>
           Description
@@ -802,17 +813,15 @@ export default function Dashboard() {
         <h3>Loan Repayment</h3>
         <div className="rule" />
       </div>
-      <div className="card" style={{ marginBottom: "1.5rem" }}>
+      <div className="loan-list" style={{ marginBottom: "1.5rem" }}>
         {obligations.length === 0 && (
           <div className="empty-state" style={{ padding: "1.25rem" }}>
             The kingdom is debt-free.
           </div>
         )}
-        <div className="building-list">
-          {obligations.map((o) => (
-            <ObligationRow key={o.id} obligation={o} onChanged={() => { load(); loadObligations(); }} />
-          ))}
-        </div>
+        {obligations.map((o) => (
+          <ObligationRow key={o.id} obligation={o} onChanged={() => { load(); loadObligations(); }} />
+        ))}
         <AddLoanForm knownResourceNames={knownResourceNames} onAdded={() => { load(); loadObligations(); }} />
       </div>
 
