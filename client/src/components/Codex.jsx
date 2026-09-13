@@ -58,7 +58,7 @@ function IntroductionTab() {
 
   if (!editing) {
     return (
-      <div className="card parchment journal-page">
+      <div className="card">
         <div className="section-title-row">
           <span className="text-faint" style={{ fontSize: "0.82rem" }}>
             {intro.postedBy && `Posted by ${intro.postedBy}`}
@@ -78,7 +78,7 @@ function IntroductionTab() {
   }
 
   return (
-    <div className="card parchment journal-page">
+    <div className="card">
       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
         <label style={{ flex: "1 1 10rem" }}>
           Posted by

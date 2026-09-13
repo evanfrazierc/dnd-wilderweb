@@ -9,8 +9,6 @@
   --border-strong: #5a4426;
 
   --parchment: #ecdfc0;
-  --parchment-dim: #d8c9a3;
-  --ink: #241c12;
 
   --text: #ece3d3;
   --text-dim: #a99a83;
@@ -201,23 +199,6 @@ input[type="number"] {
 .card.interactive:hover {
   border-color: var(--border-strong);
   box-shadow: var(--shadow-md);
-}
-
-.card.parchment {
-  background: linear-gradient(175deg, var(--parchment) 0%, var(--parchment-dim) 100%);
-  color: var(--ink);
-  border-color: #a8925f;
-}
-
-.card.parchment h1,
-.card.parchment h2,
-.card.parchment h3,
-.card.parchment h4 {
-  color: var(--ink);
-}
-
-.card.parchment .text-dim {
-  color: #5b4d34;
 }
 
 /* --- Section headers --- */
@@ -878,10 +859,6 @@ input[type="number"] {
 .book-tab.active {
   color: var(--accent-strong);
   border-color: var(--accent);
-}
-
-.journal-page {
-  position: relative;
 }
 
 .deity-card {
