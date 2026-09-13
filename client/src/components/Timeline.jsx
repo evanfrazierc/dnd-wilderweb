@@ -306,7 +306,7 @@ export default function Timeline() {
       </div>
 
       {newestFirst.length === 0 ? (
-        <div className="empty-state">No entries logged yet.</div>
+        <div className="empty-state">The chronicle is blank — log the first entry above.</div>
       ) : (
         <div className="timeline">
           {newestFirst.map((entry) => (

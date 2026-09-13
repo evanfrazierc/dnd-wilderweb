@@ -562,7 +562,7 @@ export default function Settlements() {
 
             {region.buildings.length === 0 && (
               <div className="empty-state" style={{ padding: "1.25rem" }}>
-                No buildings recorded yet.
+                Untouched — nothing built here yet.
               </div>
             )}
 

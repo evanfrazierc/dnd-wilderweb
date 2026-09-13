@@ -795,7 +795,7 @@ export default function Dashboard() {
       <div className="card" style={{ marginBottom: "1.5rem" }}>
         {obligations.length === 0 && (
           <div className="empty-state" style={{ padding: "1.25rem" }}>
-            No active loans.
+            The kingdom is debt-free.
           </div>
         )}
         <div className="building-list">

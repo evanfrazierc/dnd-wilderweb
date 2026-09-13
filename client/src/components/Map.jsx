@@ -60,7 +60,7 @@ export default function Map() {
         {map === undefined ? (
           <div className="loading">Loading…</div>
         ) : map === null ? (
-          <div className="empty-state">No map uploaded yet.</div>
+          <div className="empty-state">The map is blank — upload one below.</div>
         ) : (
           <>
             <img src={map.imageDataUri} alt="Current campaign map" style={{ maxWidth: "100%", borderRadius: "8px" }} />

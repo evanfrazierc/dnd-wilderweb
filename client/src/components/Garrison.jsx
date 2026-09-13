@@ -337,7 +337,7 @@ export default function Garrison() {
 
         {garrison.length === 0 && (
           <div className="empty-state" style={{ padding: "1.25rem" }}>
-            No units recorded yet.
+            No units mustered yet.
           </div>
         )}
 
