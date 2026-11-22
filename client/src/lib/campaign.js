@@ -9,6 +9,26 @@ export function seasonColor(season) {
   return SEASON_HEX[season] || "#a99a83";
 }
 
+// One color per weather condition in the default seasonal tables (server/db/weather.js), in
+// the same warm, muted family as SEASON_HEX above rather than literal sky colors -- the chip
+// sits inches from a season tag and shouldn't out-shout it. A condition the DM invents by
+// editing the table falls through to the same neutral seasonColor uses, so a custom table
+// still renders; it just doesn't get a color of its own.
+export const WEATHER_HEX = {
+  Clear: "#d0a23a",
+  Heat: "#c9733a",
+  Overcast: "#9b9388",
+  Mist: "#a3b2b8",
+  Rain: "#6f93b8",
+  Storm: "#7b78bd",
+  Snow: "#b6c5cf",
+  Blizzard: "#8ca7bb",
+};
+
+export function weatherColor(condition) {
+  return WEATHER_HEX[condition] || "#a99a83";
+}
+
 // A categorical palette built the dataviz skill's way (fixed hue order, checked against the
 // app's actual dark surface #1c1712 for lightness band, chroma floor, CVD-safe separation,
 // normal-vision separation, and contrast -- all pass), but re-tuned in saturation/lightness

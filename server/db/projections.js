@@ -118,17 +118,26 @@ async function applyBuildingAmended(db, region, payload) {
     .run(displayName, detail, row.id);
 }
 
+// `weather` comes along for the ride as a plain last-write-wins column pair like the rest of
+// this row (docs/adr/0020): the current date's weather is whatever the advance that set that
+// date rolled. An advance into a month with no season rolls nothing and clears it, rather than
+// leaving the previous date's weather showing as if it were today's.
 async function applyCalendarAdvanced(db, payload) {
   await db.prepare(`
-    INSERT INTO calendar_state (id, year, year_label, month, day, note)
-    VALUES (1, ?, ?, ?, ?, ?)
+    INSERT INTO calendar_state (id, year, year_label, month, day, note, weather, weather_roll)
+    VALUES (1, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT (id) DO UPDATE SET
       year = excluded.year,
       year_label = excluded.year_label,
       month = excluded.month,
       day = excluded.day,
-      note = excluded.note
-  `).run(payload.year, payload.yearLabel ?? null, payload.month, payload.day, payload.note ?? null);
+      note = excluded.note,
+      weather = excluded.weather,
+      weather_roll = excluded.weather_roll
+  `).run(
+    payload.year, payload.yearLabel ?? null, payload.month, payload.day, payload.note ?? null,
+    payload.weather?.condition ?? null, payload.weather?.roll ?? null,
+  );
 }
 
 async function applyDeityAmended(db, payload) {

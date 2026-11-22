@@ -2,6 +2,23 @@
 // entry, and building category reads consistently. Geometric and restrained
 // on purpose — no illustrative clip-art.
 
+// Shared by the Summer season and the Clear weather condition below -- a clear summer day is
+// the same sun twice, in two different namespaces, and drawing it once keeps them from
+// drifting apart.
+const SUN = (
+  <>
+    <circle cx="12" cy="12" r="4.4" />
+    <path d="M12 3.3v2.4M12 18.3v2.4M20.7 12h-2.4M5.7 12H3.3M18 6l-1.7 1.7M7.7 16.3 6 18M18 18l-1.7-1.7M7.7 7.7 6 6" />
+  </>
+);
+
+// The cloud every overcast/precipitation glyph sits under, drawn once for the same reason --
+// one silhouette, so Rain, Storm, Snow and Blizzard read as the same sky with different things
+// falling out of it. Sized to leave the bottom third of the box free for what falls.
+const CLOUD = (
+  <path d="M5 11.3a3.1 3.1 0 0 1 3.1-3.1 4.3 4.3 0 0 1 8.2 1.2A2.7 2.7 0 0 1 15.9 13.7H7.7A2.7 2.7 0 0 1 5 11.3Z" />
+);
+
 const PATHS = {
   // --- Resources ---
   Wood: (
@@ -152,12 +169,7 @@ const PATHS = {
       <path d="M12 11c0-3 2.2-4.6 5-4.6C16.7 9.8 14.7 11.8 12 11Z" />
     </>
   ),
-  Summer: (
-    <>
-      <circle cx="12" cy="12" r="4.4" />
-      <path d="M12 3.3v2.4M12 18.3v2.4M20.7 12h-2.4M5.7 12H3.3M18 6l-1.7 1.7M7.7 16.3 6 18M18 18l-1.7-1.7M7.7 7.7 6 6" />
-    </>
-  ),
+  Summer: SUN,
   Autumn: (
     <>
       <path d="M12 4c4.4 0 7 3.6 7 8.2S16.4 20 12 20s-7-3.6-7-7.8S7.6 4 12 4Z" />
@@ -168,6 +180,56 @@ const PATHS = {
     <>
       <path d="M12 3v18M4.5 7.5l15 9M19.5 7.5l-15 9" />
       <path d="M12 3l-1.6 2M12 3l1.6 2M12 21l-1.6-2M12 21l1.6-2" />
+    </>
+  ),
+
+  // --- Weather (docs/adr/0020: rolled per season when the calendar advances) ---
+  Clear: SUN,
+  Overcast: CLOUD,
+  Rain: (
+    <>
+      {CLOUD}
+      <path d="M8.6 16.1l-1 2.6M12.2 16.1l-1 2.6M15.8 16.1l-1 2.6" />
+    </>
+  ),
+  Storm: (
+    <>
+      {CLOUD}
+      <path d="M12.9 15.5 10.4 18.8h2.1l-.9 2" />
+      <path d="M8 16.2l-.9 2.3M16.6 16.2l-.9 2.3" />
+    </>
+  ),
+  Snow: (
+    <>
+      {CLOUD}
+      <circle cx="8.8" cy="17.4" r="0.9" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="19.2" r="0.9" fill="currentColor" stroke="none" />
+      <circle cx="15.2" cy="17.4" r="0.9" fill="currentColor" stroke="none" />
+    </>
+  ),
+  // Driven snow rather than falling snow: the same cloud, but long raking diagonals instead of
+  // Snow's settled dots, so the two don't read as the same glyph at pill size.
+  Blizzard: (
+    <>
+      {CLOUD}
+      <path d="M4.8 20.3 8.6 16.6M10.3 20.6l3.8-3.7M15.8 20.3l3.4-3.4" />
+    </>
+  ),
+  // Ground fog, deliberately cloudless -- stacked, staggered bands read as mist at 13px where
+  // a cloud with something vague under it just reads as "cloud".
+  Mist: (
+    <>
+      <path d="M4.5 7.5h11M17.5 7.5h2" />
+      <path d="M4.5 11h3M9.5 11h10" />
+      <path d="M4.5 14.5h11.5M18 14.5h1.5" />
+      <path d="M6.5 18h13" />
+    </>
+  ),
+  Heat: (
+    <>
+      <circle cx="12" cy="9" r="3.4" />
+      <path d="M12 2.6v1.7M18.6 9h-1.7M7.1 9H5.4M16.7 4.3l-1.2 1.2M8.5 12.5l-1.2 1.2M16.7 13.7l-1.2-1.2M8.5 5.5 7.3 4.3" />
+      <path d="M4.6 18.6q1.6-1.8 3.2 0t3.2 0t3.2 0t3.2 0" />
     </>
   ),
 

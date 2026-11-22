@@ -43,7 +43,12 @@ export function summarizeEvent(event) {
     case "BuildingAmended":
       return `Edited ${payload?.building}${region ? ` in ${region}` : ""}${changedFieldsSummary(payload?.changes)}`;
     case "CalendarAdvanced":
-      return `Advanced to ${event.gameDate}`;
+      // The weather the advance rolled (docs/adr/0020) reads as part of what happened, not as
+      // a separate entry -- an advance with no weather (a month with no season, or a date set
+      // before this existed) just says where the calendar went, as it always did.
+      return payload?.weather?.condition
+        ? `Advanced to ${event.gameDate} · ${payload.weather.condition}`
+        : `Advanced to ${event.gameDate}`;
     case "DeityAmended":
       return `Updated ${payload?.name}${changedFieldsSummary(payload?.changes)}`;
     case "LocationAmended":

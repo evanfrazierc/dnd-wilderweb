@@ -77,7 +77,12 @@ stay free-text rather than full accounts.
 - `events.js` (`createEvent`/`listEvents`): every write is an event of a type documented in
   `CONTEXT.md` (the authoritative list — don't recount them here). `createEvent` validates shape
   (400 on failure), checks in-game warnings (`validate.js`), then writes the event and updates the
-  relevant projection in one transaction.
+  relevant projection in one transaction. One payload is enriched on the way through rather than
+  stored as sent: a `CalendarAdvanced` gains `weather` from `weather.js`'s d6 roll on the new
+  date's season, unless the caller already named a condition (ADR-0020).
+- `weather.js`: the per-season weather tables (reference data, carried by the `calendarStructure`
+  resource) and the roll that reads them. Defaults apply when nothing's stored, so this works on
+  a fresh database with no seeding step.
 - `projections.js`: applies an event's payload onto current-state tables (`resource_totals`,
   `settlement_buildings`, `garrison_units`, `map_versions`, and more — `schema.sql` has the full,
   current set). Never recomputed by replaying the full log — see ADR-0001.
@@ -141,7 +146,11 @@ checkbox state; see the hook's own comment). Reads go through
   loaded snapshot into one `ResourceChanged` event. Also shows the loan (Obligation) panel: adding
   one bundles a `newObligation` onto a `ResourceChanged`, repaying one is another `ResourceChanged`
   referencing its `obligationId`, and editing/forgiving one is its own `ObligationAmended` event.
-- **CalendarView**: the date-set form emits `CalendarAdvanced`.
+- **CalendarView**: the date-set form emits `CalendarAdvanced`, which the server stamps with a
+  d6 weather roll for the new date's season (ADR-0020) — the form's weather dropdown defaults to
+  rolling and otherwise lets the DM name the condition, and the rolled result shows as a chip
+  here and in the StatusBar (`WeatherPill.jsx`). Its "Manage calendar structure" panel edits the
+  months and the per-season weather tables together, both reference data.
 - **Settlements**: add/remove building emits `BuildingConstructed`/`BuildingRemoved`, including
   the optional `displayName` field (an in-fiction name like `"Anora's Roost"` for a `Tower`; the
   `building` field itself must match the catalog — see Q2 in the spec). Also has collapsible

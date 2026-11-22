@@ -418,7 +418,11 @@ input[type="number"] {
   margin-top: 0.5rem;
 }
 
-.season-tag {
+/* .weather-tag (WeatherPill.jsx) is the same chip in the same places, colored by the rolled
+   condition instead of the season, so it drives off this same --season-color custom property
+   rather than growing a second near-identical rule beside it. */
+.season-tag,
+.weather-tag {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
@@ -430,6 +434,17 @@ input[type="number"] {
   border: 1px solid var(--season-color, var(--border));
   color: var(--season-color, var(--text-dim));
   background: color-mix(in srgb, var(--season-color, transparent) 14%, transparent);
+}
+
+/* The d6 face that produced the condition: present but recessive, since the condition is what
+   anyone actually reads and the number is the receipt behind it. */
+.weather-roll {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 0.66rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--season-color, var(--accent)) 22%, transparent);
 }
 
 /* --- Layout helpers --- */

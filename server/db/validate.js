@@ -52,6 +52,15 @@ export function validateShape(type, { gameDate, note, region, payload }) {
       if (!payload || typeof payload.year !== "number" || typeof payload.month !== "number" || typeof payload.day !== "number") {
         errors.push("CalendarAdvanced requires payload.year, payload.month, payload.day (numbers)");
       }
+      // Normally absent: createEvent rolls the weather itself (docs/adr/0020). Present means
+      // the DM chose the day's weather by hand instead of letting the die decide, which still
+      // has to name a condition -- there's nothing to display or record otherwise.
+      if (payload?.weather !== undefined) {
+        const condition = payload.weather?.condition;
+        if (typeof condition !== "string" || !condition.trim()) {
+          errors.push("CalendarAdvanced payload.weather, when given, requires a non-empty condition");
+        }
+      }
       break;
     }
     case "DeityAmended": {

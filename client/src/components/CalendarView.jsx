@@ -8,8 +8,9 @@ import WarningsList from "./WarningsList.jsx";
 import StatusPill from "./StatusPill.jsx";
 import PostToDiscordToggle from "./PostToDiscordToggle.jsx";
 import GameDatePicker from "./GameDatePicker.jsx";
+import WeatherPill from "./WeatherPill.jsx";
 import { formatGameDate } from "../lib/gameDate.js";
-import { seasonColor, assignHolidayColors } from "../lib/campaign.js";
+import { seasonColor, weatherColor, assignHolidayColors } from "../lib/campaign.js";
 
 function parseHolidaysText(text) {
   return text.split(",").map((s) => s.trim()).filter(Boolean).map((part) => {
@@ -28,12 +29,61 @@ function fromMonthRow(r) {
   return { number: Number(r.number), name: r.name.trim(), season: r.season.trim() || null, holidays: parseHolidaysText(r.holidaysText) };
 }
 
+// The d6 face numbers a weather table is read with -- 1-6 for the default six-outcome tables
+// (server/db/weather.js), which the reference write enforces, so this is a fixed row of six.
+const WEATHER_FACES = [1, 2, 3, 4, 5, 6];
+
+// One editable row per season in the weather table (docs/adr/0020). The seasons come from the
+// table itself rather than from the month rows above: a DM mid-rename has a table key the
+// months don't mention yet (and vice versa), and dropping either side of that mismatch on the
+// floor would quietly delete their work.
+function WeatherTableEditor({ weather, onChange }) {
+  const seasons = Object.keys(weather);
+
+  function setOutcome(season, face, value) {
+    const outcomes = [...weather[season]];
+    outcomes[face - 1] = value;
+    onChange({ ...weather, [season]: outcomes });
+  }
+
+  return (
+    <div style={{ marginTop: "1.1rem", paddingTop: "0.9rem", borderTop: "1px solid var(--border-soft)" }}>
+      <h4 style={{ margin: "0 0 0.15rem" }}>Weather table</h4>
+      <p className="text-faint" style={{ fontSize: "0.8rem", marginTop: 0 }}>
+        Advancing the calendar rolls a d6 and reads this row for the new date's season. Repeat an
+        outcome to make it likelier.
+      </p>
+      {seasons.map((season) => (
+        <div key={season} style={{ marginTop: "0.6rem" }}>
+          <span className="season-tag" style={{ "--season-color": seasonColor(season) }}>
+            <Icon name={season} size={12} />
+            {season}
+          </span>
+          <div style={{ display: "flex", gap: "0.4rem", marginTop: "0.35rem", flexWrap: "wrap" }}>
+            {WEATHER_FACES.map((face) => (
+              <label key={face} style={{ flex: "1 1 5.5rem", fontSize: "0.74rem" }}>
+                <span className="text-faint">{face}</span>
+                <input
+                  value={weather[season][face - 1] ?? ""}
+                  onChange={(e) => setOutcome(season, face, e.target.value)}
+                  style={{ width: "100%", borderColor: weatherColor(weather[season][face - 1]) }}
+                />
+              </label>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // Reference data (CONTEXT.md): edited directly, no event history.
 function CalendarStructureEditor({ structure, onSaved }) {
   const { draft, dirty, set, addItem, removeItem } = useDraft({
     era: structure.era || "",
     daysPerMonth: structure.daysPerMonth ?? "",
     months: structure.months.map(toMonthRow),
+    weather: structure.weather ?? {},
   });
   const { save, status } = useReferenceSave("calendarStructure", onSaved);
 
@@ -55,6 +105,7 @@ function CalendarStructureEditor({ structure, onSaved }) {
       era: draft.era.trim() || null,
       daysPerMonth: draft.daysPerMonth === "" ? null : Number(draft.daysPerMonth),
       months: draft.months.map(fromMonthRow),
+      weather: draft.weather,
     });
   }
 
@@ -95,6 +146,7 @@ function CalendarStructureEditor({ structure, onSaved }) {
           <button className="btn btn-sm btn-danger" onClick={() => removeMonth(i)}>Remove</button>
         </div>
       ))}
+      <WeatherTableEditor weather={draft.weather} onChange={(next) => set(["weather"], next)} />
       <div style={{ marginTop: "0.75rem", display: "flex", gap: "0.5rem", alignItems: "center" }}>
         <button className="btn btn-sm" onClick={addMonth}>
           <Icon name="Plus" size={14} />
@@ -167,6 +219,9 @@ export default function CalendarView() {
   const [calendar, setCalendar] = useState(null);
   const [draftDate, setDraftDate] = useState(null);
   const [note, setNote] = useState("");
+  // "" = let the d6 decide (the normal path); anything else is the DM overriding the roll for
+  // this one advance (docs/adr/0020).
+  const [weatherChoice, setWeatherChoice] = useState("");
   const [structure, setStructure] = useState(null);
   const [showStructureEditor, setShowStructureEditor] = useState(false);
   const [error, setError] = useState(null);
@@ -192,9 +247,16 @@ export default function CalendarView() {
     load();
   }
 
+  // The season of the date being *saved*, not the current one -- advancing from Winter into
+  // Spring has to offer Spring's outcomes. Deduped for the menu: a table listing "Clear" twice
+  // means a likelier outcome, not two entries to pick between.
+  const draftSeason = draftDate ? calendar?.months.find((m) => m.number === draftDate.month)?.season : null;
+  const draftSeasonOutcomes = [...new Set(structure?.weather?.[draftSeason] ?? [])];
+
   const { submit, status, warnings, postToDiscord, setPostToDiscord } = useEventSubmit(() => {
     load();
     setNote("");
+    setWeatherChoice("");
   });
 
   async function saveDate() {
@@ -208,6 +270,10 @@ export default function CalendarView() {
         day: draftDate.day,
         yearLabel: draftDate.yearLabel,
         note: draftDate.note,
+        // Omitted on the normal path, which is what tells the server to roll for the new
+        // date's season (docs/adr/0020); sent only when the DM overrode the die, with no
+        // `roll`, since no die was thrown.
+        weather: weatherChoice ? { season: draftSeason, condition: weatherChoice } : undefined,
       },
     });
   }
@@ -237,6 +303,7 @@ export default function CalendarView() {
               {currentSeason}
             </span>
           )}
+          <WeatherPill weather={calendar.currentDate.weather} />
         </div>
       </div>
 
@@ -267,6 +334,22 @@ export default function CalendarView() {
               style={{ width: "100%" }}
             />
           </label>
+          {draftSeasonOutcomes.length > 0 && (
+            <label>
+              Weather
+              <br />
+              <select
+                value={weatherChoice}
+                onChange={(e) => setWeatherChoice(e.target.value)}
+                title={`Rolled from the ${draftSeason} table unless you pick one yourself`}
+              >
+                <option value="">Roll a d6 ({draftSeason})</option>
+                {draftSeasonOutcomes.map((condition) => (
+                  <option key={condition} value={condition}>{condition}</option>
+                ))}
+              </select>
+            </label>
+          )}
           <button className="btn btn-primary" onClick={saveDate}>
             Save
           </button>

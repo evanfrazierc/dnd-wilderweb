@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getProjection, getEvents } from "../api.js";
 import Icon from "./Icon.jsx";
+import WeatherPill from "./WeatherPill.jsx";
 import { currentMonth, formatDate, seasonColor } from "../lib/campaign.js";
 import { EVENT_ICON } from "../lib/eventIcon.js";
 import { summarizeEvent } from "../lib/eventSummary.js";
@@ -59,6 +60,8 @@ export default function StatusBar() {
           {season}
         </span>
       )}
+
+      <WeatherPill weather={calendar?.currentDate?.weather} />
 
       <div className="status-spacer" />
 

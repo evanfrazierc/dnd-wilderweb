@@ -64,6 +64,13 @@ function eventFields(event) {
     }
     case "CalendarAdvanced":
       fields.push({ name: "New Date", value: `Year ${payload.year}, Month ${payload.month}, Day ${payload.day}` });
+      // The season's d6 roll (docs/adr/0020) -- worth announcing, since the players only learn
+      // what the sky is doing when the date moves. `roll` is absent when the DM picked the
+      // condition rather than rolling, in which case there's no number to show off.
+      if (payload.weather?.condition) {
+        const rolled = payload.weather.roll != null ? ` (rolled ${payload.weather.roll})` : "";
+        fields.push({ name: "Weather", value: `${payload.weather.condition}${rolled}`, inline: true });
+      }
       break;
     case "DeityAmended": {
       fields.push({ name: "Deity", value: payload.name, inline: true });

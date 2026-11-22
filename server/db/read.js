@@ -92,7 +92,13 @@ async function readCalendar(db) {
   return {
     ...meta,
     currentDate: state
-      ? { year: state.year, yearLabel: state.year_label, month: state.month, monthName, day: state.day, note: state.note }
+      ? {
+          year: state.year, yearLabel: state.year_label, month: state.month, monthName, day: state.day, note: state.note,
+          // Today's rolled weather (docs/adr/0020), or null on a date advanced before this
+          // existed / in a month with no season. `roll` is null when the DM picked the
+          // condition by hand rather than letting the die decide.
+          weather: state.weather ? { condition: state.weather, roll: state.weather_roll ?? null } : null,
+        }
       : null,
     months: months.map((m) => ({ number: m.number, name: m.name, season: m.season, holidays: JSON.parse(m.holidays) })),
   };

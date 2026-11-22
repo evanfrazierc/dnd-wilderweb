@@ -8,6 +8,10 @@
  * routes just index into this table instead of maintaining their own parallel lists.
  */
 
+import {
+  readWeatherTables, writeWeatherTables, weatherTableErrors, normalizeWeatherTables,
+} from "./weather.js";
+
 function requireFields(item, fields, label) {
   for (const f of fields) {
     if (item[f] === undefined || item[f] === null || item[f] === "") {
@@ -181,6 +185,9 @@ export async function replaceResourceDefinitions(db, definitions) {
   });
 }
 
+/** `weather` is the per-season d6 table rolled when the calendar advances (docs/adr/0020) --
+ * part of this resource rather than one of its own because its keys are the very season names
+ * the month rows below assign, so renaming a season and retuning its weather is one save. */
 export async function readCalendarStructure(db) {
   const months = await db.prepare("SELECT * FROM calendar_months ORDER BY number").all();
   const metaRow = await db.prepare("SELECT value FROM campaign_meta WHERE key = 'calendar_meta'").get();
@@ -189,15 +196,23 @@ export async function readCalendarStructure(db) {
     era: meta.era ?? undefined,
     daysPerMonth: meta.daysPerMonth ?? undefined,
     months: months.map((m) => ({ number: m.number, name: m.name, season: m.season, holidays: JSON.parse(m.holidays) })),
+    weather: await readWeatherTables(db),
   };
 }
 
-export async function replaceCalendarStructure(db, { era, daysPerMonth, months }) {
+export async function replaceCalendarStructure(db, { era, daysPerMonth, months, weather }) {
   const seen = new Set();
   for (const m of months) {
     requireFields(m, ["number", "name"], "A calendar month");
     if (seen.has(m.number)) throw new ValidationError(`Duplicate calendar month number: ${m.number}`);
     seen.add(m.number);
+  }
+  // Unlike `months`, an omitted `weather` leaves the stored table alone instead of wiping it:
+  // this field was added after the resource shipped, so an older caller (or a hand-rolled PUT)
+  // that doesn't know about it must not silently reset the DM's weather to the defaults.
+  if (weather !== undefined) {
+    const weatherErrors = weatherTableErrors(weather);
+    if (weatherErrors.length > 0) throw new ValidationError(weatherErrors.join("; "));
   }
 
   return db.transaction(async (tx) => {
@@ -212,6 +227,9 @@ export async function replaceCalendarStructure(db, { era, daysPerMonth, months }
       INSERT INTO campaign_meta (key, value) VALUES ('calendar_meta', ?)
       ON CONFLICT (key) DO UPDATE SET value = excluded.value
     `).run(JSON.stringify({ era: era ?? null, daysPerMonth: daysPerMonth ?? null }));
+    if (weather !== undefined) {
+      await writeWeatherTables(tx, normalizeWeatherTables(weather));
+    }
   });
 }
 

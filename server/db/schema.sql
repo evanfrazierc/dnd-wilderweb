@@ -78,7 +78,14 @@ CREATE TABLE IF NOT EXISTS calendar_state (
   year_label TEXT,
   month INTEGER NOT NULL,
   day INTEGER NOT NULL,
-  note TEXT
+  note TEXT,
+  -- The weather rolled for the current date (docs/adr/0020), projected out of the latest
+  -- CalendarAdvanced event's payload.weather exactly like the columns above it. `weather_roll`
+  -- is the d6 face that produced the condition, NULL when the DM picked it by hand instead.
+  -- Both added via connection.js's ALTER-TABLE-if-missing check, since this table predates
+  -- them (existing databases already had calendar_state before weather existed).
+  weather TEXT,
+  weather_roll INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS deities (

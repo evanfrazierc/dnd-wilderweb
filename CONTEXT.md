@@ -21,7 +21,9 @@ An event recording a building added to or removed from a region's settlement, re
 An event recording a change to an already-built building's `displayName` or `detail` -- not its count, and not which region it's in. Moving a building to another region is a `BuildingRemoved` from the old region immediately followed by a `BuildingConstructed` in the new one (carrying the display name/detail across), rather than a third meaning bolted onto this type or a dedicated "moved" event (see ADR-0004: don't grow the taxonomy for a variant of an existing type).
 
 **CalendarAdvanced**:
-An event recording the current in-game date moving forward.
+An event recording the current in-game date moving forward. Also carries the new date's
+Weather in `payload.weather`, rolled server-side as the event is created (ADR-0020) -- the only
+event type whose stored payload gains a field the client didn't send.
 
 **DeityAmended**:
 An event recording a change to a deity's confirmed status, title, or alignment.
@@ -59,6 +61,17 @@ _Avoid_: County, place (retired -- see ADR-0010, ADR-0011, ADR-0012); Settlement
 A tracked debt: resources owed, a due date, and a running balance that decreases as later events settle it. First-class and queryable, not narrative text on the originating event, because players need to see repayment progress over time. Its description and due date can be corrected after the fact (`ObligationAmended`); what's owed and what's been paid cannot -- those stay strictly a function of the `ResourceChanged` events that created and are settling it.
 _Avoid_: loan (the loan is the `ResourceChanged` event that creates the Obligation; the Obligation is the ongoing thing it creates)
 
+**Weather**:
+The condition at the campaign's current date -- Clear, Overcast, Mist, Rain, Storm, Heat, Snow,
+Blizzard -- rolled on a d6 from the current season's table each time the date advances, never
+derived fresh on read (ADR-0020). The roll is recorded alongside the condition, so an entry can
+show both what the sky did and the die that decided it; a condition the DM picked by hand
+instead has no roll. The tables themselves are Reference data, one six-entry list per season,
+repeating an outcome to make it likelier. A month with no season has no weather rather than a
+default one.
+_Avoid_: forecast (nothing here predicts; weather exists only for dates the calendar has
+reached), climate (a Region-level property, which this isn't -- weather is kingdom-wide)
+
 **Projection**:
 The current-state tables (current resource totals, current buildings per region, etc.), derived from and updated transactionally alongside the event log. Not recomputed by full replay on every read.
 
@@ -67,4 +80,4 @@ Data with event history: resources/assets/society totals, buildings built per re
 _Avoid_: conflating with Reference data
 
 **Reference data**:
-Static rules/lore content, edited directly with no event history: the building catalog, the unit catalog, the campaign introduction, the calendar's month and holiday definitions.
+Static rules/lore content, edited directly with no event history: the building catalog, the unit catalog, the campaign introduction, the calendar's month and holiday definitions, and the per-season Weather tables (part of the calendar's own reference resource, since they're keyed by the season names its months assign -- ADR-0020).

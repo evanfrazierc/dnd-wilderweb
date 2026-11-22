@@ -1,6 +1,7 @@
 import { parseGameDate } from "./gameDate.js";
 import { validateShape, checkWarnings } from "./validate.js";
 import { applyProjection } from "./projections.js";
+import { withWeatherRoll } from "./weather.js";
 
 /**
  * Creates one event: validates its shape, checks in-game warnings against current
@@ -13,7 +14,14 @@ export async function createEvent(db, { type, gameDate, postedAt, actor, region,
   if (errors.length > 0) return { ok: false, errors };
 
   const parsed = parseGameDate(gameDate);
-  const warnings = await checkWarnings(db, type, { region, payload: payload ?? {} });
+  // The one place an event's payload gains a field the caller didn't send: advancing the
+  // calendar rolls the season's weather here, server-side, so it lands in the event's own
+  // immutable record rather than being re-rolled on every read (docs/adr/0020). Validated
+  // input in, enriched payload out -- everything below writes `eventPayload`, never `payload`.
+  const eventPayload = type === "CalendarAdvanced"
+    ? await withWeatherRoll(db, payload ?? {})
+    : payload ?? {};
+  const warnings = await checkWarnings(db, type, { region, payload: eventPayload });
 
   const event = await db.transaction(async (tx) => {
     const info = await tx.prepare(`
@@ -27,11 +35,11 @@ export async function createEvent(db, { type, gameDate, postedAt, actor, region,
       actor ?? null,
       region ?? null,
       note ?? null,
-      JSON.stringify(payload ?? {}),
+      JSON.stringify(eventPayload),
       JSON.stringify(warnings),
     );
 
-    await applyProjection(tx, { id: info.lastInsertRowid, type, region, payload: payload ?? {} });
+    await applyProjection(tx, { id: info.lastInsertRowid, type, region, payload: eventPayload });
 
     return getEvent(tx, info.lastInsertRowid);
   });

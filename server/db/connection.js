@@ -628,6 +628,10 @@ async function initSchema(client) {
   // afterward if either of them just ran (docs/adr/0019). A safe no-op otherwise, same as
   // building_catalog's annual_effect column above.
   await ensureColumn(client, "events", "hidden", "INTEGER NOT NULL DEFAULT 0");
+  // The current date's rolled weather (docs/adr/0020) -- a safe no-op on a database created
+  // after schema.sql grew these columns, same as building_catalog's annual_effect above.
+  await ensureColumn(client, "calendar_state", "weather", "TEXT");
+  await ensureColumn(client, "calendar_state", "weather_roll", "INTEGER");
   await ensureKnownDataCorrections(client);
   await ensureCurrentDateAdvancedPastRealActivity(client);
   await ensureConsistentDateFormatting(client);
